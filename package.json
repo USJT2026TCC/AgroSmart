@@ -1,0 +1,16 @@
+{
+  "name": "agrosmart",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node scripts/local.mjs iniciar",
+    "status": "node scripts/local.mjs status",
+    "leituras:demo": "node scripts/local.mjs leituras",
+    "instalar": "node scripts/instalar.mjs",
+    "test": "node scripts/verificar.mjs",
+    "verificar": "node scripts/verificar.mjs",
+    "start:sepolia": "node scripts/local.mjs iniciar-sepolia",
+    "stop": "node scripts/local.mjs parar"
+  }
+}

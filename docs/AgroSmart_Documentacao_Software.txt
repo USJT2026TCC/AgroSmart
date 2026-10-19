@@ -1,0 +1,721 @@
+UNIVERSIDADE SÃO JUDAS TADEU
+Curso de Bacharelado em Engenharia de Computação
+
+AGROSMART
+
+Seguros agrícolas automatizados com smart contracts e IoT
+
+DOCUMENTAÇÃO DE SOFTWARE
+
+Ana Victória Faria dos Santos
+Beatriz Aarão de Melo
+Bruno Henrique Volpini Stramasso
+Gabriel Moreira Bittencourt
+Lamys Bachir Fares
+
+São Paulo
+2026
+
+AGROSMART
+
+Documentação de software apresentada à disciplina de Trabalho de Conclusão de Curso como requisito parcial para a obtenção do grau de Bacharel em Engenharia de Computação. Contempla a especificação de requisitos, a modelagem em UML, a arquitetura do sistema e o planejamento do desenvolvimento do protótipo.
+Orientador: Prof. Nelson Aguiar
+São Paulo
+2026
+
+RESUMO
+O AgroSmart é um protótipo de seguro agrícola por índice climático que integra leituras autenticadas, validação fora da cadeia e liquidação em contrato inteligente. O cenário principal é a estiagem: quando o índice publicado por um oráculo autorizado atinge o limiar experimental contratado, durante a vigência de uma apólice garantida, o contrato transfere 100% do limite à carteira do produtor em parcela única. A aplicação oferece contratação, acompanhamento e cancelamento antes do início da vigência com devolução da garantia à seguradora. A contribuição é implementar, integrar e avaliar esse fluxo com rastreabilidade, controle de acesso e tratamento de falhas. Nesta revisão foram aprovados 90 testes dos contratos, com 100% de cobertura de ramos, 108 testes da API e 60 testes do aplicativo. A demonstração local confirmou a liquidação integral e o impedimento de um segundo pagamento. As evidências públicas de versões anteriores não comprovam a implantação do código atual na Sepolia. O trabalho não estabelece limites agronômicos universais, não mede perdas de produção e não constitui validação de um seguro comercial. A indenização escalonada permanece como trabalho futuro, dependente de fundamentação agronômica e atuarial.
+Palavras-chave: Contratos inteligentes. Blockchain. Oráculo. Seguro agrícola indexado. Documentação de software.
+
+ABSTRACT
+AgroSmart is a climate-indexed agricultural insurance prototype integrating authenticated readings, off-chain validation and smart-contract settlement. Its main demonstration scenario is drought. During the coverage period, a funded policy transfers its full agreed limit in one payment when an authorized oracle publishes an index reaching the experimental threshold. The application supports contracting, monitoring and cancellation before inception, returning collateral to the insurer. Its contribution is implementation, integration and experimental evaluation with traceability, access control and failure handling. This revision passed 90 contract tests with 100% branch coverage, 108 API tests and 60 application tests. A local demonstration confirmed full settlement and prevented a second payment. Public evidence from older versions does not establish deployment of the current code on Sepolia. The prototype does not measure crop losses or establish universal agronomic thresholds. Graduated compensation remains future work requiring agronomic and actuarial support.
+Keywords: Smart contracts. Blockchain. Oracle. Index-based crop insurance. Software documentation.
+
+LISTA DE ILUSTRAÇÕES
+Figura 1 – Diagrama de casos de uso consolidado	8
+Figura 2 – Casos de uso: contratação e gestão da apólice	9
+Figura 3 – Casos de uso de coleta e comunicação	10
+Figura 4 – Etapas de revisão e avaliação do sistema	26
+Figura 5 – Diagrama de classes de domínio	29
+Figura 6 – Diagrama de sequência do fluxo de apuração e liquidação	31
+Figura 7 – Arquitetura do sistema em camadas	32
+Figura 8 – Fronteira de confiança entre as camadas	33
+LISTA DE QUADROS
+Quadro 1 – Posicionamento em relação aos trabalhos correlatos	6
+Quadro 2 – Atores do sistema	7
+Quadro 3 – Casos de uso do sistema	11
+Quadro 4 – Relações entre casos de uso	12
+Quadro 5 – Distribuição dos requisitos funcionais por camada	12
+Quadro 6 – Requisitos funcionais: cadastro e identidade	12
+Quadro 7 – Requisitos funcionais: ciclo da apólice	13
+Quadro 8 – Requisitos funcionais: coleta de dados	13
+Quadro 9 – Requisitos funcionais: oráculo	14
+Quadro 10 – Requisitos funcionais: contrato e liquidação	14
+Quadro 11 – Requisitos funcionais: notificação e gestão	14
+Quadro 12 – Requisitos não funcionais: qualidade geral	19
+Quadro 13 – Requisitos não funcionais: execução em cadeia	20
+Quadro 14 – Requisitos não funcionais: oráculo e dados	20
+Quadro 15 – Product backlog e alocação por sprint	21
+Quadro 16 – Detalhamento das histórias de usuário	22
+Quadro 17 – Objetivos e entregas por sprint	25
+Quadro 18 – Resultado da Sprint 1: planejado e concluído	27
+Quadro 19 – Itens de reserva e decisão após a Sprint 1	28
+Quadro 20 – Classes do sistema	29
+Quadro 21 – Fases do fluxo de apuração	31
+Quadro 22 – Tecnologias por componente	34
+Quadro 23 – Verificações do fluxo climático integral	35
+Quadro 24 – Consumo de gas medido em execução local	35
+Quadro 25 – Situação dos objetivos e próximos experimentos	36
+LISTA DE ABREVIATURAS E SIGLAS
+ABNT — Associação Brasileira de Normas Técnicas
+API — Application Programming Interface — interface de programação que permite a sistemas diferentes trocarem dados
+bps — pontos-base (basis points); 1 bps = 0,01%, 10.000 bps = 100%
+EIP — Ethereum Improvement Proposal — proposta formal de mudança no protocolo Ethereum
+ETH — Ether, a moeda nativa da rede Ethereum
+HU — História de usuário
+IoT — Internet das Coisas (Internet of Things)
+LGPD — Lei Geral de Proteção de Dados Pessoais (Lei nº 13.709/2018)
+MQTT — Message Queuing Telemetry Transport — protocolo leve de mensagens usado em IoT
+MVP — Produto Mínimo Viável (Minimum Viable Product)
+p95 — percentil 95; valor abaixo do qual ficam 95% das observações de uma medição
+RF — Requisito funcional
+RNF — Requisito não funcional
+SUSEP — Superintendência de Seguros Privados
+TOTP — Time-based One-Time Password — código temporário usado como segundo fator de autenticação
+UC — Caso de uso (use case)
+GLOSSÁRIO
+faucet: serviço que distribui ETH de teste sem custo, usado em redes de teste como a Sepolia
+gas: unidade de custo computacional cobrada para executar uma transação ou um contrato na rede Ethereum
+gwei: submúltiplo do ETH (10 elevado a menos 9 ETH), unidade usual para expressar o preço do gas
+oráculo: serviço que leva dados do mundo externo para dentro de uma blockchain, já que contratos inteligentes não acessam a rede por conta própria (Seção 1.1)
+camada de integração com a cadeia: no texto, componente ou camada que faz a travessia de dados entre o que roda fora da cadeia e os contratos inteligentes; também chamada de ponte. Evita-se o termo isolado bridge, usado na literatura para pontes entre blockchains diferentes, o que não é o caso deste trabalho
+
+SUMÁRIO
+LISTA DE ILUSTRAÇÕES	5
+LISTA DE QUADROS	6
+LISTA DE ABREVIATURAS E SIGLAS	7
+GLOSSÁRIO	8
+1 INTRODUÇÃO	1
+1.1 Contextualização	1
+1.2 Problema de pesquisa	2
+1.3 Justificativa	3
+1.4 Objetivos	3
+1.4.1 Objetivo geral	3
+1.4.2 Objetivos específicos	4
+1.5 Delimitação do escopo	4
+1.6 Trabalhos relacionados	5
+2 REQUISITOS DO SISTEMA	7
+2.1 Diagrama de casos de uso	7
+2.1.1 Atores	7
+2.1.2 Visão consolidada	8
+2.1.3 Visão detalhada	9
+2.1.4 Descrição dos casos de uso	11
+2.1.5 Relações entre casos de uso	11
+2.2 Requisitos funcionais	12
+2.2.1 Cadastro, autenticação e identidade digital	12
+2.2.2 Ciclo da apólice e implantação do contrato	13
+2.2.3 Coleta e validação de dados de campo	13
+2.2.4 Oráculo e ponte de dados	14
+2.2.5 Contrato inteligente e liquidação	14
+2.2.6 Notificação e gestão	14
+2.2.7 Regras de negócio	14
+2.3 Detalhamento dos fluxos dos casos de uso	15
+2.3.1 UC05 – Contratar apólice	16
+2.3.2 UC10 – Publicar dados via oráculo	17
+2.3.3 UC11 – Avaliar condição contratada	17
+2.3.4 UC12 – Executar pagamento	18
+2.4 Requisitos não funcionais	19
+2.4.1 Qualidade geral do produto	19
+2.4.2 Contrato inteligente e execução em cadeia	20
+2.4.3 Oráculo, dados e tolerância a falhas	20
+3 METODOLOGIA ÁGIL E GESTÃO DO PROJETO	21
+3.1 Product backlog e histórias de usuário	21
+3.2 Divisão em sprints e cronograma de entregas	25
+3.3 Resultado da Sprint 1	26
+3.4 Itens de reserva e decisão após a Sprint 1	27
+4 MODELAGEM DO SISTEMA	29
+4.1 Diagrama de classes	29
+4.2 Diagrama de sequência	31
+5 ARQUITETURA DO SISTEMA	32
+5.1 Visão geral da arquitetura	32
+5.2 Fronteira de confiança	32
+5.3 Tecnologias adotadas	33
+5.4 Ambiente de desenvolvimento reproduzível	34
+6 AVALIAÇÃO EXPERIMENTAL	34
+6.1 Versão e condições de reprodução	34
+6.2 Resultados desta revisão	35
+6.3 Gas e custo do ciclo	35
+6.4 Comparação e limites	36
+7 CONSIDERAÇÕES FINAIS	36
+REFERÊNCIAS	38
+
+
+1 INTRODUÇÃO
+1.1 Contextualização
+Historicamente, acordos comerciais dependem de um terceiro capaz de verificar o cumprimento das obrigações e executar as consequências previstas. Cartórios, câmaras de compensação, bancos e seguradoras exercem essa função, mediante remuneração. A tecnologia de registro distribuído, proposta com o Bitcoin (NAKAMOTO, 2008), ofereceu uma alternativa: em lugar do verificador, um procedimento que qualquer participante da rede pode reexecutar e conferir por conta própria. Com a capacidade de programação introduzida pela rede Ethereum (BUTERIN, 2014), essa ideia deixou de se restringir a transferências de valor e passou a alcançar cláusulas arbitrariamente complexas, codificadas em programas que a própria rede executa e cujo resultado permanece registrado de forma imutável.
+Esses programas, chamados de contratos inteligentes, conceito sistematizado por Szabo (1997) para designar cláusulas contratuais embutidas em software, têm uma propriedade pouco comum entre artefatos de software: o código implantado não muda depois da implantação, nem por iniciativa de quem o publicou. Existem padrões de contrato atualizável, em que um contrato intermediário (proxy) repassa as chamadas a uma implementação que pode ser trocada (PALLADINO; GIORDANO; CROUBOIS, 2019). Os contratos do AgroSmart não usam esse recurso e são implantados sem mecanismo de atualização. A execução não depende da vontade das partes, e o histórico de chamadas fica disponível para auditoria por qualquer interessado. Em acordos marcados por desconfiança mútua elevada e por um custo alto de verificação do cumprimento, essa combinação representa um ganho considerável.
+Essa mesma arquitetura, porém, impõe uma restrição severa. O estado da rede é replicado entre milhares de nós, e sua validade depende de que todos cheguem ao mesmo resultado ao reexecutar uma mesma transação. Uma consulta a fonte externa romperia essa premissa: se cada nó acessasse por conta própria uma interface de programação, poderia obter uma resposta diferente da dos demais, e o consenso se desfaria. Por isso, como decisão de projeto, contratos inteligentes não têm acesso a nada além do próprio estado da cadeia. Manoj T. et al. (2025) resumem bem o ponto ao observar que a blockchain opera como um sistema determinístico e sincronizado, no qual os estados dos dados do mundo real não são diretamente acessíveis pelos contratos.
+Contorna-se essa limitação com um componente chamado oráculo, responsável por obter dados do ambiente, validá-los e submetê-los à cadeia em formato que o contrato consiga processar. A solução resolve o problema e, ao mesmo tempo, cria outro: o oráculo concentra justamente a confiança que a arquitetura descentralizada tentou eliminar, e se torna o ponto único de falha e o alvo preferencial de ataque. Na literatura, o assunto é tratado sob o nome de problema do oráculo e segue como questão em aberto na engenharia de software distribuído. Pasdar, Lee e Dong (2023 apud MANOJ T. et al., 2025) classificam as soluções propostas em quatro famílias (agregação, participação com garantia, votação e reputação), e Al-Breiki et al. (2020) destacam o risco de oráculos fornecerem dados corrompidos, maliciosos ou imprecisos, discutindo os desafios de pesquisa ainda em aberto para torná-los seguros e confiáveis.
+O domínio agrícola permite estudar a integração entre medições externas e decisões contratuais. Estiagens podem afetar a produção, mas a relação entre um índice climático e a perda real depende do contexto da lavoura. Por isso, o protótipo não transforma dias sem chuva em uma porcentagem de prejuízo: usa um limiar experimental para verificar o funcionamento do fluxo automatizado, com essa limitação declarada.
+No seguro por índice, uma regra contratual associa uma variável observável ao direito ao pagamento. Esse arranjo pode divergir da perda efetivamente sofrida pelo produtor, diferença tratada como risco de base (JENSEN; BARRETT; MUDE, 2016). A autenticação das mensagens e a execução correta do contrato não eliminam esse risco: provam a origem registrada e a aplicação da regra, não que o limiar corresponda a prejuízo agrícola. Neste protótipo, o índice de dias secos e o limiar configurável são usados para experimentação do fluxo computacional, sem validação agronômica ou atuarial.
+1.2 Problema de pesquisa
+Como implementar e avaliar um fluxo automatizado entre leituras climáticas autenticadas e liquidação em contrato inteligente, mantendo rastreabilidade, controle de acesso e tratamento de falhas?
+A avaliação responde a quatro perguntas: P1 — quais responsabilidades pertencem ao backend, ao banco, ao oráculo e aos contratos? P2 — quais registros permitem reconstituir o índice e a decisão de pagamento? P3 — quanto gas as operações consomem, e qual o custo do ciclo sob hipóteses explícitas? P4 — como o fluxo reage a origem não autorizada, duplicação, indisponibilidade e falha na transferência? As metas e as evidências desta versão são distinguidas no Capítulo 6.
+Ficam fora do escopo a adequação atuarial do produto e a avaliação do seu impacto econômico: o domínio agrícola funciona aqui como instância concreta do problema técnico, não como objeto de estudo em si.
+1.3 Justificativa
+Do ponto de vista técnico, a justificativa é direta. A impossibilidade de acesso a dados externos não decorre de uma lacuna de implementação que se resolveria trocando de biblioteca: é consequência direta do modelo de consenso. Trabalhar nessa fronteira obriga a equipe a lidar com determinismo, custo de execução, verificação de integridade e superfície de ataque, temas centrais tanto em arquitetura distribuída quanto em segurança computacional.
+O trabalho adota como referência arquitetural Manoj T. et al. (2025), que implementam seguro climático com oráculo descentralizado e avaliam transações em Ganache e Sepolia. O AgroSmart usa um oráculo de nó único e concentra sua contribuição na integração reproduzível da contratação, das leituras autenticadas, da publicação e da liquidação. Cancelamento, cobertura de testes e análise estática são aspectos a comparar com o que os trabalhos relacionados efetivamente descrevem; a ausência de descrição não comprova inexistência de uma funcionalidade. Não se reivindica uma nova modalidade de seguro ou superioridade de descentralização.
+A comparação deve identificar arquitetura, etapas implementadas, condições experimentais, falhas testadas e evidências publicadas. Resultados de gas e latência só são comparáveis quando versão do código, rede, compilador e carga são informados. O trabalho de Manoj T. et al. orienta essa seleção de métricas; seus resultados não são transferidos ao AgroSmart.
+O projeto articula criptografia aplicada, sistemas distribuídos, programação de contratos, integração de dispositivos, banco geográfico e testes de software, conteúdos pertinentes à Engenharia de Computação.
+1.4 Objetivos
+1.4.1 Objetivo geral
+Implementar e avaliar experimentalmente um fluxo de seguro climático automatizado, da recepção de leituras autenticadas à liquidação em contrato inteligente, com rastreabilidade, controle de acesso e tratamento de falhas.
+1.4.2 Objetivos específicos
+Levantar e descrever os requisitos funcionais e não funcionais do sistema;
+Delimitar formalmente a fronteira entre os componentes externos e os que operam na cadeia, justificando a alocação de cada responsabilidade;
+Representar as interações entre atores, sistemas externos e o sistema por meio de diagrama de casos de uso, e o fluxo de liquidação por meio de diagrama de sequência;
+Implementar, em Solidity, o contrato da apólice e o contrato do oráculo, contemplando registro imutável dos termos, controle de endereços autorizados, avaliação da condição contratada e transferência da indenização;
+Implementar o serviço de oráculo responsável por consolidar, assinar e publicar os índices, bem como o simulador que alimenta o sistema com séries climáticas históricas;
+Desenvolver a aplicação do produtor e o painel da seguradora, integrados ao serviço externo e à rede;
+Submeter os contratos a análise estática de vulnerabilidades e a testes automatizados que cubram 100% dos ramos (branch coverage);
+Avaliar experimentalmente o protótipo quanto a consumo de gas por função, latência, vazão de transações e comportamento sob indisponibilidade do oráculo, comparando rede local e rede de teste pública.
+1.5 Delimitação do escopo
+O objeto deste trabalho é a prova de conceito da arquitetura proposta, não um produto pronto para comercialização. As delimitações adotadas são as seguintes.
+Fontes de campo simuladas. As leituras são geradas por componente simulador alimentado por séries climáticas históricas do INMET (INSTITUTO NACIONAL DE METEOROLOGIA, [2026]). Não há instrumentação instalada em campo, mas o protocolo de ponta a ponta é implementado e testado como se a fonte fosse real: cada estação simulada tem par de chaves próprio, publica no tópico MQTT agrosmart/leituras/<fonte> um envelope com o corpo da leitura em base64 e a assinatura da mensagem, opcionalmente sobre TLS com autoridade certificadora própria do ambiente de desenvolvimento, e uma ponte decodifica e repassa os mesmos bytes à API sem reserializar o JSON, para não invalidar a assinatura (RNF17). A chave privada da estação nunca sai do equipamento simulado; o que a seguradora cadastra como Fonte é só o endereço público correspondente. Substituir o simulador por um dispositivo físico não exige, portanto, mudança de protocolo — só a troca da origem dos dados. O produto de demonstração usado na avaliação experimental (Capítulo 6) é de soja, em talhão de 180 ha, com o clima vindo de duas estações do INMET no Brasil, com as datas deslocadas para caber na vigência da apólice — composição declarada aqui para que nenhum resultado do Capítulo 6 seja lido como validação de um cenário agronômico coerente;
+Rede de teste. Os contratos são implantados em rede local e em rede de teste pública, sem movimentação de valores com lastro monetário real;
+Oráculo de nó único. O serviço do protótipo opera com um único endereço autorizado. A arquitetura com múltiplos nós e agregação segura é discutida e apontada como extensão natural, mas não integra a implementação;
+Visão computacional fora do escopo. O módulo foi retirado por limitações de dados públicos adequados e de integração coerente com o índice climático. Esta versão não recebe fotos, não calcula área afetada e não depende de modelo de inteligência artificial para pagar.
+A adequação agronômica, atuarial, regulatória e à LGPD não foi validada. O limiar de dias secos é configurável para experimentação e não representa tolerância universal de uma cultura. O protótipo movimenta ETH de teste; sua execução não equivale à oferta de um seguro comercial.
+1.6 Trabalhos relacionados
+Três trabalhos recentes delimitam o espaço em que este projeto se situa. O primeiro, de Safeer, Gallo e Pulvento (2025), trata de agricultura de precisão com sensores, processamento e blockchain. Sensores de ambiente coletam dados, um Raspberry Pi processa na borda, módulos de visão computacional fazem avaliação de qualidade e detecção de anomalia em tempo real, e os resultados vão para uma blockchain Ethereum por meio de contratos inteligentes. A validação usa o cultivo de açafrão, com um modelo de cadeias de Markov que acompanha a degradação dos filamentos e aponta possível fraude. A finalidade, porém, é outra: o contrato é um registro auditável da qualidade ao longo da cadeia, e nenhum pagamento depende do que o modelo observou.
+Maleki Vishkaei, Trindade e De Giovanni (2026) tratam do seguro agrícola propriamente dito. Modelam, em teoria dos jogos, a relação entre uma seguradora e um produtor que usa oráculos blockchain para atualizar contratos inteligentes quando ocorre um desastre. O foco está em quando vale a pena a seguradora cofinanciar o investimento do produtor em blockchain, e os autores concluem que a colaboração reduz a taxa do seguro e melhora o resultado das duas partes, embora possa falhar sob certas condições. Trata-se de um trabalho de economia: a ponte entre o dado de campo e o contrato é uma premissa do modelo, que os autores não implementam.
+Manoj T. et al. (2025) ficam entre os dois. Implementam um oráculo descentralizado com preservação de privacidade que alimenta contratos de seguro indexado com dados de dispositivos IoT, atribuindo a cada dispositivo um escore de reputação que condiciona o uso de suas leituras. A implementação é avaliada em rede simulada e em rede de teste pública, com medição de gas por função, latência e uso de recursos. O gatilho, porém, é climático: não há inferência sobre imagens da lavoura.
+Os trabalhos relacionados situam o AgroSmart entre a integração de dados externos e a execução de contratos por índice. O posicionamento desta revisão está na implementação e na avaliação reproduzível do fluxo completo, incluindo cancelamento com devolução da garantia, controle de acesso e testes de falhas. O pagamento é integral e único. A comparação deve usar o que cada fonte efetivamente descreve, sem atribuir ausência ou novidade a funcionalidades não verificadas.
+Quadro 1 – Posicionamento em relação aos trabalhos correlatos
+Fonte: elaborado pelos autores (2026).
+2 REQUISITOS DO SISTEMA
+Este capítulo reúne os casos de uso, os requisitos funcionais, os fluxos dos casos de uso e os requisitos não funcionais do AgroSmart.
+2.1 Diagrama de casos de uso
+Os casos de uso seguem a notação UML (OBJECT MANAGEMENT GROUP, 2017). O sistema tem 12 casos de uso e 4 atores externos: o oráculo e a rede blockchain, antes listados como atores, são parte da fronteira do sistema especificado, não do seu ambiente, e foram retirados dessa condição. Três casos de uso — UC10, UC11 e UC12 — não são acionados por um ator externo: descrevem comportamento automático e interno do sistema, documentado aqui para rastreabilidade com os requisitos funcionais e detalhado no diagrama de sequência (Seção 4.2), mas deliberadamente ausente das relações de include e extend entre casos de uso acionados por ator e do escopo dos diagramas de caso de uso das Figuras 1 a 3, que tratam apenas da interação entre atores e sistema. A seção apresenta os atores, uma visão consolidada do diagrama, duas visões ampliadas, a descrição de cada caso de uso e as relações entre eles.
+2.1.1 Atores
+O Quadro 2 descreve os atores do sistema.
+Quadro 2 – Atores do sistema
+Fonte: elaborado pelos autores (2026).
+2.1.2 Visão consolidada
+A Figura 1 apresenta os objetivos dos dois perfis humanos e o fluxo automático alimentado pelas fontes climáticas. Os identificadores retirados são preservados como lacunas históricas para manter a rastreabilidade da revisão.
+
+Figura 1 – Diagrama de casos de uso consolidado
+Fonte: elaborado pelos autores (2026).
+2.1.3 Visão detalhada
+A Figura 2 amplia o grupo A: o que os usuários humanos fazem para contratar e gerir a apólice.
+
+Figura 2 – Casos de uso: contratação e gestão da apólice
+Fonte: elaborado pelos autores (2026).
+A Figura 3 apresenta coleta e comunicação com atores externos. Publicação, avaliação e pagamento são etapas internas automáticas e aparecem no diagrama de sequência, não como objetivos de atores humanos.
+
+Figura 3 – Casos de uso de coleta e comunicação
+Fonte: elaborado pelos autores (2026).
+2.1.4 Descrição dos casos de uso
+O Quadro 3 descreve o ator principal e o objetivo de cada caso de uso. Os doze casos de uso fazem parte do protótipo, incluindo UC13 e UC15, incorporados ao núcleo após a decisão registrada no Quadro 18 (Seção 3.4).
+Quadro 3 – Casos de uso do sistema
+Fonte: elaborado pelos autores (2026).
+2.1.5 Relações entre casos de uso
+O Quadro 4 descreve as relações de inclusão e extensão entre os casos de uso acionados por ator. UC10, UC11 e UC12 formam, entre si, uma cadeia sequencial de comportamento interno automático — publicação pelo oráculo, avaliação da condição e execução do pagamento —, detalhada nos fluxos da Seção 2.3 e no diagrama de sequência (Seção 4.2); por não serem acionados por ator, essa sequência não é modelada aqui como include ou extend entre casos de uso, o que incorreria em decomposição funcional (caso de uso representa o objetivo de um ator, não uma etapa interna).
+Quadro 4 – Relações entre casos de uso
+Fonte: elaborado pelos autores (2026).
+2.2 Requisitos funcionais
+Os requisitos funcionais ativos estão agrupados por responsabilidade. A revisão retira RF14 a RF17 e RF28, e redefine RF25 como pagamento integral em parcela única. Os identificadores não são reutilizados. Os quadros descrevem a versão atual; registros de versões anteriores permanecem apenas no histórico do repositório.
+Quadro 5 – Distribuição dos requisitos funcionais por camada
+Fonte: elaborado pelos autores (2026).
+2.2.1 Cadastro, autenticação e identidade digital
+Quadro 6 – Requisitos funcionais: cadastro e identidade
+Fonte: elaborado pelos autores (2026).
+2.2.2 Ciclo da apólice e implantação do contrato
+Quadro 7 – Requisitos funcionais: ciclo da apólice
+Fonte: elaborado pelos autores (2026).
+O prêmio é informado pela cotação, mas sua cobrança e quitação não são processadas pelo contrato. A seguradora deposita uma garantia exatamente igual ao limite contratado; só então a apólice fica ativa. Se o gatilho for atendido durante a vigência, o contrato transfere esse limite integralmente ao produtor. O cancelamento anterior à vigência e o encerramento sem acionamento permitem devolver a garantia à seguradora. Após pagamento integral, normalmente não há saldo; valores forçados por terceiros podem ser recuperados sem gerar nova indenização.
+2.2.3 Coleta e validação de dados de campo
+Quadro 8 – Requisitos funcionais: coleta de dados
+Fonte: elaborado pelos autores (2026).
+2.2.4 Oráculo e ponte de dados
+Quadro 9 – Requisitos funcionais: oráculo
+Fonte: elaborado pelos autores (2026).
+2.2.5 Contrato inteligente e liquidação
+Quadro 10 – Requisitos funcionais: contrato e liquidação
+Fonte: elaborado pelos autores (2026).
+2.2.6 Notificação e gestão
+Quadro 11 – Requisitos funcionais: notificação e gestão
+Fonte: elaborado pelos autores (2026).
+2.2.7 Regras de negócio
+Esta seção reúne, com fórmula, unidade e exemplo numérico, as regras que decidem se a condição contratada foi atendida e quanto se paga — o que RF23 e RF25 pressupõem, mas não bastam para tornar verificável por si só. As regras espelham a implementação (contratos/contracts/ApolicePolicy.sol, função _percentualDevido, e sua réplica em app/src/cadeia/regraDeGatilho.js, testada caso a caso contra o contrato).
+RN01 — Índice climático: dias consecutivos sem chuva, contados retroativamente a partir do período de referência (um dia, no formato AAAAMMDD). Um dia é seco quando a chuva consolidada é menor que 1 mm (padrão do oráculo); a contagem para no primeiro dia chuvoso ou no primeiro dia sem leitura válida — nesse caso, o índice é um piso, não a medida completa da estiagem. A chuva do dia, por fonte, é a soma das leituras daquele dia; entre fontes, o dia recebe a média dos totais.
+RN02 — Pagamento integral único: se índice climático < limiar, o percentual devido é 0; se índice climático ≥ limiar, é 10000 bps, isto é, 100% do limite. Após a liquidação a apólice não aceita nova publicação, impedindo nova indenização.
+RN03 — Configuração experimental: modoPagamento deve ser 0 e limiarClimaticoIntegral deve ser 0. Esses campos permanecem no formato da ABI por compatibilidade, mas valores de escalonamento são rejeitados no contrato e na API. O limiar de dias secos é informado na contratação e não tem validação agronômica por cultura, solo, região ou fase.
+Exemplo ilustrativo: limiar de 30 dias secos e limite de 1,08 ETH. O exemplo testa a lógica do software; não afirma que 30 dias representem perda total de uma lavoura.
+Índice de 29 dias: 0%, sem pagamento; a apólice continua ativa.
+Índice de 30 dias: 100%, pagamento único de 1,08 ETH; a apólice passa a liquidada.
+Índice de 45 dias em outra apólice ativa: 100%, pagamento único de 1,08 ETH; não há interpolação proporcional.
+Depois de liquidada, qualquer tentativa de nova publicação reverte. Não existe complementação posterior da indenização.
+2.3 Detalhamento dos fluxos dos casos de uso
+Esta seção detalha os fluxos de quatro casos de uso, que concentram a lógica do contrato e do oráculo: a contratação, que implanta o contrato na rede (UC05), a publicação dos índices pelo oráculo (UC10), a avaliação da condição contratada (UC11) e a execução do pagamento (UC12). Nos demais casos de uso, o comportamento já está coberto pelos requisitos funcionais da Seção 2.2 e pelo diagrama de sequência da Seção 4.2. Para cada caso, apresentam-se o fluxo principal, os fluxos alternativos, identificados por "FA", e as exceções, identificadas por "E", na forma usual de especificação de casos de uso (COCKBURN, 2001).
+2.3.1 UC05 – Contratar apólice
+Fluxo principal
+1.	A partir da cotação (UC04), o produtor solicita a contratação.
+2.	O sistema verifica se há carteira digital vinculada ao cadastro.
+3.	O sistema exibe os termos da apólice para aceite.
+4.	O produtor aceita os termos.
+5. A seguradora prepara a emissão na API e confirma, em sua carteira, a transação de implantação na fábrica. O produtor solicita a contratação, mas não implanta o contrato. A nova apólice aguarda o depósito da garantia pela seguradora.
+6.	O contrato registra o resumo criptográfico dos termos.
+7.	A seguradora deposita a garantia, em valor exatamente igual ao limite de indenização contratado; o contrato confere o valor e ativa a apólice (RF30).
+8.	O sistema registra a apólice como ativa e exibe o endereço do contrato. O prêmio é cobrado do produtor fora da cadeia, segundo a prática comercial da seguradora, e não é registrado pelo contrato.
+Fluxos alternativos
+FA01 – Vinculação da carteira (a partir do passo 2)
+2.1	O sistema identifica que não há carteira vinculada.
+2.2	O sistema gera uma mensagem única para assinatura.
+2.3	O produtor assina a mensagem com sua carteira.
+2.4	O sistema verifica a assinatura, grava o endereço e retoma o passo 3.
+Exceções
+E01 – Carteira já vinculada a outro produtor (FA01): o sistema recusa a vinculação e informa o produtor.
+E02 – Falha na implantação do contrato (passo 5): a apólice não é registrada e o produtor é informado.
+E03 – Valor da garantia incorreto (passo 7): a transação é revertida (RF30) e a apólice permanece aguardando o depósito correto.
+O protótipo não implementa, hoje, validação de expiração da cotação, recusa explícita dos termos pelo produtor no passo 4, nem nova checagem de área ou polígono na contratação — essa checagem já ocorre no cadastro do talhão (UC02). São lacunas conhecidas, registradas aqui como trabalho futuro, não como fluxos cobertos pela implementação atual.
+2.3.2 UC10 – Publicar dados via oráculo
+Fluxo principal
+1.	Ao fim do período de referência, o serviço de oráculo recebe o índice climático (UC07) consolidado.
+2.	O oráculo envia a transação de publicação a partir do endereço autorizado; é a própria assinatura da transação, verificada pela rede, que autentica a origem (RF18) — não há verificação de assinatura adicional no contrato. Uma assinatura separada (por exemplo EIP-712) só seria necessária em um desenho com múltiplos nós e um relayer, extensão apontada na Seção 1.5 e ainda não implementada.
+3.	O oráculo submete os índices ao contrato da apólice em uma única transação.
+4.	O sistema registra o identificador da transação, o gas consumido e o instante de confirmação.
+Fluxos alternativos
+FA01 – Rede indisponível (a partir do passo 3)
+3.1	O oráculo enfileira a publicação, preservando o período de referência original.
+3.2	Com a rede restabelecida, o fluxo é retomado no passo 3.
+Exceções
+E01 – Publicação rejeitada pelo contrato (passo 3): a rejeição, por endereço não autorizado ou período já publicado, é registrada em log.
+2.3.3 UC11 – Avaliar condição contratada
+Fluxo principal
+1.	O contrato recebe a transação de publicação (UC10).
+2.	O contrato verifica se o remetente consta da lista de endereços autorizados.
+3.	O contrato verifica se o período de referência ainda não foi publicado.
+4.	O contrato registra os índices do período e emite o evento de publicação.
+5.	O contrato compara os índices com a condição contratada.
+6.	Atendida a condição, o contrato executa o pagamento (UC12).
+Fluxos alternativos
+FA01 – Condição não atendida (a partir do passo 5)
+5.1	O contrato mantém a apólice em monitoramento até o próximo período ou até o fim da vigência.
+Exceções
+E01 – Remetente não autorizado (passo 2): a transação é revertida com motivo identificável.
+E02 – Período já publicado (passo 3): a transação é revertida, preservando o valor original.
+2.3.4 UC12 – Executar pagamento
+Fluxo principal
+1.	O contrato verifica que ainda não houve acionamento para o período.
+2.	O contrato atualiza a situação da apólice antes de qualquer transferência.
+3.	O contrato transfere a indenização para a carteira do produtor.
+4.	O contrato emite o evento de pagamento executado, que dispara a notificação (UC13).
+Fluxos alternativos
+FA01 — Condição ainda não atendida: a apólice continua ativa para as próximas publicações válidas, sem transferir valor.
+O pagamento não é proporcional à severidade; a condição é binária e o limite é fixado antes da emissão.
+A liquidação só é concluída se a transferência integral for bem-sucedida.
+Exceções
+E01 – Acionamento duplicado (passo 1): a transação é revertida.
+E02 – Falha na transferência (passo 3): toda a operação é revertida e a situação da apólice permanece inalterada.
+2.4 Requisitos não funcionais
+Além das categorias previstas pela norma ISO/IEC 25010 (INTERNATIONAL ORGANIZATION FOR STANDARDIZATION, 2023), foram acrescentadas categorias específicas da execução em rede descentralizada; sem elas, os pontos de maior risco técnico do projeto ficariam sem cobertura. Os nomes das características seguem a edição de 2023 da norma, em que Usabilidade passou a se chamar Capacidade de interação e Portabilidade passou a se chamar Flexibilidade. Os Quadros 12 a 14 detalham esses requisitos por categoria.
+2.4.1 Qualidade geral do produto
+Quadro 12 – Requisitos não funcionais: qualidade geral
+Fonte: elaborado pelos autores (2026).
+2.4.2 Contrato inteligente e execução em cadeia
+Quadro 13 – Requisitos não funcionais: execução em cadeia
+Fonte: elaborado pelos autores (2026).
+2.4.3 Oráculo, dados e tolerância a falhas
+Quadro 14 – Requisitos não funcionais: oráculo e dados
+Fonte: elaborado pelos autores (2026).
+3 METODOLOGIA ÁGIL E GESTÃO DO PROJETO
+O desenvolvimento do projeto adota o Scrum (SCHWABER; SUTHERLAND, 2020), com equipe de cinco integrantes; as Sprints 1 e 2 têm dez dias úteis cada, e a Sprint 3, que se estende até a entrega final, tem onze. O calendário da disciplina fixa duas datas: o artigo científico em 25/10/2026 e a entrega final do projeto em 02/11/2026 — confirmada com o orientador. Papéis formais (Product Owner, Scrum Master), evento de retrospectiva, Definição de Pronto e método de estimativa não foram formalizados pela equipe; as estimativas em pontos de história (Seção 3.1) seguem a prática usual de Fibonacci, sem registro formal de como o consenso foi obtido. Este capítulo apresenta o backlog em histórias de usuário, sua distribuição nas sprints, o resultado da Sprint 1 e a decisão sobre os itens de reserva.
+3.1 Product backlog e histórias de usuário
+O backlog mantém os identificadores históricos e os critérios de aceite aplicáveis ao fluxo climático. Histórias ligadas a imagens e revisão por perito foram retiradas. As estimativas e as sprints registram planejamento da equipe; não constituem evidência de testes ou de implantação. A matriz de rastreabilidade atual está em docs/RASTREABILIDADE.md.
+Quadro 15 – Product backlog e alocação por sprint
+Fonte: elaborado pelos autores (2026).
+O Quadro 16 apresenta cada história com requisitos, estimativa, sprint e critérios de aceite.
+Quadro 16 – Detalhamento das histórias de usuário
+
+
+
+
+
+
+
+
+
+
+
+
+Fonte: elaborado pelos autores (2026).
+
+3.2 Divisão em sprints e cronograma de entregas
+As sprints registram o planejamento original. A revisão de escopo foi consolidada em 16/10/2026 e exige novas evidências sempre que o código dos contratos muda. As medições antigas e as transações públicas de 07 e 08/10/2026 pertencem a versões anteriores e não validam automaticamente o release atual. O calendário acadêmico deve ser mantido conforme a confirmação da equipe e do orientador.
+Quadro 17 – Objetivos e entregas por sprint
+Fonte: elaborado pelos autores (2026).
+O produto mínimo viável desta revisão reúne contratos, oráculo, simulador climático, API, banco e interfaces de contratação e acompanhamento. A liquidação é integral e única.
+A Figura 4 registra as etapas de implementação, integração, avaliação e documentação da revisão. Não se atribuem novas estimativas de esforço às tarefas sem replanejamento da equipe.
+
+Figura 4 – Etapas de revisão e avaliação do sistema
+Fonte: elaborado pelos autores (2026).
+3.3 Resultado da Sprint 1
+A Sprint 1 terminou em 02/10/2026. O Quadro 18 compara o planejado com o concluído, com base no histórico de alterações do repositório do projeto. O código dos contratos e do oráculo começou a ser escrito em 17/09, antes do início formal da sprint, o que explica parte da antecipação.
+Quadro 18 – Resultado da Sprint 1: planejado e concluído
+Fonte: elaborado pelos autores (2026).
+O histórico da Sprint 1 é mantido como registro do planejamento anterior. A retirada de funcionalidades altera o backlog ativo e impede usar a soma original de pontos como medida da conclusão desta revisão. A aprovação do software depende dos testes e das evidências descritos no Capítulo 6.
+3.4 Itens de reserva e decisão após a Sprint 1
+Se menos de 80% dos pontos comprometidos para a sprint forem concluídos, reduz-se o escopo da sprint seguinte, preservando a cobertura de testes exigida pelos requisitos RNF11 e RNF12.
+O núcleo ativo compreende contratação, garantia, ingestão autenticada, publicação, avaliação e liquidação. Cancelamento e relatórios complementam o fluxo. RF25 foi redefinido como indenização integral única; escalonamento passa a trabalho futuro.
+Quadro 19 – Itens de reserva e decisão após a Sprint 1
+Fonte: elaborado pelos autores (2026).
+4 MODELAGEM DO SISTEMA
+4.1 Diagrama de classes
+A Figura 5 apresenta as entidades fora da cadeia e os contratos. O banco mantém cadastros, propostas, leituras, registros de publicação e eventos indexados; a apólice em Solidity guarda os termos e executa o pagamento.
+
+Figura 5 – Diagrama de classes de domínio
+Fonte: elaborado pelos autores (2026).
+Um produtor possui propriedades; uma propriedade reúne talhões. Cada talhão possui fontes e pode originar propostas e apólices. Cada fonte produz leituras autenticadas. O serviço de oráculo consolida o índice e publica por período. ApoliceFactory cria apólices, e ApolicePolicy consulta OracleRegistry para validar a autorização do remetente.
+Quadro 20 – Classes do sistema
+Fonte: elaborado pelos autores (2026).
+ApolicePolicy, OracleRegistry e ApoliceFactory correspondem aos contratos Solidity. Os termos incluem produtor, talhão, cultura, vigência, limiar experimental e limite. Publicacao guarda oráculo, índice climático e instante do bloco; o período é a chave do registro. Os eventos registram a publicação, a avaliação e o pagamento. O detalhe das fontes e das leituras permanece fora da cadeia.
+4.2 Diagrama de sequência
+A Figura 6 mostra a sequência entre fonte, API, banco, oráculo, contratos e aplicativo. A publicação que atinge o gatilho e a transferência ocorrem na mesma transação. A notificação depende da indexação posterior dos eventos.
+
+Figura 6 – Diagrama de sequência do fluxo de apuração e liquidação
+Fonte: elaborado pelos autores (2026).
+Quadro 21 – Fases do fluxo de apuração
+Fonte: elaborado pelos autores (2026).
+A transação do oráculo transporta período e índice climático. O contrato verifica a autorização, a situação, a vigência e a duplicação; então avalia o limiar. Não recebe imagens nem mede perdas agrícolas.
+5 ARQUITETURA DO SISTEMA
+5.1 Visão geral da arquitetura
+A Figura 7 apresenta a arquitetura: fonte climática simulada, API e banco, serviço de oráculo, contratos e interfaces. O backend não guarda chaves privadas da seguradora ou do produtor. A carteira da seguradora emite e garante apólices, e a chave do oráculo assina publicações. A nova versão foi avaliada localmente; a publicação na Sepolia precisa corresponder ao mesmo código.
+
+Figura 7 – Arquitetura do sistema em camadas
+Fonte: elaborado pelos autores (2026).
+5.2 Fronteira de confiança
+A Figura 8 resume a divisão de responsabilidades entre o que executa fora e dentro da cadeia. O critério de alocação é o seguinte:
+Fora da cadeia ficam ingestão e validação das leituras, cadastros, histórico climático, consolidação, fila, relatórios e notificações. O banco não autoriza pagamentos.
+Na cadeia fica o que precisa ser confiável sem depender de quem executa: termos da apólice, endereços autorizados, avaliação da condição e transferência de valor.
+
+Figura 8 – Fronteira de confiança entre as camadas
+Fonte: elaborado pelos autores (2026).
+O contrato autentica a origem pela assinatura da transação e pelo registro de oráculos. Verifica a situação ativa, a vigência e a inexistência do período, mas não prova a veracidade física das leituras nem recalcula a chuva. A reprodução completa exige preservar a série de entrada, a configuração e o registro do oráculo. O pagamento usa envio direto: se a carteira de destino recusar ETH, toda a transação reverte. Os testes exercitam essa atomicidade e ataques de reentrância. Um mecanismo de saque pode ser estudado futuramente.
+5.3 Tecnologias adotadas
+As escolhas relevantes para avaliação são um contrato por apólice, pagamento por envio, garantia em ETH e oráculo de nó único. Clones mínimos, redes de camada 2, mecanismo de saque e múltiplos nós são alternativas futuras e precisam de medição própria; não se afirma que cumpram a meta de custo sem avaliação.
+Quadro 22 – Tecnologias por componente
+Fonte: elaborado pelos autores (2026).
+5.4 Ambiente de desenvolvimento reproduzível
+O backend suporta PostgreSQL/PostGIS e um banco embutido para demonstração, conforme a configuração. As migrações são aplicadas em ordem e o banco persiste cadastros e leituras. Os testes usam dados e banco isolados. Arquivos .env e chaves não são versionados. Endereços públicos só podem ser usados pelo release atual se a implantação corresponder ao código e à ABI atuais.
+6 AVALIAÇÃO EXPERIMENTAL
+6.1 Versão e condições de reprodução
+Esta revisão avalia o protocolo clima-integral-v1 em rede Hardhat local, com Solidity 0.8.24 e otimizador de 200 execuções. Os testes não movimentam dinheiro real. Os índices da demonstração local são sintéticos e identificados como tal. Separadamente, o simulador permite reproduzir séries históricas do INMET sobre talhão fictício. O limiar demonstrativo de 30 dias não constitui recomendação agronômica. A atualização do banco inicial foi testada preservando contas históricas do papel retirado, bloqueando seu acesso e revogando suas sessões. A checagem numa cópia do banco existente também concluiu as migrações; o banco original foi preservado.
+A reprodução utiliza npm run testar em contratos, backend e app; npm run testar:tudo em oraculo; npm run testar:integracao em backend; e npx hardhat run scripts/avaliar-integral.js em contratos. A cobertura é medida com npx hardhat coverage e npm run cobertura. A análise estática usa npm run analisar. Compilação e análise estática devem terminar antes dos testes que leem artefatos.
+6.2 Resultados desta revisão
+Quadro 23 – Verificações do fluxo climático integral
+Fonte: execuções desta revisão, registradas em docs/resultados/clima-integral-2026-10-16. Os testes de tela usam carteira simulada exclusivamente no ambiente de teste.
+A análise estática possui supressões justificadas no próprio código. Nesta rodada, um alerta arbitrary-send-eth foi aceito por apontar o envio ao beneficiário fixado no construtor. A execução final do Slither analisou seis contratos com 102 detectores e não apresentou resultados remanescentes com as supressões. Isso não equivale à ausência de alertas brutos nem constitui prova de segurança. A saída e a triagem acompanham as evidências desta versão.
+6.3 Gas e custo do ciclo
+Quadro 24 – Consumo de gas medido em execução local
+Em cenário ilustrativo de 180 publicações, com 179 sem acionamento e uma que paga ao final, o custo estimado é 24.619.823 unidades de gas. Usam-se, conservadoramente, as unidades da primeira publicação sem pagamento para as demais. Para limite de 1,08 ETH, taxa de prêmio de 4,5% e preço hipotético de 0,5 gwei, o custo equivale a 25,33% do prêmio. É uma simulação de custo baseada em gas local, não uma medição de preço de mercado nem de transações da rede principal. A meta de 1% do RNF08 não é atendida nesse cenário.
+O preço do gas, a cadência e o momento do acionamento alteram o resultado. A nova implantação na Sepolia e a verificação pública de seu código ainda precisam ser executadas; as evidências de 07 e 08/10/2026 pertencem a versões anteriores. Também precisam de nova medição as metas de latência, carga, recuperação e compatibilidade entre navegadores. Resultados antigos são linhas de base históricas, não aprovação automática desta versão.
+6.4 Comparação e limites
+Manoj T. et al. (2025) usam oráculo descentralizado, enquanto este protótipo usa nó único. A comparação documental deve indicar as etapas e as evidências disponíveis de cada implementação, sem concluir superioridade a partir de funcionalidades não descritas. A publicação do código atual verificado na Sepolia será evidência do AgroSmart apenas depois de efetivamente realizada.
+As principais limitações são risco de base, fontes simuladas, confiança no operador do oráculo, ausência de validação agronômica e atuarial, garantia em ETH de teste e execução local em uma máquina. Assinatura comprova a origem da mensagem, não a verdade do fenômeno. Dias sem leitura válida interrompem a sequência seca; dados ausentes não contam como seca. O índice de estiagem não cobre excesso de chuva nem calcula percentual de lavoura perdida.
+7 CONSIDERAÇÕES FINAIS
+O recorte atual permite avaliar uma contribuição de Engenharia de Computação: implementar e integrar um fluxo climático automatizado, da leitura autenticada à liquidação, com rastreabilidade, controle de acesso e tratamento de falhas. Os testes confirmam a regra integral única no ambiente avaliado. Cancelamento com devolução da garantia, cobertura de testes, análise estática e futura verificação pública do código compõem a avaliação, com suas condições e limitações expressas.
+Quadro 25 – Situação dos objetivos e próximos experimentos
+No momento, adota-se indenização integral em parcela única, condicionada ao gatilho climático experimental e aos termos previamente aceitos. Como evolução futura, poderá ser estudada indenização escalonada, com faixas fundamentadas em tipo de solo, cultura, região, fase de desenvolvimento, época do ano e risco coberto, mediante dados e validação especializada. O diferencial acadêmico deverá decorrer da comparação comprovada com os trabalhos relacionados: etapas implementadas, falhas testadas e evidências publicadas. Implementação, integração e avaliação reproduzível constituem contribuições válidas sem a criação de uma nova modalidade de seguro.
+REFERÊNCIAS
+AL-BREIKI, Hamda; REHMAN, Muhammad Habib Ur; SALAH, Khaled; SVETINOVIC, Davor. Trustworthy blockchain oracles: review, comparison, and open research challenges. IEEE Access, v. 8, p. 85675-85685, 2020. DOI: 10.1109/ACCESS.2020.2992698.
+BRASIL. Lei nº 13.709, de 14 de agosto de 2018. Lei Geral de Proteção de Dados Pessoais (LGPD). Brasília, DF: Presidência da República, 2018. Disponível em: https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm. Acesso em: 15 out. 2026.
+BUTERIN, Vitalik. A next-generation smart contract and decentralized application platform. [S. l.: s. n.], 2014. Ethereum white paper. Disponível em: https://ethereum.org/whitepaper. Acesso em: 8 out. 2026.
+COCKBURN, Alistair. Writing effective use cases. Boston: Addison-Wesley, 2001.
+INSTITUTO NACIONAL DE METEOROLOGIA (Brasil). Dados históricos. Brasília, DF: INMET, [2026]. Disponível em: https://portal.inmet.gov.br/dadoshistoricos. Acesso em: 8 out. 2026.
+INTERNATIONAL ORGANIZATION FOR STANDARDIZATION. ISO/IEC 25010: systems and software engineering: systems and software quality requirements and evaluation (SQuaRE): product quality model. 2. ed. Geneva: ISO, 2023. Disponível em: https://www.iso.org/standard/78176.html. Acesso em: 28 set. 2026.
+JENSEN, Nathaniel D.; BARRETT, Christopher B.; MUDE, Andrew G. Index insurance quality and basis risk: evidence from northern Kenya. American Journal of Agricultural Economics, v. 98, n. 5, p. 1450-1469, 2016. DOI: 10.1093/ajae/aaw046.
+MALEKI VISHKAEI, Behzad; TRINDADE, Maria Alice; DE GIOVANNI, Pietro. Blockchain-powered agricultural production and insurance: a game-theoretic model for fraud prevention and smart compensation. International Journal of Production Economics, v. 301, art. 110120, 2026. DOI: 10.1016/j.ijpe.2026.110120.
+MANOJ T.; MAKKITHAYA, Krishnamoorthi; NARENDRA V. G.; VIJAYA MURARI T. Blockchain oracles for decentralized agricultural insurance using trusted IoT data. Frontiers in Blockchain, v. 7, art. 1481339, 2025. DOI: 10.3389/fbloc.2024.1481339.
+NAKAMOTO, Satoshi. Bitcoin: a peer-to-peer electronic cash system. [S. l.: s. n.], 2008. Disponível em: https://bitcoin.org/bitcoin.pdf. Acesso em: 8 out. 2026.
+OBJECT MANAGEMENT GROUP. OMG Unified Modeling Language (UML), version 2.5.1. [S. l.]: OMG, 2017. Disponível em: https://www.omg.org/spec/UML. Acesso em: 28 set. 2026.
+PALLADINO, Santiago; GIORDANO, Francisco; CROUBOIS, Hadrien. ERC-1967: proxy storage slots. Ethereum Improvement Proposals, n. 1967, abr. 2019. Disponível em: https://eips.ethereum.org/EIPS/eip-1967. Acesso em: 8 out. 2026.
+SAFEER, Sajid; GALLO, Pierluigi; PULVENTO, Cataldo. Agri-farming with computer vision, IoT and blockchain towards climate smart cultivation. Internet of Things, v. 34, art. 101749, 2025. DOI: 10.1016/j.iot.2025.101749.
+SCHWABER, Ken; SUTHERLAND, Jeff. The Scrum Guide: o guia definitivo do Scrum: as regras do jogo. [S. l.]: Scrum.org, 2020. Disponível em: https://scrumguides.org. Acesso em: 28 set. 2026.
+SOMMERVILLE, Ian. Engenharia de software. 10. ed. São Paulo: Pearson Education do Brasil, 2019.
+SZABO, Nick. Formalizing and securing relationships on public networks. First Monday, v. 2, n. 9, 1 set. 1997. DOI: 10.5210/fm.v2i9.548.
+Trabalho | IoT | Liquidação descrita | Contrato | O que o contrato faz
+Safeer, Gallo e Pulvento (2025) | Sim | — | Sim | Registra qualidade e rastreabilidade; não movimenta valor
+Maleki Vishkaei, Trindade e De Giovanni (2026) | Teórico (premissa do modelo) | Não implementado | Sim | Paga por desastre; a ponte entre dado e contrato fica como premissa do modelo
+Manoj T. et al. (2025) | Sim | Seguro por índice climático | Sim | Oráculo descentralizado; experimentos em Ganache e Sepolia. Não se presume ausência de funcionalidades não descritas.
+AgroSmart (este trabalho) | Simulado | Integral em parcela única | Sim | Avalia limiar climático experimental; paga 100% uma vez; cancela antes da vigência e devolve garantia.
+Ator | Tipo | O que faz no sistema
+Produtor Rural | Principal | Simula, contrata e acompanha apólices e recebe a indenização.
+Seguradora | Principal | Cadastra produtores e talhões, parametriza os produtos e acompanha a carteira.
+Sensores IoT e estações | Secundário | Enviam as leituras climáticas. Estações meteorológicas e sensores de solo. No protótipo, representados por simulações.
+Serviço de notificação | Secundário | Envia mensagens por aplicativo e e-mail.
+ID | Caso de uso | Ator principal | Objetivo | Fig.
+UC01 | Autenticar-se no sistema | Produtor ou seguradora | Obter acesso às funcionalidades de acordo com cada perfil. | 2
+UC02 | Cadastrar produtor e talhão | Seguradora | Registrar o produtor e delimitar os talhões seguráveis. | 2
+UC03 | Configurar produto indexado | Seguradora | Definir cultura, índice, condição de acionamento, vigência e limite de indenização. | 2
+UC04 | Simular cotação | Produtor Rural | Estimar o prêmio a partir da área segurada, da cultura e do histórico climático. | 2
+UC05 | Contratar apólice | Produtor Rural | Formalizar a cobertura e implantar o contrato na rede. | 2
+UC06 | Consultar apólice e histórico | Produtor Rural | Acompanhar a apólice e a linha do tempo reconstruída da rede. | 2
+UC07 | Coletar dados de sensores | Sensores IoT e estações | Obter periodicamente as leituras climáticas do talhão. | 3
+UC10 | Publicar dados via oráculo | Sistema (automático) | Consolidar, assinar e submeter à rede os índices do período. | 3
+UC11 | Avaliar condição contratada | Sistema (automático) | Validar a origem do dado e decidir se a condição foi atendida. | 3
+UC12 | Executar pagamento | Sistema (automático) | Transferir o valor devido à carteira do produtor. | 3
+UC13 | Notificar partes | Serviço de notificação | Comunicar acionamento, pagamento e falhas de publicação. | 3
+UC15 | Gerar relatórios e indicadores | Seguradora | Acompanhar o desempenho da carteira e a liquidação. | 2
+Relação | Tipo | Por quê
+UC02 a UC06 e UC15 → UC01 | include | Exigem autenticação prévia do ator humano.
+UC13 → UC10, UC12 | Comportamento interno | Indexador observa eventos e gera notificacoes; nao representa extensao acionada por ator.
+Grupo de requisitos | Fora da cadeia | Ponte | Em cadeia
+Cadastro e identidade | RF01, RF03, RF04 | RF02 | —
+Ciclo da apólice | RF05, RF06 | RF09 | RF07, RF08, RF10, RF30, RF31
+Coleta de dados de campo | RF11, RF12, RF13 | — | —
+Oráculo e ponte de dados | — | RF19, RF21, RF22 | RF18, RF20
+Contrato e liquidação | — | — | RF23, RF24, RF25, RF26
+Notificação e gestão | RF29 | RF27 | —
+Total | 9 requisitos | 6 requisitos | 11 requisitos
+ID | Descrição | Prioridade | Camada
+RF01 | Permitir que produtores e seguradoras realizem login mediante identificador e senha, com segundo fator de autenticação. | Essencial | Fora da cadeia
+RF02 | Permitir que o produtor associe uma carteira digital ao cadastro, validando a titularidade do endereço por assinatura de mensagem antes da primeira contratação. | Essencial | Ponte
+RF03 | Permitir o cadastro e a edição de produtores e propriedades, com delimitação georreferenciada dos talhões em formato de polígono. | Essencial | Fora da cadeia
+RF04 | Controlar o acesso por perfil, restringindo funcionalidades conforme o perfil autenticado. | Essencial | Fora da cadeia
+ID | Descrição | Prioridade | Camada
+RF05 | Permitir que a seguradora configure produtos indexados, definindo cultura, índice de referência, condição de acionamento, janela de vigência, limite de indenização e valor segurado por hectare. | Essencial | Fora da cadeia
+RF06 | Permitir a simulação de cotação a partir da área segurada, da cultura e do histórico climático da localidade. | Essencial | Fora da cadeia
+RF07 | Instanciar e implantar na rede, no ato da contratação, o contrato correspondente à apólice, parametrizado com a condição contratada, o endereço da carteira do produtor e o endereço do oráculo autorizado. | Essencial | Em cadeia
+RF08 | Registrar o resumo criptográfico dos termos da apólice, tornando detectável qualquer alteração posterior das condições contratadas. | Essencial | Em cadeia
+RF09 | Permitir que o produtor consulte a linha do tempo da apólice reconstruída a partir dos eventos emitidos pelo contrato, exibindo o identificador de cada transação para verificação independente em explorador de blocos. | Essencial | Ponte
+RF10 | Permitir o cancelamento da apólice antes do início da vigência, com liberação da garantia vinculada. | Desejável | Em cadeia
+RF30 | Receber da seguradora, no depósito da garantia, valor exatamente igual ao limite de indenização contratado, e só então ativar a apólice para publicação de índices. | Essencial | Em cadeia
+RF31 | Devolver a garantia à seguradora no cancelamento anterior à vigência ou no encerramento sem acionamento; permitir recuperar saldo forçado por terceiros após a liquidação. | Essencial | Em cadeia
+ID | Descrição | Prioridade | Camada
+RF11 | Coletar automaticamente, em periodicidade configurável, leituras de estações meteorológicas e sensores associados aos talhões segurados. | Essencial | Fora da cadeia
+RF12 | Validar a plausibilidade das leituras e sinalizar fontes inoperantes, com valores fora de faixa ou sem transmissão no período esperado. | Essencial | Fora da cadeia
+RF13 | Atribuir a cada fonte um escore de reputação baseado em taxa de transmissão bem-sucedida e consistência das leituras, condicionando o uso dos dados à superação de um limiar mínimo. | Importante | Fora da cadeia
+ID | Descrição | Prioridade | Camada
+RF18 | Manter uma lista de endereços autorizados a publicar dados e rejeitar qualquer transação originada de endereço não constante dessa lista. | Essencial | Em cadeia
+RF19 | Consolidar os índices do período, assiná-los e submetê-los ao contrato em uma única transação. | Essencial | Ponte
+RF20 | Rejeitar publicação duplicada para um mesmo período de referência, preservando a integridade do histórico. | Essencial | Em cadeia
+RF21 | Enfileirar publicações não concluídas em caso de indisponibilidade da rede e retomá-las na primeira oportunidade, preservando o período de referência original. | Essencial | Ponte
+RF22 | Registrar, para cada publicação, o identificador da transação, o custo de execução consumido e o instante de confirmação. | Essencial | Ponte
+ID | Descrição | Prioridade | Camada
+RF23 | Avaliar automaticamente a condição contratada a cada publicação de dados, sem intervenção humana e sem chamada externa. | Essencial | Em cadeia
+RF24 | Executar a transferência da indenização para a carteira do produtor imediatamente após a confirmação do acionamento. | Essencial | Em cadeia
+RF25 | Executar indenização integral em parcela única, de 100% do limite, quando o índice climático atingir o limiar durante a vigência. Não admite pagamento proporcional. | Importante | Em cadeia
+RF26 | Impedir acionamento duplicado para o mesmo período e garantir que uma falha na transferência não deixe o estado da apólice inconsistente, adotando a ordem de verificação, atualização de estado e interação externa. | Essencial | Em cadeia
+ID | Descrição | Prioridade | Camada
+RF27 | Capturar os eventos emitidos pelo contrato e notificar produtor e seguradora sobre acionamento, execução de pagamento e falhas de publicação. | Importante | Ponte
+RF29 | Permitir que a seguradora gere relatórios de apólices, acionamentos, valores pagos e tempo médio de liquidação, com filtros por período, cultura e região. | Desejável | Fora da cadeia
+ID | Categoria | Descrição
+RNF01 | Eficiência de desempenho | O sistema deve responder a 95% das consultas de apólice atendidas pelo banco de dados em até 2 segundos, com até 20 usuários simultâneos (carga de referência deste protótipo, não validada para produção); as consultas que leem eventos na rede de teste têm o tempo medido e reportado.
+RNF03 | Manutenibilidade | O código-fonte executado fora da cadeia deve seguir a formatação do Prettier, nos módulos em JavaScript, e do Ruff, nos módulos em Python, e possuir cobertura mínima de 70% em testes automatizados.
+RNF04 | Capacidade de interação | As condições contratadas devem ser apresentadas ao produtor em linguagem não técnica antes do aceite, com exemplos numéricos de situações que acionam e que não acionam o pagamento.
+RNF05 | Flexibilidade | A aplicação deve ser acessível pelos navegadores Chrome, Firefox e Edge, nas duas últimas versões estáveis, com integração a carteira compatível com o padrão de provedor de injeção (EIP-1193 e, para descoberta de múltiplas carteiras, EIP-6963).
+ID | Categoria | Descrição
+RNF06 | Determinismo | A lógica do contrato deve ser integralmente determinística, não podendo depender de aleatoriedade, de marca de tempo do bloco como fonte de entropia ou de chamadas a contratos não auditados.
+RNF07 | Custo | Medir e documentar o gas das funções públicas e verificar os limites da rede de destino. Os números de redes e versões diferentes não são intercambiáveis; gas desta revisão está no capítulo de avaliação.
+RNF08 | Custo | O custo médio de transação por apólice, ao longo de um ciclo de vigência, não deve ultrapassar 1% do prêmio, admitindo-se agregação de publicações como estratégia de redução.
+RNF09 | Segurança | O contrato deve ser protegido contra reentrância, adotando a ordem de verificação, atualização de estado e interação externa, além de guarda de reentrância nas funções que transferem valor. A proteção deve ser verificada por testes automatizados e por análise estática.
+RNF10 | Segurança | O contrato deve implementar controle de acesso explícito por função, distinguindo os papéis de seguradora, oráculo autorizado e produtor titular.
+RNF11 | Segurança | Os contratos devem ser submetidos a análise estática de vulnerabilidades antes de qualquer implantação, e nenhum achado de severidade alta pode permanecer sem tratamento ou justificativa registrada.
+RNF12 | Testabilidade | Os contratos devem possuir cobertura de 100% dos ramos (branch coverage), incluindo os caminhos de rejeição por endereço não autorizado e por período duplicado.
+RNF13 | Integridade | Nenhuma falha de transação pode resultar em pagamento parcial ou em estado inconsistente da apólice; toda operação deve ser atômica.
+RNF14 | Custódia | As chaves privadas da seguradora devem ser mantidas fora do código-fonte e do repositório, carregadas por variável de ambiente ou módulo de custódia dedicado.
+RNF15 | Custódia | O sistema não deve, em nenhuma hipótese, armazenar a chave privada da carteira do produtor.
+ID | Categoria | Descrição
+RNF16 | Confiabilidade | Cada talhão segurado deve dispor de, no mínimo, duas fontes independentes de dados climáticos.
+RNF17 | Integridade | Toda leitura recebida deve ser autenticada na origem e transmitida por canal cifrado, de modo que a adulteração em trânsito seja detectável.
+RNF18 | Rastreabilidade | Preservar termos, publicações e eventos em cadeia e registros de cálculo fora dela, permitindo reconstituir a decisão e auditar as leituras e a configuração usadas pelo oráculo.
+RNF20 | Tolerância a falhas | A indisponibilidade do oráculo ou da rede não pode acarretar perda de dados: as leituras devem ser preservadas fora da cadeia e publicadas na retomada, mantendo o período de referência original.
+RNF21 | Latência | O intervalo entre o fim do período de referência e a publicação dos índices que o avaliam não deve exceder 72 horas em condições normais de operação; uma vez publicado, o pagamento, quando devido, ocorre na mesma transação (Seção 6.4), o que torna a meta de 72 horas uma restrição sobre a frequência de publicação do oráculo, não sobre o pagamento em si.
+ID | História de usuário | Requisitos | Pontos | Sprint
+HU01 | Contrato da apólice em rede local | RF07, RF08 | 13 | 1
+HU02 | Controle de endereços autorizados | RF18, RF20 | 8 | 1
+HU04 | Simulador de sensores climáticos | RF11 | 8 | 1 e 2
+HU13 | Autenticação e perfis de acesso | RF01, RF04 | 5 | 1
+HU03 | Liquidação atômica e protegida | RF23, RF24, RF26 | 13 | 1 (antecipada)
+HU05 | Consolidação do índice climático | RF12, RF13, RNF16 | 8 | 1 (antecipada)
+HU06 | Publicação assinada pelo oráculo | RF19, RF22 | 13 | 1 (antecipada)
+HU07 | Vinculação da carteira do produtor | RF02 | 5 | 1 (antecipada)
+HU09 | Cadastro de talhões e produtos | RF03, RF05 | 8 | 2
+HU10 | Cotação e contratação no aplicativo | RF06, RF07 | 8 | 2
+HU15 | Avaliação experimental (técnica) | RNF01, RNF07, RNF08, RNF20, RNF21 | 13 | 2
+HU16 | Banco em contêiner Docker (técnica) | RNF14 | 3 | 2
+Total | 12 histórias |  | 105 |
+HU01 – Contrato da apólice em rede local | HU01 – Contrato da apólice em rede local
+História | Como seguradora, quero que cada apólice seja implantada como contrato com os termos registrados e a condição parametrizada, para validar a lógica de acionamento antes de levá-la à rede de teste.
+Requisitos | RF07, RF08
+Pontos / Sprint | 13 pontos · Sprint 1
+Critérios de aceite | 1. O construtor recebe condição de gatilho, endereço da carteira e endereço do oráculo autorizado.
+2. O resumo criptográfico dos termos fica gravado e legível por consulta pública.
+3. Os testes cobrem implantação bem-sucedida e implantação com parâmetro inválido.
+4. O relatório de gas registra o custo da implantação.
+HU02 – Controle de endereços autorizados | HU02 – Controle de endereços autorizados
+História | Como seguradora, quero que o contrato aceite publicações apenas de endereços autorizados e rejeite períodos duplicados, para impedir a injeção de dados por terceiros.
+Requisitos | RF18, RF20
+Pontos / Sprint | 8 pontos · Sprint 1
+Critérios de aceite | 1. Publicação de endereço não autorizado é revertida com motivo identificável.
+2. Publicação para período já registrado é revertida, preservando o valor original.
+3. Incluir e remover endereços autorizados é restrito ao papel de seguradora.
+4. Toda publicação válida emite evento com apólice, período e índices.
+5. Os testes cobrem os três caminhos: válida, não autorizada e duplicada.
+HU04 – Simulador de sensores climáticos | HU04 – Simulador de sensores climáticos
+História | Como seguradora, quero receber as leituras climáticas do simulador em periodicidade configurável, para dispor das séries sobre as quais a condição será avaliada.
+Requisitos | RF11
+Pontos / Sprint | 8 pontos · Sprints 1 e 2
+Critérios de aceite | 1. O simulador publica leituras por MQTT em intervalo configurável.
+2. As séries podem ser carregadas de arquivo histórico do INMET.
+3. Há três cenários pré-configurados: estiagem severa, estiagem moderada e safra normal.
+4. Cada leitura carrega data, hora, identificador da fonte e coordenada.
+HU13 – Autenticação e perfis de acesso | HU13 – Autenticação e perfis de acesso
+História | Como usuário, quero autenticar-me com credenciais e perfil de acesso, para utilizar apenas as funcionalidades do meu papel.
+Requisitos | RF01, RF04
+Pontos / Sprint | 5 pontos · Sprint 1
+Critérios de aceite | 1. Senhas são armazenadas com hash e salt.
+2. Os perfis produtor e seguradora veem menus distintos.
+3. Sessão expirada redireciona para a tela de login.
+4. Tentativa de acesso a rota de outro perfil retorna erro de autorização.
+5. O segundo fator usa código temporário (TOTP): uma vez ativado pelo usuário, o login só se completa com o código válido.
+HU03 – Liquidação atômica e protegida | HU03 – Liquidação atômica e protegida
+História | Como seguradora, quero que o contrato avalie a condição e transfira a indenização de forma atômica e protegida contra reentrância, para evitar estado inconsistente ou pagamento indevido.
+Requisitos | RF23, RF24, RF26
+Pontos / Sprint | 13 pontos · Sprint 1 (antecipada da Sprint 2)
+Critérios de aceite | 1. A função segue a ordem verificar, atualizar estado e só então transferir.
+2. Há guarda de reentrância na função que transfere valor.
+3. Acionamento duplicado para o mesmo período é rejeitado.
+4. Falha na transferência não altera a situação da apólice.
+5. Teste com contrato malicioso de reentrância falha ao tentar o ataque.
+HU05 – Consolidação do índice climático | HU05 – Consolidação do índice climático
+História | Como seguradora, quero que a plausibilidade das leituras seja validada e o índice do período consolidado, para que apenas dados íntegros sejam publicados.
+Requisitos | RF12, RF13, RNF16
+Pontos / Sprint | 8 pontos · Sprint 1 (antecipada da Sprint 2)
+Critérios de aceite | 1. Leitura fora da faixa física admissível é descartada e registrada em log.
+2. Fonte sem transmitir no período esperado é marcada como inoperante.
+3. Cada fonte tem escore de reputação atualizado a cada ciclo.
+4. O índice consolidado registra quais fontes foram usadas.
+5. O índice só é consolidado com pelo menos duas fontes independentes (RNF16). No protótipo, são as estações A770 e A747 do INMET, reproduzidas pelo simulador.
+HU06 – Publicação assinada pelo oráculo | HU06 – Publicação assinada pelo oráculo
+História | Como seguradora, quero que o oráculo assine e publique os índices consolidados registrando identificador e custo da transação, para tornar a travessia auditável.
+Requisitos | RF19, RF22
+Pontos / Sprint | 13 pontos · Sprint 1 (antecipada da Sprint 2)
+Critérios de aceite | 1. Os índice climático são publicados em uma única transação.
+2. A transação é assinada com a chave carregada por variável de ambiente.
+3. O identificador da transação, o gas consumido e o instante de confirmação são gravados.
+4. O evento emitido pelo contrato é capturado e associado à apólice.
+HU07 – Vinculação da carteira do produtor | HU07 – Vinculação da carteira do produtor
+História | Como produtor, quero vincular minha carteira ao cadastro por assinatura de mensagem, para comprovar a titularidade sem expor a chave privada.
+Requisitos | RF02
+Pontos / Sprint | 5 pontos · Sprint 1 (antecipada da Sprint 2)
+Critérios de aceite | 1. O sistema gera uma mensagem única para assinatura.
+2. A assinatura é verificada no servidor antes de gravar o endereço.
+3. A chave privada nunca trafega nem é armazenada.
+4. Endereço já vinculado a outro produtor é recusado.
+HU09 – Cadastro de talhões e produtos | HU09 – Cadastro de talhões e produtos
+História | Como seguradora, quero cadastrar produtores e talhões georreferenciados e configurar produtos indexados, para disponibilizá-los à contratação.
+Requisitos | RF03, RF05
+Pontos / Sprint | 8 pontos · Sprint 2
+Critérios de aceite | 1. O talhão é desenhado no mapa ou importado em GeoJSON.
+2. A área é calculada automaticamente a partir do polígono.
+3. Polígono com autointerseção é recusado.
+4. O produto exige cultura, índice, condição, vigência e limite.
+HU10 – Cotação e contratação no aplicativo | HU10 – Cotação e contratação no aplicativo
+História | Como produtor, quero simular uma cotação e contratar a apólice pelo aplicativo, para formalizar a cobertura sem deslocamento.
+Requisitos | RF06, RF07
+Pontos / Sprint | 8 pontos · Sprint 2
+Critérios de aceite | 1. A cotação mostra prêmio, limite e condição em linguagem simples.
+2. A tela exibe um exemplo numérico do que aciona e do que não aciona o pagamento.
+3. A contratação dispara a implantação do contrato e exibe o endereço gerado.
+4. Falha na implantação não registra a apólice.
+HU15 – Avaliação experimental (história técnica) | HU15 – Avaliação experimental (história técnica)
+História | Como equipe, queremos executar o plano de avaliação experimental do Capítulo 6 na rede local e na Sepolia, para responder às perguntas da Seção 1.2 com dados medidos antes do artigo científico.
+Requisitos | RNF01, RNF07, RNF08, RNF20, RNF21
+Pontos / Sprint | 13 pontos · Sprint 2
+Critérios de aceite | 1. Cada cenário do Quadro 23 roda com o número de repetições previsto, por script versionado no repositório.
+2. Os resultados trazem média, desvio padrão, mínimo e máximo.
+3. O RNF08 é calculado com o prêmio de referência e os dois preços de gas da Seção 6.3.
+4. Os dados brutos ficam no repositório, com a data, o ambiente e a versão dos contratos de cada execução.
+5. Os resultados estão consolidados até 16/10/2026.
+HU16 – Banco em contêiner Docker (história técnica) | HU16 – Banco em contêiner Docker (história técnica)
+História | Como equipe, queremos subir o PostgreSQL com PostGIS por contêiner Docker, para que todos executem o protótipo sobre o mesmo banco de dados.
+Requisitos | Seção 5.4 (RNF14 cobre só o critério de aceite 4, não o propósito da história)
+Pontos / Sprint | 3 pontos · Sprint 2
+Critérios de aceite | 1. O arquivo docker-compose.yml, na raiz do repositório, sobe a imagem postgis/postgis:16-3.4 com um comando.
+2. A primeira inicialização cria o usuário e o banco da aplicação, e o esquema é aplicado pelas migrações do back-end.
+3. Os dados ficam em volume persistente.
+4. O arquivo .env não é versionado; o repositório traz apenas o .env.example.
+Sprint | Período | Objetivo (Sprint Goal) | Histórias (pontos) | Incremento entregue
+1 | 21/09 a 02/10/2026 | Implantar o núcleo em cadeia: contrato da apólice em rede local com controle de endereços autorizados; simulador de sensores e autenticação em operação. | Planejadas: HU01, HU02, HU04, HU13 (34). Concluídas: HU01, HU02, HU13 e as antecipadas HU03, HU05, HU06, HU07 (65). | 02/10/2026: contratos testados nas três rotas de publicação, com relatório de gas; oráculo consolidando e publicando na rede local; autenticação e vinculação da carteira.
+2 | 05/10 a 16/10/2026 | Fechar o fluxo do produtor e medir: contratação pelo aplicativo, leituras climáticas autenticadas, itens incorporados da reserva e execução dos experimentos. | HU04 (restante), HU09, HU10, HU15 e HU16; esforço a replanejar. | 16/10/2026: integração do índice climático e liquidação integral em ambiente de teste; resultados dos experimentos com os dados brutos.
+3 | 19/10 a 02/11/2026 | Analisar os resultados, entregar o artigo científico e consolidar o produto. | Consolidação dos resultados, artigo e revisão da documentação, com esforço a replanejar. | 25/10/2026: artigo científico. 02/11/2026: entrega final do projeto, com o MVP e a documentação revisada.
+História | Pontos | Previsão | Situação em 02/10/2026
+HU01 | 13 | Sprint 1 | Concluída.
+HU02 | 8 | Sprint 1 | Concluída.
+HU04 | 8 | Sprint 1 | Não concluída. Só o critério 2 (séries do INMET) estava pronto. Os critérios 1 e 3 foram concluídos em 07/10 e o critério 4 em 08/10, já na Sprint 2.
+HU13 | 5 | Sprint 1 | Concluída.
+HU03 | 13 | Sprint 2 | Antecipada e concluída.
+HU05 | 8 | Sprint 2 | Antecipada e concluída.
+HU06 | 13 | Sprint 2 | Antecipada e concluída.
+HU07 | 5 | Sprint 2 | Antecipada e concluída.
+Total |  |  | Planejado: 34 pontos. Concluído: 65 pontos (26 das histórias planejadas e 39 das antecipadas).
+Item | Descrição | Decisão após a Sprint 1 | Situação em 08/10/2026
+HU08 (RF21) | Retomada da publicação após indisponibilidade da rede. | Incorporado: pertence ao núcleo. | Implementado; fila do oráculo testada com falhas injetadas.
+HU12 (RF09) | Consulta à linha do tempo reconstruída dos eventos. | Incorporado: requisito essencial. | Implementado; eventos lidos da rede em trechos de 10 mil blocos.
+HU14 (RF27) | Notificação de acionamento e pagamento. | Incorporado. | Implementado no aplicativo e por e-mail.
+RF10 | Cancelamento da apólice antes da vigência. | Incorporado. | Implementado e demonstrado na Sepolia em 08/10.
+RF25 | Executar indenização integral em parcela única, de 100% do limite, quando o índice climático atingir o limiar durante a vigência. Não admite pagamento proporcional. | Incorporado. | Implementado.
+RF29 | Relatórios e indicadores da carteira. | Incorporado. | Implementado, com filtros por período, cultura e região.
+Classe | Camada | Atributos principais | Responsabilidade | Requisitos
+Usuario | Fora | identificador, senhaHash, perfil, segredoTotp | Autenticar e aplicar o perfil de acesso, com segundo fator. | RF01, RF04
+Produtor | Fora | nome, cpfCnpj, enderecoCarteira | Especializa Usuario e guarda a carteira vinculada por assinatura. | RF02, RF03
+Propriedade | Fora | nome, municipio, uf | Agrupar os talhões de um produtor. | RF03
+Talhao | Fora | poligono, areaHa, cultura | Delimitar a área para cadastro, associação de fontes e contratação. | RF03
+ProdutoIndexado | Fora | cultura, limiarClimatico, valorPorHectare | Configurar o gatilho experimental e o limite; pagamento exclusivamente integral. | RF05, RF25
+Apolice | Fora | premio, valorSegurado, vigência, enderecoContrato, hashTermos | Espelhar o contrato implantado para consultas e relatórios. | RF07, RF29
+FonteDados | Fora | identificador, tipo, coordenada, escoreReputacao | Representar estação ou sensor e sua reputação. | RF12, RF13, RNF16
+LeituraSensor | Fora | instante, precipitacaoMm, temperaturaC, assinatura | Guardar a leitura autenticada na origem. | RF11, RNF17
+IndiceConsolidado | Ponte | periodo, indiceClimatico, fontesUsadas, hashTransacao, gasConsumido | Registrar o cálculo climático e sua publicação. | RF19, RF22
+ApoliceFactory «contrato» | Em cadeia | registry, apolices | Implantar um contrato ApolicePolicy por apólice emitida. | RF07
+OracleRegistry «contrato» | Em cadeia | seguradora, totalAutorizados | Manter os endereços autorizados; só a seguradora autoriza e revoga. | RF18, RNF10
+ApolicePolicy «contrato» | Em cadeia | termos (com hashTermos), situacao, valorPago, periodoAcionador | Receber publicações, avaliar a condição, pagar e cancelar antes da vigência. | RF08, RF10, RF20, RF23 a RF26, RF30, RF31
+Publicacao «struct» | Em cadeia | oraculo, indiceClimatico, publicadoEm; chave: periodo | Registrar o índice climático publicado. | RF20, RNF18
+Fase | Mensagens | O que acontece
+Coleta e consulta | 1 a 4 | A fonte envia leituras; a API valida, persiste e fornece dados ao oráculo.
+Consolidação | 5 | O oráculo calcula o índice climático a partir das leituras válidas.
+Travessia | 6 a 8 | O oráculo publica período e índice; a apólice consulta o registro de autorização.
+Liquidação | 9 | Se a condição for atendida, a apólice transfere 100% do limite na mesma transação.
+Acompanhamento | 10 a 12 | O indexador lê os eventos confirmados e atualiza o espelho e os avisos no banco.
+Componente | Tecnologia | Por que essa escolha
+Contratos | Solidity + Hardhat | Hardhat oferece rede local, testes e relatório de gas em um só ambiente.
+Rede | Sepolia (rede de teste) | Gas gratuito por faucet e explorador público para verificação independente.
+Serviço de oráculo | Node.js + ethers.js | Mesma linguagem do back-end e biblioteca madura de assinatura.
+API e ingestão | Node.js + Express | Curva de aprendizado baixa e integração direta com ethers.js.
+Banco de dados | PostgreSQL + PostGIS | PostGIS resolve o polígono do talhão e a checagem de ponto em área.
+Ambiente do banco | Docker + Docker Compose | Sobe o PostgreSQL com PostGIS em um comando, igual para toda a equipe.
+Simulador de sensores | Python + MQTT | MQTT é o protocolo usual de IoT; séries históricas do INMET dão realismo.
+Interfaces | React + ethers.js | ethers.js conecta a carteira do produtor direto no navegador.
+Carteira do produtor | MetaMask | Extensão de navegador compatível com ethers.js e com a rede de teste Sepolia.
+Serviço de notificação | Nodemailer | Biblioteca de envio de e-mail para Node.js, a mesma linguagem do back-end.
+Componente | Resultado | Evidência
+Contratos | 90 testes aprovados; 100% de ramos cobertos | contratos/test; relatório de cobertura
+API e banco de testes | 108 testes aprovados | backend/test; inclui bloqueio de proposta parcial legada
+Aplicativo | 60 testes aprovados; linhas 80,58%; ramos 74,45% | app/test e relatório Vitest
+Oráculo | 68 testes unitários e 7 de integração aprovados | oraculo/test e oraculo/integracao
+Liquidação local | 1 ETH de teste contratado e 1 ETH recebido; saldo final zero | gas-e-fluxo.json
+Falhas e cancelamento | Origem não autorizada e segundo pagamento rejeitados; cancelamento devolve garantia | gas-e-fluxo.json e testes de segurança
+Operação | Gas
+emissao | 1301916
+garantia | 47132
+publicacaoSemPagamento | 129027
+publicacaoComPagamento | 174942
+cancelamento | 44252
+Objetivo | Situação e evidência
+Contratação e liquidação integral | Implementadas e testadas localmente; indenização de 100% uma única vez
+Controle de acesso e falhas | Testes de origem, repetição, atomicidade, reentrância e cancelamento
+API, banco, oráculo e interfaces | Testes unitários e integração; relatórios no repositório
+Implantação atual na Sepolia | Pendente; contratos antigos são imutáveis e seus resultados não pertencem ao release atual
+Gas e custo | Gas local medido; cenário de custo do RNF08 acima da meta
+Validação agronômica e atuarial | Fora do escopo; não há limite universal de tolerância por cultura

@@ -1,0 +1,95 @@
+import { readFileSync } from "node:fs";
+import https from "node:https";
+
+import { criarApp } from "./app.js";
+import { config } from "./config.js";
+import { abrirBanco } from "./banco/conexao.js";
+import { carregarHistoricoClimatico } from "./banco/historico.js";
+import { criarDespachanteDeEmail } from "./notificacoes/email.js";
+import { migrar } from "./banco/migrar.js";
+import { semear } from "./banco/semente.js";
+import { criarIndexador } from "./cadeia/indexador.js";
+import { criarLeitorDaCadeia } from "./cadeia/leitor.js";
+import { encerrarProvedor } from "./cadeia/rede.js";
+
+/**
+ * Ponto de entrada do backend.
+ *
+ * Na ordem: abre o banco, aplica as migracoes, semeia a demonstracao (so em
+ * desenvolvimento e com banco vazio), liga o indexador e abre a porta.
+ */
+async function iniciar() {
+  const banco = await abrirBanco();
+  const aplicadas = await migrar(banco);
+
+  if (aplicadas.length > 0) console.log(`Migracoes aplicadas: ${aplicadas.join(", ")}`);
+
+  const diasDeHistorico = await carregarHistoricoClimatico(banco);
+  if (diasDeHistorico > 0)
+    console.log(`Historico de chuva do INMET carregado: ${diasDeHistorico} dias.`);
+
+  if (!config.emProducao && (await semear(banco))) {
+    console.log(
+      "Dados de demonstracao criados. Usuarios: produtor, seguradora (senha: agrosmart).",
+    );
+  }
+
+  const cadeia = criarLeitorDaCadeia();
+  const indexador = config.indexadorAtivo ? criarIndexador(banco) : null;
+  const despachante = config.emailAtivo ? criarDespachanteDeEmail(banco) : null;
+
+  const app = criarApp({ banco, cadeia, indexador });
+
+  const comTls = Boolean(config.tlsCertificado && config.tlsChave);
+  const aoOuvir = () => {
+    console.log(
+      `AgroSmart backend em ${comTls ? "https" : "http"}://localhost:${config.porta}/api`,
+    );
+    console.log(`Banco: ${banco.motor}${config.urlDoBanco ? "" : ` (${config.dirBanco})`}`);
+    console.log(
+      cadeia.disponivel()
+        ? `Cadeia: ${config.rede}, fabrica ${cadeia.enderecoDaFabrica()}`
+        : `Cadeia: nenhuma implantacao encontrada para "${config.rede}"; indexador em espera.`,
+    );
+  };
+
+  // RNF17: com certificado e chave, a API atende so em https.
+  const servidor = comTls
+    ? https
+        .createServer(
+          { cert: readFileSync(config.tlsCertificado), key: readFileSync(config.tlsChave) },
+          app,
+        )
+        .listen(config.porta, aoOuvir)
+    : app.listen(config.porta, aoOuvir);
+
+  indexador?.iniciar();
+  despachante?.iniciar();
+  if (despachante) {
+    console.log(
+      config.smtpUrl
+        ? "E-mail: enviando pelo SMTP configurado."
+        : `E-mail: sem SMTP_URL, mensagens gravadas em ${config.dirEmails}`,
+    );
+  }
+
+  // Encerramento limpo: para o indexador, fecha a porta e o banco. Sem isso, o
+  // PGlite pode ficar com o diretorio de dados travado ate o proximo inicio.
+  const encerrar = async (sinal) => {
+    console.log(`\n${sinal} recebido, encerrando...`);
+    indexador?.parar();
+    despachante?.parar();
+    servidor.close();
+    encerrarProvedor();
+    await banco.fechar();
+    process.exit(0);
+  };
+
+  process.on("SIGINT", () => encerrar("SIGINT"));
+  process.on("SIGTERM", () => encerrar("SIGTERM"));
+}
+
+iniciar().catch((erro) => {
+  console.error("Falha ao iniciar o backend:", erro);
+  process.exit(1);
+});

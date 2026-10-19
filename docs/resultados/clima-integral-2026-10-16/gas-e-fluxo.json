@@ -1,0 +1,22 @@
+{
+  "protocolo": "clima-integral-v1",
+  "rede": "hardhat",
+  "chainId": 31337,
+  "limiarExperimentalDias": 30,
+  "valorContratadoWei": "1000000000000000000",
+  "recebidoWei": "1000000000000000000",
+  "estadoLiquidada": 2,
+  "saldoFinalWei": "0",
+  "recusouOrigem": true,
+  "recusouRepeticao": true,
+  "cancelada": true,
+  "saldoCanceladaWei": "0",
+  "gas": {
+    "emissao": "1301916",
+    "garantia": "47132",
+    "publicacaoSemPagamento": "129027",
+    "publicacaoComPagamento": "174942",
+    "cancelamento": "44252"
+  },
+  "nota": "Dados sinteticos de indice para testar software. Nao validam perdas agronomicas. Gas local nao e gas da Sepolia."
+}

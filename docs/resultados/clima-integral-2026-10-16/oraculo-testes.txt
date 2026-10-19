@@ -1,0 +1,119 @@
+
+> agrosmart-oraculo@0.1.0 cobertura
+> c8 --all --src src --include "src/**" --reporter text-summary npm run testar:tudo
+
+
+> agrosmart-oraculo@0.1.0 testar:tudo
+> npm run testar && npm run testar:integracao
+
+
+> agrosmart-oraculo@0.1.0 testar
+> node --test "test/*.test.js"
+
+✔ o cliente envia a chave de servico em toda requisicao (73.2284ms)
+✔ erro da API vira excecao com status e codigo (13.4187ms)
+✔ API lenta falha pelo tempo limite, sem pendurar o oraculo (214.0097ms)
+[oraculo] nao foi possivel relatar ao backend (relatarPublicacao): backend fora do ar
+✔ BigInt no relato e serializado como texto (14.1183ms)
+✔ publicacao bem-sucedida e relatada ao backend com gas, latencia e procedencia (12.0214ms)
+✔ backend fora do ar nao desfaz a publicacao ja feita na cadeia (5.095ms)
+✔ so a falha definitiva e relatada, e uma unica vez (19.4333ms)
+✔ uma fonte climatica nao e suficiente para enfileirar publicacao (2.3476ms)
+✔ diaDe converte um instante em identificador AAAAMMDD (1.9045ms)
+✔ somarDias e diaAnterior atravessam viradas de mes e de ano (1.4931ms)
+✔ validarLeitura aceita uma leitura plausivel (1.8158ms)
+✔ validarLeitura recusa chuva acima da faixa fisica (0.2509ms)
+✔ validarLeitura recusa temperatura impossivel (0.251ms)
+✔ validarLeitura recusa leitura sem o campo de chuva (0.1866ms)
+✔ validarLeitura recusa data invalida e fonte ausente (0.2367ms)
+✔ validarLeitura tolera campo opcional ausente (0.1692ms)
+✔ agruparPorDia tira a media entre as fontes do mesmo dia (0.5046ms)
+✔ agruparPorDia soma as leituras horarias da mesma fonte antes da media (0.4937ms)
+✔ agruparPorDia combina fontes com granularidades diferentes (0.2877ms)
+✔ contarDiasSecosConsecutivos para no primeiro dia com chuva (0.4288ms)
+✔ contarDiasSecosConsecutivos para quando falta dado, sem presumir dia seco (0.1823ms)
+✔ chuva abaixo do limiar ainda conta como dia seco (1.7609ms)
+✔ consolidarIndiceClimatico conta a estiagem e lista as fontes usadas (1.1883ms)
+✔ consolidarIndiceClimatico descarta leituras implausiveis sem derrubar o indice (0.3956ms)
+✔ consolidarIndiceClimatico alerta quando ha menos de duas fontes (RNF16) (0.4203ms)
+✔ consolidarIndiceClimatico alerta quando a contagem para por falta de dado (0.3472ms)
+✔ consolidarIndiceClimatico devolve zero quando nao ha dado do proprio periodo (0.2857ms)
+✔ consolidarIndiceClimatico exige o periodo de referencia (0.7568ms)
+✔ fonte com reputacao abaixo do limiar tem as leituras ignoradas (0.6063ms)
+✔ leitura invalida derruba a reputacao da fonte (0.2126ms)
+✔ enfileirar cria uma entrada pendente (6.3268ms)
+✔ enfileirar o mesmo periodo duas vezes nao duplica a entrada (3.23ms)
+✔ o endereco da apolice e comparado sem diferenciar maiusculas (2.5142ms)
+✔ marcarPublicando incrementa as tentativas (2.7444ms)
+✔ uma tentativa falha devolve a entrada para pendente, sem perde-la (4.2627ms)
+✔ esgotadas as tentativas, a entrada vai para falha e sai da fila de trabalho (5.2664ms)
+✔ reabrir zera as tentativas de uma entrada esgotada (5.6558ms)
+✔ reabrir uma chave inexistente devolve nulo (1.1132ms)
+✔ marcarConcluida tira a entrada da fila de trabalho e guarda o recibo (4.8453ms)
+✔ o estado sobrevive a queda do processo, preservando o periodo original (5.1485ms)
+✔ fila corrompida falha de forma explicita, sem descartar o arquivo (4.2554ms)
+✔ pendentes lista apenas o que ainda precisa de atencao (5.6143ms)
+✔ recusa explicita do contrato e falha definitiva, sem novas tentativas (3.3661ms)
+✔ erro de rede continua pendente para a retomada do RF21 (4.2143ms)
+✔ os tres cenarios da HU04 existem (3.9651ms)
+✔ a geracao e deterministica (5.1598ms)
+✔ todas as leituras geradas sao plausiveis (6.272ms)
+✔ cada dia tem leituras das duas fontes independentes (RNF16) (0.5979ms)
+✔ estiagem_severa cruza o limiar de 30 dias sem chuva (3.8529ms)
+✔ a estiagem gerada tem exatamente o tamanho declarado no cenario (18.7526ms)
+✔ estiagem_moderada fica abaixo do limiar de 30 dias (2.745ms)
+✔ safra_normal mantem o indice proximo de zero (1.9239ms)
+✔ com-falhas injeta leituras que a validacao precisa descartar (1.7763ms)
+✔ cenario desconhecido falha de forma explicita (0.9093ms)
+✔ registrar calcula a latencia entre envio e confirmacao (3.991ms)
+✔ registrar serializa BigInt sem estourar o JSON (5.5048ms)
+✔ cada publicacao vira uma linha propria, e nenhuma sobrescreve a anterior (7.592ms)
+✔ listar devolve vazio quando nada foi registrado (3.0282ms)
+✔ estatisticas agregam gas minimo, maximo, medio e latencia (5.1412ms)
+✔ a procedencia do indice fica gravada junto com a transacao (RNF18) (3.5277ms)
+✔ fonte nova comeca com o escore inicial (1.9194ms)
+✔ leitura valida mantem o escore alto e leitura invalida o derruba (1.3398ms)
+✔ a media movel faz o escore cair rapido quando a fonte quebra (0.5408ms)
+✔ o escore se recupera quando a fonte volta a funcionar (0.2801ms)
+✔ fontesAbaixoDe lista as fontes fora de operacao, da pior para a melhor (1.686ms)
+✔ alfa fora do intervalo valido e recusado (1.0109ms)
+✔ o estado sobrevive a um reinicio do servico (5.1993ms)
+✔ instantaneo devolve o estado completo ordenado por fonte (10.6108ms)
+ℹ tests 68
+ℹ suites 0
+ℹ pass 68
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2448.0673
+
+> agrosmart-oraculo@0.1.0 testar:integracao
+> node --test --test-concurrency=1 "integracao/*.test.js"
+
+(node:27780) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+▶ oraculo contra um no real
+  ✔ status: endereco, saldo e autorizacao no registro (514.829ms)
+  ✔ publicar um periodo de safra normal nao aciona (660.8039ms)
+  ✔ publicar o mesmo periodo de novo e recusado pelo contrato (RF20) (255.0374ms)
+  ✔ ciclo de estiagem severa, com leituras defeituosas, aciona e paga (669.7573ms)
+  ✔ fila e estatisticas mostram o que foi publicado (690.2391ms)
+  ✔ comando desconhecido mostra a ajuda e sai com erro (231.6734ms)
+  ✔ publicador: vigencia e escuta de eventos (4689.9052ms)
+✔ oraculo contra um no real (15277.5992ms)
+ℹ tests 7
+ℹ suites 1
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15513.1066
+
+=============================== Coverage summary ===============================
+Statements   : 90.75% ( 1953/2152 )
+Branches     : 83.98% ( 278/331 )
+Functions    : 90.69% ( 78/86 )
+Lines        : 90.75% ( 1953/2152 )
+[separador da ferramenta]

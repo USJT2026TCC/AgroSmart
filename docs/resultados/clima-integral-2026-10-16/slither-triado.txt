@@ -1,0 +1,4 @@
+. analyzed (6 contracts with 102 detectors), 0 result(s) found
+'npx hardhat clean' running (wd: C:\TCC 2026 - SemVisaoComputacional\contratos)
+'npx hardhat clean --global' running (wd: C:\TCC 2026 - SemVisaoComputacional\contratos)
+'npx hardhat compile --force' running (wd: C:\TCC 2026 - SemVisaoComputacional\contratos)

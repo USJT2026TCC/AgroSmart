@@ -1,0 +1,164 @@
+
+Version
+[separador da ferramenta]
+> solidity-coverage: v0.8.17
+
+Instrumenting for coverage...
+[separador da ferramenta]
+
+> ApoliceFactory.sol
+> ApolicePolicy.sol
+> OracleRegistry.sol
+
+Coverage skipped for:
+[separador da ferramenta]
+
+> mocks\AtacanteReentrancia.sol
+> mocks\ProdutorQueRecusa.sol
+> mocks\SeguradoraMaliciosa.sol
+
+Compilation:
+[separador da ferramenta]
+
+Compiled 6 Solidity files successfully (evm target: paris).
+
+Network Info
+[separador da ferramenta]
+> HardhatEVM: v2.29.1
+> network:    hardhat
+
+
+
+  ApoliceFactory
+    √ recusa implantacao com enderecos zerados (221ms)
+    √ emite a apolice e registra o endereco implantado (246ms)
+    √ sobrescreve o registro informado, para nenhuma apolice apontar para outra lista (170ms)
+    √ recusa emissao por quem nao e a seguradora (110ms)
+    √ indexa as apolices por produtor e por talhao (206ms)
+    √ uma apolice emitida pela fabrica opera normalmente ate a liquidacao (114ms)
+    √ nao registra a apolice quando a implantacao falha (101ms)
+
+  ApolicePolicy
+    implantacao (RF07, RF08)
+      √ recebe condicao de gatilho, carteira do produtor e registro de oraculos (150ms)
+      √ grava o resumo criptografico dos termos, legivel por consulta publica (85ms)
+      √ emite ApoliceImplantada na criacao (100ms)
+      recusa de parametros invalidos
+        √ seguradora com endereco zero (70ms)
+        √ produtor com endereco zero (52ms)
+        √ registro de oraculos com endereco zero (60ms)
+        √ produtor igual a seguradora (77ms)
+        √ valor de indenizacao zerado (86ms)
+        √ vigencia que termina antes de comecar (72ms)
+        √ resumo dos termos zerado (56ms)
+        √ limiar climatico zerado (67ms)
+        √ recusa modo legado de pagamento parcial (42ms)
+        √ recusa teto reservado diferente de zero no modo integral (57ms)
+    deposito da garantia
+      √ ativa a apolice quando o valor exato e depositado (109ms)
+      √ recusa valor diferente do contratado (67ms)
+      √ recusa deposito de quem nao e a seguradora (59ms)
+      √ recusa segundo deposito (77ms)
+      √ recusa transferencia direta para o contrato (41ms)
+      √ nao aceita publicacao antes da garantia (78ms)
+    publicacao de indices (RF18, RF20)
+      √ aceita publicacao de endereco autorizado e emite evento com apolice, periodo e indice (88ms)
+      √ rejeita publicacao de endereco nao autorizado (51ms)
+      √ deixa de aceitar um oraculo revogado no registro (56ms)
+      √ rejeita periodo duplicado e preserva o valor original (72ms)
+      √ registra quem publicou e quando (RNF18) (79ms)
+      √ mantem a ordem dos periodos publicados (74ms)
+      √ rejeita publicacao antes do inicio da vigencia (48ms)
+      √ rejeita publicacao depois do fim da vigencia (52ms)
+    avaliacao da condicao e liquidacao (RF23, RF24, RF26)
+      √ nao paga quando o indice fica abaixo do limiar (104ms)
+      √ paga integralmente quando o indice atinge exatamente o limiar (124ms)
+      √ emite CondicaoAvaliada e PagamentoExecutado na mesma transacao (82ms)
+      √ impede acionamento duplicado: nenhuma publicacao e aceita apos a liquidacao (99ms)
+      √ segue acumulando periodos sem acionar ate a condicao ser atendida (143ms)
+    indenizacao integral em parcela unica
+      √ paga 100% uma unica vez com indice 30 (95ms)
+      √ paga 100% uma unica vez com indice 31 (101ms)
+      √ paga 100% uma unica vez com indice 60 (104ms)
+      √ paga 100% uma unica vez com indice 366 (121ms)
+      √ nao paga no dia anterior ao gatilho (85ms)
+    resgate da garantia
+      √ devolve a garantia a seguradora apos o fim da vigencia sem acionamento (133ms)
+      √ recusa resgate durante a vigencia (77ms)
+      √ recusa resgate de quem nao e a seguradora (78ms)
+      √ recusa resgate apos pagamento integral, porque nao sobrou saldo (100ms)
+      √ recusa resgate na situacao AGUARDANDO_GARANTIA (93ms)
+      √ recusa segundo resgate (82ms)
+      recuperacao de saldo forcado apos pagamento integral
+        √ saldo forcado nao altera o pagamento integral registrado (69ms)
+        √ a seguradora resgata a sobra de imediato, sem esperar a vigencia (105ms)
+        √ a apolice continua LIQUIDADA depois do resgate da sobra (77ms)
+        √ um segundo resgate da sobra e recusado (65ms)
+        √ apenas a seguradora resgata a sobra (79ms)
+
+  Cancelamento antes da vigencia (RF10)
+    √ a seguradora cancela e recebe a garantia de volta (101ms)
+    √ o produtor titular tambem pode cancelar, e a garantia volta a seguradora (66ms)
+    √ cancela antes do deposito, sem transferencia nenhuma (56ms)
+    √ recusa quem nao e parte do contrato (55ms)
+    √ recusa depois do inicio da vigencia
+    √ nao cancela duas vezes (55ms)
+    √ apolice cancelada nao aceita garantia nem publicacao (46ms)
+    √ nao cancela apolice ja liquidada (48ms)
+    com uma seguradora hostil
+      √ reverte tudo quando a devolucao e recusada, e a apolice continua ATIVA (56ms)
+      √ barra a reentrada durante a devolucao (62ms)
+
+  OracleRegistry
+    implantacao
+      √ grava a seguradora informada e comeca sem nenhum autorizado
+      √ recusa implantacao com endereco zero
+    autorizar
+      √ autoriza um endereco e emite evento (40ms)
+      √ recusa quem nao e a seguradora
+      √ recusa o endereco zero
+      √ recusa autorizar duas vezes o mesmo endereco (45ms)
+      √ mantem os autorizados independentes entre si
+    revogar
+      √ revoga um endereco autorizado e emite evento (57ms)
+      √ recusa quem nao e a seguradora
+      √ recusa revogar quem nunca foi autorizado
+    transferirSeguradora
+      √ transfere a administracao e passa a aceitar a nova seguradora (64ms)
+      √ recusa transferir para o endereco zero
+      √ recusa quem nao e a seguradora
+
+  Equivalencia entre a regra do contrato e a do aplicativo
+    √ concorda com o contrato: pagamento integral (111ms)
+    √ concorda com o contrato: pagamento integral com gatilho alternativo (149ms)
+    √ o valor devido em wei tambem bate com o limite contratado (47ms)
+    √ os exemplos mostrados na cotacao sao calculados pela mesma regra (41ms)
+
+  Seguranca da apolice
+    reentrancia (RNF09, HU03)
+      √ o contrato malicioso falha ao tentar sacar duas vezes (69ms)
+      √ a reentrada e barrada especificamente pela guarda naoReentrante (58ms)
+      √ o segundo periodo usado no ataque nao chega a ser registrado (59ms)
+    atomicidade da liquidacao (RF26, RNF13)
+      √ reverte a transacao inteira quando a transferencia falha (49ms)
+      √ nao deixa estado inconsistente apos a falha na transferencia (53ms)
+      √ publicacoes que nao acionam continuam funcionando com o mesmo produtor (47ms)
+    resgate da garantia sob ataque (RNF09, RNF13)
+      √ reverte o resgate quando a seguradora recusa a devolucao (50ms)
+      √ barra a reentrada no resgate e devolve a garantia uma unica vez (56ms)
+
+
+  90 passing (7s)
+
+---------------------|----------|----------|----------|----------|----------------|
+File                 |  % Stmts | % Branch |  % Funcs |  % Lines |Uncovered Lines |
+---------------------|----------|----------|----------|----------|----------------|
+ contracts\          |      100 |      100 |      100 |      100 |                |
+  ApoliceFactory.sol |      100 |      100 |      100 |      100 |                |
+  ApolicePolicy.sol  |      100 |      100 |      100 |      100 |                |
+  OracleRegistry.sol |      100 |      100 |      100 |      100 |                |
+---------------------|----------|----------|----------|----------|----------------|
+All files            |      100 |      100 |      100 |      100 |                |
+---------------------|----------|----------|----------|----------|----------------|
+
+> Istanbul reports written to ./coverage/ and ./coverage.json

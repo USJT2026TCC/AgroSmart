@@ -1,0 +1,13 @@
+{
+  "versaoProtocolo": "clima-integral-v1",
+  "rede": "sepolia",
+  "chainId": 11155111,
+  "implantadoEm": "2026-10-19T22:49:37.289Z",
+  "blocoInicial": 11951234,
+  "seguradora": "0x95eA48b7BF91446CF12C156aC2FDeA75Af03fD70",
+  "oraculoAutorizado": "0xeFCf4d0c3f22ac012896c2D9c6bA35e9fd7D691D",
+  "contratos": {
+    "OracleRegistry": "0x92E45255950dB6950048f6d3f97f5E35Ee465997",
+    "ApoliceFactory": "0xD2eA9047E0fC149a6D7001B9287795749d8ADB76"
+  }
+}
