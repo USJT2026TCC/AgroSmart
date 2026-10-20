@@ -51,8 +51,6 @@ CABECALHOS = {
 
 # Colunas do CSV que interessam ao seguro indexado, pelo nome que o INMET usa.
 COLUNA_CHUVA = "PRECIPITAÇÃO TOTAL, HORÁRIO (mm)"
-COLUNA_TEMPERATURA = "TEMPERATURA DO AR - BULBO SECO, HORARIA (°C)"
-COLUNA_UMIDADE = "UMIDADE RELATIVA DO AR, HORARIA (%)"
 
 
 @dataclass(frozen=True)
@@ -67,15 +65,6 @@ class Estacao:
     longitude: float
     altitude: float | None
 
-    def distancia_km(self, latitude: float, longitude: float) -> float:
-        """Distancia aproximada ate um ponto, boa o bastante para ordenar estacoes."""
-        import math
-
-        graus_lat = (self.latitude - latitude) * 111.0
-        graus_lon = (self.longitude - longitude) * 111.0 * math.cos(math.radians(latitude))
-
-        return math.hypot(graus_lat, graus_lon)
-
 
 @dataclass(frozen=True)
 class Leitura:
@@ -83,16 +72,6 @@ class Leitura:
 
     instante: datetime
     chuva_mm: float | None
-    temperatura_c: float | None
-    umidade_pct: float | None
-    # Posicao da estacao que mediu (HU04, criterio 4). A API confere contra a
-    # posicao cadastrada da fonte.
-    longitude: float | None = None
-    latitude: float | None = None
-
-    @property
-    def completa(self) -> bool:
-        return self.chuva_mm is not None
 
 
 def baixar_ano(ano: int, destino: Path) -> Path:
@@ -120,7 +99,7 @@ def baixar_ano(ano: int, destino: Path) -> Path:
 
 
 def _numero(texto: str) -> float | None:
-    """Converte '12,5' em 12.5; vazio e sentinela negativo viram None."""
+    """Converte decimal com virgula; vazio ou texto invalido vira None."""
     texto = (texto or "").strip()
 
     if not texto:
@@ -131,8 +110,7 @@ def _numero(texto: str) -> float | None:
     except ValueError:
         return None
 
-    # -9999 é o sentinela do INMET. Chuva, umidade e radiacao nunca sao negativas;
-    # temperatura pode ser, e por isso o corte e feito por coluna, nao aqui.
+    # Sentinelas negativos de precipitacao sao descartados pelo leitor.
     return valor
 
 
@@ -183,51 +161,12 @@ def ler_csv(conteudo: bytes) -> tuple[Estacao, list[Leitura]]:
             continue
 
         chuva = _numero(registro.get(COLUNA_CHUVA, ""))
-        umidade = _numero(registro.get(COLUNA_UMIDADE, ""))
 
         leituras.append(
             Leitura(
                 instante=_instante(data, hora),
                 chuva_mm=chuva if chuva is not None and chuva >= 0 else None,
-                temperatura_c=_numero(registro.get(COLUNA_TEMPERATURA, "")),
-                umidade_pct=umidade if umidade is not None and 0 <= umidade <= 100 else None,
-                longitude=estacao.longitude,
-                latitude=estacao.latitude,
             )
         )
 
     return estacao, leituras
-
-
-def abrir_do_zip(caminho_zip: Path, codigo: str) -> tuple[Estacao, list[Leitura]]:
-    """Le, de dentro do ZIP anual, o CSV da estacao de codigo informado."""
-    codigo = codigo.upper()
-
-    with zipfile.ZipFile(caminho_zip) as arquivo:
-        for nome in arquivo.namelist():
-            if not nome.upper().endswith(".CSV"):
-                continue
-            if f"_{codigo}_" in nome.upper():
-                return ler_csv(arquivo.read(nome))
-
-    raise KeyError(f"Estacao {codigo} nao encontrada em {caminho_zip.name}")
-
-
-def listar_estacoes(caminho_zip: Path, uf: str | None = None) -> list[Estacao]:
-    """Le so o cabecalho de cada CSV do ZIP. Serve para achar a estacao mais proxima."""
-    estacoes: list[Estacao] = []
-
-    with zipfile.ZipFile(caminho_zip) as arquivo:
-        for nome in arquivo.namelist():
-            if not nome.upper().endswith(".CSV"):
-                continue
-            if uf and f"_{uf.upper()}_" not in nome.upper():
-                continue
-
-            with arquivo.open(nome) as fluxo:
-                cabecalho = fluxo.read(600)
-
-            estacao, _ = ler_csv(cabecalho + b"\n")
-            estacoes.append(estacao)
-
-    return estacoes

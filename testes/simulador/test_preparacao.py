@@ -1,11 +1,11 @@
-from datetime import UTC, date, datetime
+from datetime import date, datetime, timezone
 
 from simulador.inmet import Leitura
 from simulador.preparacao import dias_normalizados
 
 
 def leitura(dia, hora, chuva):
-    return Leitura(datetime(2024, 1, dia, hora, tzinfo=UTC), chuva, None, None)
+    return Leitura(datetime(2024, 1, dia, hora, tzinfo=timezone.utc), chuva)
 
 
 def test_ausencia_nao_vira_zero_e_dia_sem_registros_aparece():

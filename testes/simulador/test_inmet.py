@@ -8,7 +8,7 @@ caso que nao pode virar zero.
 Fonte: INMET — https://portal.inmet.gov.br/dadoshistoricos
 """
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from simulador.inmet import ler_csv
 
@@ -44,8 +44,7 @@ def test_converte_decimal_com_virgula_e_hora_utc():
     _, leituras = ler_csv(CSV)
 
     assert leituras[1].chuva_mm == 0.2
-    assert leituras[1].temperatura_c == 17.9
-    assert leituras[1].instante == datetime(2024, 7, 2, 1, tzinfo=UTC)
+    assert leituras[1].instante == datetime(2024, 7, 2, 1, tzinfo=timezone.utc)
 
 
 def test_hora_sem_medicao_vira_none_e_nao_zero():
@@ -54,23 +53,12 @@ def test_hora_sem_medicao_vira_none_e_nao_zero():
     _, leituras = ler_csv(CSV)
 
     assert leituras[2].chuva_mm is None
-    assert leituras[2].completa is False
-    assert leituras[0].completa is True
 
 
 def test_sentinela_negativo_tambem_e_ausencia():
     _, leituras = ler_csv(CSV)
 
     assert leituras[3].chuva_mm is None
-    assert leituras[3].umidade_pct is None
-    assert leituras[3].temperatura_c == 17.1
-
-
-def test_distancia_ordena_estacoes_por_proximidade():
-    estacao, _ = ler_csv(CSV)
-
-    assert estacao.distancia_km(-21.46, -47.58) < 1
-    assert estacao.distancia_km(-23.55, -46.63) > 100
 
 
 # Formato usado pelo INMET ate 2018: cabecalhos de data e hora com outro nome e
@@ -97,14 +85,4 @@ def test_le_tambem_o_formato_ate_2018():
     assert estacao.codigo == "A747"
     assert len(leituras) == 2
     assert leituras[1].chuva_mm == 1.4
-    assert leituras[1].instante == datetime(2018, 1, 1, 1, tzinfo=UTC)
-
-
-def test_cada_leitura_recebe_a_posicao_da_estacao():
-    estacao, leituras = ler_csv(CSV)
-
-    assert leituras
-    assert all(
-        leitura.longitude == estacao.longitude and leitura.latitude == estacao.latitude
-        for leitura in leituras
-    )
+    assert leituras[1].instante == datetime(2018, 1, 1, 1, tzinfo=timezone.utc)
