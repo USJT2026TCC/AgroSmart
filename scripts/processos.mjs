@@ -25,10 +25,3 @@ export function executar(comando, argumentos, opcoes = {}) {
     );
   });
 }
-export function npm(modulo, argumentos) {
-  if (!process.env.npm_execpath)
-    throw new Error("Execute este comando por npm na raiz do projeto.");
-  return executar(process.execPath, [process.env.npm_execpath, ...argumentos], {
-    cwd: path.join(raiz, modulo),
-  });
-}

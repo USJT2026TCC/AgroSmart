@@ -2,15 +2,11 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "AgroSmart local completo",
+      "name": "AgroSmart \u2014 Sepolia",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["start"],
-      "port": 5173
-    },
-    {
-      "name": "AgroSmart Sepolia completo",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "start:sepolia"],
+      "runtimeArgs": [
+        "start"
+      ],
       "port": 5173
     }
   ]

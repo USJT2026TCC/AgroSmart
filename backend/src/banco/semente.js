@@ -11,21 +11,8 @@ import { gerarHashDeSenha } from "../seguranca/cripto.js";
  * PostGIS. So roda em desenvolvimento e com o banco vazio: em producao, recusa;
  * com usuarios ja cadastrados, nao toca em nada.
  *
- * CHAVES DAS FONTES
- *
- * As duas estacoes do talhao-01 assinam os lotes com chaves derivadas da frase
- * de teste do Hardhat ("test test ... junk"), nas posicoes 10 e 11. Essa frase e
- * publica e conhecida — o proprio `npx hardhat node` avisa. Serve para que o
- * script de envio de leituras e o simulador consigam assinar sem configuracao,
- * e para nada alem disso. Em rede publica, cada fonte precisa de chave propria.
+ * As fontes guardam somente enderecos publicos. A assinatura e feita fora da API.
  */
-
-export const FRASE_DE_TESTE = "test test test test test test test test test test test junk";
-
-/** Carteira de uma fonte de demonstracao, pela posicao na derivacao. */
-export function carteiraDeFonteDeDemonstracao(indice) {
-  return ethers.HDNodeWallet.fromPhrase(FRASE_DE_TESTE, undefined, `m/44'/60'/0'/0/${indice}`);
-}
 
 /**
  * Fontes do talhao-01.
@@ -45,14 +32,28 @@ export function carteiraDeFonteDeDemonstracao(indice) {
  * e por isso fica sem serie ate o hardware existir.
  */
 export const FONTES_DE_DEMONSTRACAO = [
-  { id: "estacao-inmet-a770", tipo: "estacao", indice: 10, lon: -47.57944444, lat: -21.46111111 },
-  { id: "estacao-inmet-a747", tipo: "estacao", indice: 11, lon: -48.11388888, lat: -21.33833333 },
-  { id: "sensor-solo-talhao-01", tipo: "sensor_solo", indice: 12, lon: -47.585, lat: -21.455 },
+  {
+    id: "estacao-inmet-a770",
+    tipo: "estacao",
+    carteira: "0xbcd4042de499d14e55001ccbb24a551f3b954096",
+    lon: -47.57944444,
+    lat: -21.46111111,
+  },
+  {
+    id: "estacao-inmet-a747",
+    tipo: "estacao",
+    carteira: "0x71be63f3384f5fb98995898a86b02fb2426c5788",
+    lon: -48.11388888,
+    lat: -21.33833333,
+  },
+  {
+    id: "sensor-solo-talhao-01",
+    tipo: "sensor_solo",
+    carteira: "0xfabb0ac9d68b0b445fb7357272ff202c5651694a",
+    lon: -47.585,
+    lat: -21.455,
+  },
 ];
-
-/** Carteira do produtor de demonstracao: conta 1 do `hardhat node`. */
-const CARTEIRA_DO_PRODUTOR =
-  config.rede === "localhost" ? carteiraDeFonteDeDemonstracao(1).address.toLowerCase() : null;
 
 export async function semear(banco) {
   if (config.emProducao) throw new Error("A semente de demonstracao nao roda em producao.");
@@ -74,15 +75,13 @@ export async function semear(banco) {
         )
       ).rows[0].id;
 
-    // O produtor ja nasce com a carteira da conta 1 vinculada, para que a
-    // demonstracao nao dependa de passar pela tela de vinculo. A tela continua
-    // funcionando para quem quiser trocar a carteira.
+    // O produtor comprova a propria carteira por assinatura, inclusive na demonstracao.
     const produtor = await inserir(
       "produtor",
       "Joao Ribeiro",
       "produtor",
       "Fazenda Santa Clara — Ribeirao Preto/SP",
-      CARTEIRA_DO_PRODUTOR,
+      null,
     );
     await inserir(
       "seguradora",
@@ -145,14 +144,7 @@ export async function semear(banco) {
       await tx.query(
         `INSERT INTO fontes (id, talhao_id, tipo, endereco, localizacao)
          VALUES ($1, $2, $3, $4, ST_SetSRID(ST_MakePoint($5, $6), 4326))`,
-        [
-          f.id,
-          ids["talhao-01"],
-          f.tipo,
-          carteiraDeFonteDeDemonstracao(f.indice).address.toLowerCase(),
-          f.lon,
-          f.lat,
-        ],
+        [f.id, ids["talhao-01"], f.tipo, f.carteira, f.lon, f.lat],
       );
     }
 

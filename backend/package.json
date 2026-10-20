@@ -8,12 +8,11 @@
   "scripts": {
     "iniciar": "node src/index.js",
     "dev": "node --watch src/index.js",
-    "testar": "node --import ./test/preparar.js --test --test-concurrency=1 \"test/*.test.js\"",
+    "testar": "node --import ../testes/backend/unitarios/preparar.js --test --test-concurrency=1 \"../testes/backend/unitarios/*.test.js\"",
     "migrar": "node src/banco/migrar.js",
-    "formatar": "prettier --write \"src/**/*.js\" \"test/**/*.js\" \"integracao/**/*.js\" \"scripts/**/*.js\"",
-    "testar:integracao": "node --test --test-concurrency=1 \"integracao/*.test.js\"",
-    "enviar-leituras": "node scripts/enviar-leituras.js",
-    "cobertura": "c8 --all --src src --include \"src/**\" --reporter text-summary npm run testar"
+    "formatar": "prettier --write \"src/**/*.js\"",
+    "testar:integracao": "node --test --test-concurrency=1 \"../testes/backend/integracao/*.test.js\"",
+    "cobertura": "c8 --reports-dir ../testes/gerados/backend/cobertura --all --src src --include \"src/**\" --reporter text-summary npm run testar"
   },
   "engines": {
     "node": ">=20"

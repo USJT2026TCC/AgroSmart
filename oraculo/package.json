@@ -5,14 +5,12 @@
   "description": "Servico de oraculo do AgroSmart: consolida, assina e publica os indices de campo nos contratos da apolice.",
   "main": "src/index.js",
   "scripts": {
-    "testar": "node --test \"test/*.test.js\"",
-    "publicar": "node src/index.js publicar",
-    "ciclo": "node src/index.js ciclo",
+    "testar": "node --test \"../testes/oraculo/unitarios/*.test.js\"",
     "ouvir": "node src/index.js ouvir",
     "fila": "node src/index.js fila",
-    "formatar": "prettier --write \"src/**/*.js\" \"test/**/*.js\"",
-    "testar:integracao": "node --test --test-concurrency=1 \"integracao/*.test.js\"",
-    "cobertura": "c8 --all --src src --include \"src/**\" --reporter text-summary npm run testar:tudo",
+    "formatar": "prettier --write \"src/**/*.js\"",
+    "testar:integracao": "node --test --test-concurrency=1 \"../testes/oraculo/integracao/*.test.js\"",
+    "cobertura": "c8 --reports-dir ../testes/gerados/oraculo/cobertura --all --src src --include \"src/**\" --reporter text-summary npm run testar:tudo",
     "testar:tudo": "npm run testar && npm run testar:integracao"
   },
   "dependencies": {

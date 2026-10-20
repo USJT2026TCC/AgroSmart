@@ -1,67 +1,56 @@
 # AgroSmart
 
-Protótipo acadêmico de seguro por estiagem, com indenização integral em parcela única. Não há processamento de fotos nem pagamento escalonado. O gatilho é experimental, não uma tolerância agronômica validada.
+Demonstração acadêmica de seguro por estiagem com pagamento integral, uma única vez, em contrato inteligente. Talhão e produto cadastrados são exemplos pedagógicos. O limiar é experimental; não mede perda real de produção. Excesso de chuva não está implementado.
 
-## Abrir o software
+## Executar
 
-Use esta pasta: `C:\TCC 2026 - SemVisaoComputacional`.
-Pré-requisito: Node.js 20 ou superior e dependências dos quatro módulos instaladas.
+Use Node.js 20.19+ ou 22.12+. Na raiz do repositório:
 
 ```powershell
-npm run instalar
+npm ci
 npm start
 ```
 
-Abra **http://localhost:5173** no navegador com MetaMask. Mantenha o terminal aberto. `npm stop` ou Ctrl+C encerra os serviços iniciados. Não inicie outra instância nas mesmas portas.
+Abra **http://localhost:5173** no navegador com MetaMask na **Sepolia**. Usuários da demonstração: `produtor` e `seguradora`; senha: `agrosmart`.
 
-`npm start` liga blockchain local, implanta os contratos atuais, inicia API, banco separado, indexador, interface e oráculo. Reutiliza uma rede local 31337 existente. Na demonstração local, cada execução cria um banco novo e preserva os anteriores. Na Sepolia, o banco e a fila são mantidos por implantação, preservando vínculos e propostas entre reinicializações. As contas dessa rede são públicas de desenvolvimento e nunca devem receber dinheiro real.
+`npm start` inicia interface, API, banco, indexador e oráculo na Sepolia. Não é necessário escolher outra rede de uso. O banco e a fila são preservados entre reinicializações.
+
+Antes de iniciar, configure `RPC_SEPOLIA` e `CHAVE_PRIVADA_ORACULO` em `contratos/.env`. A chave deve corresponder ao oráculo autorizado na implantação de `contratos/implantacoes/sepolia.json`. Chaves e arquivos .env não são distribuídos pelo Git.
 
 ```powershell
 npm run status
+npm stop
 ```
 
-Confere API, código da fábrica, indexador, interface e processo do oráculo. Não valida a extensão MetaMask nem substitui a conferência de uma transação.
+## Fluxo
 
-## Usar o fluxo
+1. Produtor vincula sua carteira por assinatura, sem transferir ETH; depois cota e envia a proposta.
+2. Seguradora confirma na MetaMask a emissão e, em outra transação, o depósito da garantia.
+3. Fontes enviam leituras assinadas à API. O oráculo calcula a sequência de dias secos e publica o índice. Abrir a tela não gera leituras.
+4. Ao atingir o gatilho durante a vigência, a apólice transfere 100% do limite ao produtor. O recebimento não exige assinatura. Confira Valor pago e a transação no detalhe da apólice.
 
-1. Entre como `produtor`, senha local `agrosmart`. Confira a carteira beneficiária em Minha carteira; o banco local vem com a conta 1 de desenvolvimento. Para usar outra carteira, conecte-a e assine o vínculo.
-2. Faça uma cotação e envie a proposta. Isso não transfere ETH.
-3. Entre como `seguradora`, mesma senha local. Na MetaMask, use a conta 0 da rede local. Em Propostas, confirme a emissão e depois o depósito da garantia: são duas transações.
-4. Para experimentar estiagem SINTÉTICA, execute em outro terminal na raiz: `npm run leituras:demo`. O oráculo busca as leituras na API e publica automaticamente. Não são sensores físicos nem INMET ao vivo.
-5. Abra a apólice. Confira índice, situação, Valor pago e transação. Ao atingir o gatilho durante a vigência, o contrato paga 100% do limite. O produtor não assina para receber. Confira também o saldo da conta beneficiária na mesma rede.
+MetaMask assina mensagens e transações e mostra a conta selecionada. Etherscan permite consultar publicamente contrato, eventos e recibos na Sepolia. Trocar o usuário do aplicativo não troca automaticamente a conta da extensão: cada papel deve usar sua própria conta autorizada.
 
-O prêmio mostrado na cotação não é cobrado pelo contrato. Excesso de chuva não está coberto. Cancelamento só é possível antes do início da vigência e devolve a garantia à seguradora.
+O prêmio mostrado é informativo e não é cobrado pelo contrato. Cancelar antes da vigência devolve a garantia à seguradora. Não há envio de fotos nem visão computacional. A demonstração com séries INMET reproduz dados históricos; não são sensores físicos nem medições ao vivo.
 
-## Sepolia
+## Organização
 
-Há uma implantação atual em `contratos/implantacoes/sepolia.json`. Para iniciar todos os serviços nessa rede, encerre a execução local e use:
+| Pasta | Responsabilidade |
+|---|---|
+| contratos | Autorização, garantia e pagamento |
+| oraculo | Consolidação e publicação do índice |
+| backend | API, validação e acesso ao banco |
+| app | Interface web |
+| simulador | Envio de leituras históricas assinadas |
+| testes | Todas as suítes, fixtures, configurações, medições e evidências |
+| docs | Documentação de software e referências técnicas |
 
-```powershell
-npm run start:sepolia
-```
-
-Exige `RPC_SEPOLIA` e `CHAVE_PRIVADA_ORACULO` em `contratos/.env`, correspondentes à implantação. A seguradora assina emissão e garantia na MetaMask; o iniciador não recebe nem guarda a chave do produtor. O produtor deve vincular a própria carteira por assinatura. O envio sintético rápido é bloqueado nesse modo. Use somente ETH de teste.
-
-MetaMask é uma extensão do seu navegador. Não faz parte do servidor e não é instalada nem desbloqueada por esses comandos. A interface informa quando não encontra carteira ou quando a rede/conta está incorreta. Carteira simulada não deve ser usada na apresentação.
-
-## Uma entrada para as verificações
+## Verificações
 
 ```powershell
 npm test
 ```
 
-Executa sequencialmente: contratos e cobertura, Slither, API e cobertura, integrações locais, oráculo e cobertura, telas e cobertura, build e simulador. Exige Slither no PATH e `simulador/.venv` com dependências de desenvolvimento. Interrompe na primeira falha. Os arquivos de teste ficam junto dos respectivos módulos; a execução é centralizada aqui.
+Tudo que serve a testes está em [testes](testes). As redes locais são iniciadas somente pelas suítes automatizadas. Exige Slither no PATH e o ambiente Python `simulador/.venv` com as dependências dev. Os resultados gerados ficam em `testes/gerados`, fora do Git.
 
-## Organização
-
-| Pasta     | Função                                      |
-| --------- | ------------------------------------------- |
-| app       | Interface web                               |
-| backend   | API e acesso ao banco                       |
-| oraculo   | Cálculo e publicação do índice              |
-| contratos | Garantia e pagamento na blockchain          |
-| simulador | Envio de leituras assinadas                 |
-| scripts   | Iniciar e verificar o conjunto              |
-| docs      | Referência técnica e documentação acadêmica |
-
-Para operar, siga apenas este README. Documentos e medições anteriores em docs são referência histórica e devem ser conferidos pela versão de contrato. O artigo ainda precisa ser alinhado: esta versão não grava hash do conjunto de leituras na blockchain.
+A configuração entregue não inclui chaves de terceiros. Um professor que queira assinar como seguradora ou operar um novo oráculo precisa de contas próprias e de uma implantação autorizada para essas contas; consultar os contratos públicos não requer essas chaves.

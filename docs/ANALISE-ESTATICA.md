@@ -129,4 +129,4 @@ construtor. Foi triado e aceito, com supressão justificada junto à função e 
 de valor recebido, pagamento único, reentrância e reversão de transferência.
 A execução final retornou zero resultados **com essas supressões**, não zero alertas
 brutos nem prova de ausência de vulnerabilidades. Saídas e versões em
-[resultados atuais](resultados/clima-integral-2026-10-16/README.md).
+[resultados atuais](../testes/evidencias/clima-integral-2026-10-16/README.md).

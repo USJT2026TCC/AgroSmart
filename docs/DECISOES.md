@@ -209,7 +209,7 @@ foi pago, e por quem.
 **Para isso existir, a proposta ganhou a data de início** (`propostas.inicio_desejado`, migração
 003): sem vigência futura, não há janela de cancelamento. Na Sepolia, em 08/10/2026: apólice com
 início em 10 dias, cancelada pela seguradora, 0,002 ETH devolvidos em 43.055 de gas
-([resultados/sepolia-2026-10-08](resultados/sepolia-2026-10-08/README.md)).
+([resultados/sepolia-2026-10-08](../testes/evidencias/sepolia-2026-10-08/README.md)).
 
 ### 1.16 Contestação (RF28): a retificação fica ao lado da publicação original
 
@@ -285,7 +285,7 @@ todos os 79 recortes de validação, e o limiar do perito é 70%. Com ela, todo 
 2.0.0, o único recorte abaixo do limiar é justamente o de maior erro. Calibrar a confiança da 3.0.0
 (uma temperatura ajustada na validação) é o passo que falta; baixar o limiar só para ela esconderia
 o problema. Detalhes em
-[resultados/visao-unet-resnet18-3.0.0](resultados/visao-unet-resnet18-3.0.0/README.md).
+[resultados/visao-unet-resnet18-3.0.0](../testes/evidencias/visao-unet-resnet18-3.0.0/README.md).
 
 ### 1.20 Contratação (UC05): o produtor propõe, a seguradora assina a emissão
 
@@ -866,7 +866,7 @@ erro publicado (3,3 pontos) era medido na mesma validação. Um número otimista
 mesmos 257 recortes, e a validação antiga foi dividida ao meio. Retreinada do zero nessa divisão, a
 2.0.1 erra **3,3 pontos no teste nunca visto** — o mesmo número. A ressalva estava certa em
 princípio e, medida, não mudou o resultado. Ver
-[resultados/visao-teste-nunca-visto-2026-10-13](resultados/visao-teste-nunca-visto-2026-10-13/README.md).
+[resultados/visao-teste-nunca-visto-2026-10-13](../testes/evidencias/visao-teste-nunca-visto-2026-10-13/README.md).
 
 **O experimento sugerido para o dano alto falhou.** Pesar mais as classes de estresse (2.0.2) fez o
 modelo parar de subestimar o dano alto, mas superestimar todo o resto: erro de 7,4, pior que
@@ -892,7 +892,7 @@ foto comum, o modelo erra com a mesma segurança.
 TCC, produto que pague só pela imagem (operador `DANO`) não deve ser apresentado como seguro para
 foto de celular de soja; os produtos com operador `E` ou só climáticos continuam protegidos, porque o
 índice da estação não depende do modelo. Detectar imagem fora do domínio (antes de confiar no número)
-é trabalho futuro. Ver [resultados/visao-soja-murcha-2026-10-14](resultados/visao-soja-murcha-2026-10-14/README.md).
+é trabalho futuro. Ver [resultados/visao-soja-murcha-2026-10-14](../testes/evidencias/visao-soja-murcha-2026-10-14/README.md).
 
 ### 2.34 O oráculo publicava "sem dano" quando o certo era "ainda não se sabe"
 
@@ -980,11 +980,11 @@ e substituir esta conferência cruzada pela leitura direta.
 |---|---|---|
 | Análise estática dos contratos | RNF11 | **Feito.** Slither sem nenhum achado; ver [ANALISE-ESTATICA.md](ANALISE-ESTATICA.md) |
 | Implantação em Sepolia | — | **Feito** em 07/10/2026 e refeito em 08/10/2026 com o RF10 e o RF28; endereços em `contratos/implantacoes/sepolia.json` |
-| Verificação do código-fonte no Etherscan | — | **Feito** em 08/10/2026: registro, fábrica e apólices ([resultados/sepolia-2026-10-08](resultados/sepolia-2026-10-08/README.md)) |
-| Pagamento pelos dois índices | RF23, RF24 | **Feito** em 07/10/2026: [resultados/sepolia-2026-10-07](resultados/sepolia-2026-10-07/README.md) |
-| Cancelamento e contestação | RF10, RF28 | **Feito** em 08/10/2026: [resultados/sepolia-2026-10-08](resultados/sepolia-2026-10-08/README.md) |
+| Verificação do código-fonte no Etherscan | — | **Feito** em 08/10/2026: registro, fábrica e apólices ([resultados/sepolia-2026-10-08](../testes/evidencias/sepolia-2026-10-08/README.md)) |
+| Pagamento pelos dois índices | RF23, RF24 | **Feito** em 07/10/2026: [resultados/sepolia-2026-10-07](../testes/evidencias/sepolia-2026-10-07/README.md) |
+| Cancelamento e contestação | RF10, RF28 | **Feito** em 08/10/2026: [resultados/sepolia-2026-10-08](../testes/evidencias/sepolia-2026-10-08/README.md) |
 | Latência em rede pública | RNF21 | **Medido**: ~27 s da publicação à segunda confirmação, contra ~170 ms na rede local |
-| Custo em gas | RNF07, RNF08 | **Medido** (CONTRATOS.md §4; [requisitos não funcionais](resultados/requisitos-nao-funcionais-2026-10-08/README.md)) |
+| Custo em gas | RNF07, RNF08 | **Medido** (CONTRATOS.md §4; [requisitos não funcionais](../testes/evidencias/requisitos-nao-funcionais-2026-10-08/README.md)) |
 
 ---
 
@@ -1022,7 +1022,7 @@ A escolha de criar uma **cópia separada**, em vez de remover a visão computaci
 - RNF16 muda de enunciado: de "duas fontes independentes de dado climático OU evidência por imagem" para só "duas fontes independentes de dado climático".
 - Documentação de software: reescrita para refletir o sistema só-climático (ver o próprio `docs/AgroSmart_Documentacao_Software.docx` desta cópia).
 
-**O que fica sem solução:** a pergunta de pesquisa original sobre viabilidade de visão computacional para estimar dano de lavoura, se havia uma, não é respondida por esta versão — ela é respondida pelo trabalho que já existe na versão original (`C:\TCC 2026`), cujos resultados (positivos e negativos) continuam documentados em `docs/resultados/` e nas entradas 2.18 a 2.34 deste mesmo arquivo. Esta bifurcação não invalida esse trabalho; só o separa do sistema apresentado como solução de produto.
+**O que fica sem solução:** a pergunta de pesquisa original sobre viabilidade de visão computacional para estimar dano de lavoura, se havia uma, não é respondida por esta versão — ela é respondida pelo trabalho que já existe na versão original (`C:\TCC 2026`), cujos resultados (positivos e negativos) continuam documentados em `testes/evidencias/` e nas entradas 2.18 a 2.34 deste mesmo arquivo. Esta bifurcação não invalida esse trabalho; só o separa do sistema apresentado como solução de produto.
 
 ## 1.25 Recorte climático com indenização integral única — 16/10/2026
 

@@ -11,7 +11,7 @@ import react from "@vitejs/plugin-react";
 export default defineConfig(({ mode }) => {
   // `vite --mode sepolia` (npm run dev:sepolia): o mesmo aplicativo apontando
   // para a rede de teste publica, sem precisar criar um .env so para isso.
-  if (mode === "sepolia") process.env.VITE_REDE ??= "sepolia";
+  process.env.VITE_REDE ??= "sepolia";
 
   return {
     plugins: [react()],
@@ -27,20 +27,6 @@ export default defineConfig(({ mode }) => {
           target: process.env.VITE_API_ALVO || "http://localhost:3001",
           changeOrigin: false,
         },
-      },
-    },
-    // Testes (RNF03): Vitest no mesmo pipeline do Vite, com as telas renderizadas
-    // em jsdom. A cobertura conta TODO o src, inclusive arquivos que nenhum teste
-    // carrega; sem isso, o numero mediria so o que ja foi testado.
-    test: {
-      environment: "jsdom",
-      include: ["test/**/*.test.{js,mjs,jsx}"],
-      setupFiles: ["test/preparar.js"],
-      coverage: {
-        provider: "v8",
-        include: ["src/**/*.{js,jsx}"],
-        exclude: ["src/main.jsx", "src/cadeia/implantacoes.json"],
-        reporter: ["text-summary", "text"],
       },
     },
     build: {

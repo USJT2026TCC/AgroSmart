@@ -60,26 +60,14 @@ module.exports = {
     },
   },
 
-  // Relatorio de gas por funcao (RNF07, HU01 criterio 4, HU03).
-  gasReporter: {
-    enabled: process.env.REPORT_GAS === "true",
-    currency: "BRL",
-    outputFile: process.env.GAS_OUTPUT_FILE || undefined,
-    noColors: Boolean(process.env.GAS_OUTPUT_FILE),
-  },
-
   etherscan: {
     apiKey: ETHERSCAN_API_KEY,
   },
 
   paths: {
     sources: "./contracts",
-    tests: "./test",
     cache: "./cache",
     artifacts: "./artifacts",
   },
 
-  mocha: {
-    timeout: 120000,
-  },
 };

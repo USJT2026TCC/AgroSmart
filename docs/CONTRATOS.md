@@ -1,63 +1,31 @@
-# Contratos da versão climática integral
+# Contratos
 
-Protocolo `clima-integral-v1`. Especificação operacional em [ESCOPO-ATUAL.md](ESCOPO-ATUAL.md).
+## Função de cada contrato
 
-## Responsabilidades
+| Contrato | Responsabilidade |
+|---|---|
+| OracleRegistry | A seguradora autoriza ou revoga endereços de oráculos |
+| ApoliceFactory | Somente a seguradora pode emitir apólices; fixa o registro usado |
+| ApolicePolicy | Guarda termos, recebe garantia, verifica publicações e transfere a indenização |
 
-`OracleRegistry` mantém endereços autorizados; apenas a seguradora administra a lista.
-`ApoliceFactory` cria uma apólice por contratação, restrita à seguradora e com o
-registro oficial. `ApolicePolicy` recebe garantia, valida publicações e liquida.
-Nenhum contrato processa fotografias, calcula dano agrícola ou consulta uma API.
+## Fluxo atual
 
-## Regra e estados
+1. A seguradora emite a apólice com produtor, vigência, limiar experimental e limite em ETH de teste.
+2. A seguradora deposita exatamente esse limite. Só então a apólice fica ativa.
+3. Durante a vigência, apenas oráculo autorizado pode publicar período e índice climático. O mesmo período não pode ser publicado novamente.
+4. Índice abaixo do limiar: pagamento zero. No limiar ou acima: 100% do limite, uma única vez. O produtor recebe automaticamente.
+5. Antes da vigência, produtor ou seguradora podem cancelar; a garantia volta à seguradora. Depois do fim, a seguradora pode resgatar a garantia não utilizada.
 
-`AGUARDANDO_GARANTIA → ATIVA → LIQUIDADA` quando há acionamento.
-Sem acionamento, após a vigência, o resgate leva de `ATIVA` a `ENCERRADA`.
-Antes da vigência, produtor ou seguradora podem levar a apólice a `CANCELADA`.
+Estado e valor pago são atualizados antes da transferência. Se a transferência falha, toda a transação reverte. A guarda contra reentrância permanece ativa. Apólice liquidada não aceita nova publicação.
 
-Garantia exata = limite de indenização. A publicação exige apólice ativa, relógio
-do bloco dentro da vigência, oráculo autorizado e período ainda não publicado.
-O contrato avalia `indiceClimatico >= limiarClimatico`. Abaixo: 0%; no limiar ou
-acima: 100% em parcela única. Não recebe nova publicação depois de liquidado.
+## Limites do que o contrato faz
 
-`simularPercentual` devolve 0 ou 10000. A cotação usa a réplica JavaScript,
-comparada com Solidity nos testes de equivalência. Os campos legados de ABI
-`modoPagamento` e `limiarClimaticoIntegral` devem ser 0; o construtor recusa outros
-valores. Não existe função de interpolação nesta versão.
+O contrato não lê sensores, não interpreta fotos, não calcula perda agrícola e não valida fisicamente a medição. Recebe o índice calculado pelo oráculo. O índice implementado é a sequência de dias secos; excesso de chuva não está coberto. O prêmio exibido na cotação não é cobrado pelo contrato.
 
-O pagamento usa verificar-efeitos-interação e guarda de reentrância. Se o destino
-recusar ETH, toda a transação reverte, inclusive registros e eventos. O destino
-é fixado no construtor. Eventual ETH forçado por terceiros pode ser recuperado
-pela seguradora após liquidação; isso não é indenização parcial.
+O hash dos termos existe. Não há hash do conjunto de leituras na publicação atual; não confundir as duas coisas. Os campos reservados modoPagamento e limiarClimaticoIntegral só aceitam zero: não habilitam indenização escalonada.
 
-## Garantia e cancelamento
+## Implantação e verificações
 
-`cancelar()` é permitido às partes apenas antes da vigência. Passa a CANCELADA e
-devolve o saldo à seguradora na mesma transação. Falha da transferência reverte
-tudo. Após vigência encerrada sem acionamento, a seguradora usa `resgatarGarantia`.
-O contrato não cobra prêmio nem comprova quitação comercial.
+A implantação atual está em `contratos/implantacoes/sepolia.json`, protocolo clima-integral-v1. Registro e fábrica foram implantados em 19/10/2026 e verificados no Etherscan. Registros de implantações anteriores ficam apenas em testes/evidencias/legado.
 
-## Índice e confiança
-
-O índice é dias consecutivos com chuva consolidada abaixo de 1 mm. O cálculo é
-externo, e o limiar é experimental. A assinatura identifica o remetente; não prova
-veracidade física. O registro na cadeia contém período, remetente, índice e instante.
-Para reexecutar a consolidação, preservar leituras, configuração e logs fora da cadeia.
-
-## Verificação reproduzível
-
-Dentro de `contratos/`: `npm run testar`, `npx hardhat coverage`, `npm run analisar`
-e `npx hardhat run scripts/avaliar-integral.js`. Não executar análise estática e
-integrações em paralelo: a ferramenta limpa/recompila artefatos compartilhados.
-
-Nesta revisão: 90 testes, 100% de ramos, linhas, funções e instruções na cobertura
-dos três arquivos de produção. Slither: zero alertas remanescentes com as supressões
-justificadas no código; consultar a [triagem](ANALISE-ESTATICA.md). Isso não é prova
-de ausência de vulnerabilidades. [Gas e resultado local](resultados/clima-integral-2026-10-16/README.md).
-
-## Rede pública
-
-Os endereços antigos da Sepolia permanecem como evidências históricas, marcados como
-legados. Não operam com a ABI atual. Reimplantar com `npm run implantar:sepolia`,
-verificar registro, fábrica e apólice no explorador e repetir os cenários antes de
-afirmar que este release foi validado publicamente. Nenhuma chave ou .env é versionado.
+Fontes de produção: contratos/contracts. Todos os testes, contratos de ataque, configurações de cobertura e ensaios estão em testes/contratos e testes/configuracao. Execute `npm test` na raiz. A configuração de testes possui artefatos próprios e não altera os metadados de compilação da implantação de produção.

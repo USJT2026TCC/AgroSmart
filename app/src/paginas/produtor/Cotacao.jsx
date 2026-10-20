@@ -13,7 +13,7 @@ import { Aviso, Campo, Carregando, RodapeDaFronteira } from "../../componentes/u
  * O limite e o premio vem do servidor, calculados em BigInt sobre a area que o
  * PostGIS mediu no elipsoide. Os exemplos numericos do que aciona e do que nao
  * aciona vem de `regraDeGatilho.js`, a mesma regra do contrato — a equivalencia e
- * verificada caso a caso por `contratos/test/RegraDeGatilho.test.js`.
+ * verificada caso a caso por `testes/contratos/unitarios/RegraDeGatilho.test.js`.
  */
 /**
  * Historico climatico da localidade (RF06): em quantos dos ultimos anos esta

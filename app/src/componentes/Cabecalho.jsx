@@ -44,10 +44,6 @@ export default function Cabecalho() {
 
   const itens = MENUS[usuario?.perfil] ?? [];
 
-  // Aviso permanente enquanto a carteira simulada estiver ativa. Uma demonstracao
-  // em que a assinatura e simulada, sem ninguem perceber, seria pior do que nenhuma.
-  const carteiraSimulada = typeof window !== "undefined" && window.ethereum?.isCarteiraSimulada;
-
   useEffect(() => {
     if (!usuario) return undefined;
 
@@ -75,13 +71,6 @@ export default function Cabecalho() {
 
   return (
     <header className="cabecalho">
-      {carteiraSimulada ? (
-        <div className="faixa-simulada">
-          Carteira simulada ativa — as transacoes sao assinadas pelo no local, nao por uma carteira
-          real. Ferramenta de desenvolvimento; nao use em demonstracao.
-        </div>
-      ) : null}
-
       <div className="cabecalho-interno">
         <a className="marca" href="/">
           AgroSmart

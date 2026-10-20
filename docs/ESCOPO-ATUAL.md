@@ -45,18 +45,19 @@ não há interpolação na implementação. A migração 008 desativa ofertas an
 incompatíveis e impede produtos ativos com pagamento parcial. Propostas antigas
 são preservadas e têm a preparação recusada: é necessária nova cotação.
 
-Contratos já implantados são imutáveis. `sepolia.json` é marcado como legado e não
-habilita contratações pelo aplicativo/API atuais. A nova implantação deve gerar
-`versaoProtocolo: clima-integral-v1`; depois é preciso verificar o código no
-explorador e executar o roteiro público. Resultados públicos antigos são históricos.
+Contratos já implantados são imutáveis. A implantação atual de 19/10/2026, em
+`contratos/implantacoes/sepolia.json`, usa `versaoProtocolo: clima-integral-v1`.
+O registro e a fábrica têm código verificado no Etherscan. As implantações
+antigas saíram da operação e estão em testes/evidencias/legado. A confirmação
+pela MetaMask real é distinta da compilação, dos testes e da verificação do fonte.
 
 ## Fundamentação e contribuição
 
 O recorte implementa e avalia um fluxo de seguro climático automatizado, da recepção
 de leituras autenticadas à liquidação em contrato inteligente, com rastreabilidade,
 controle de acesso e tratamento de falhas. Cancelamento com devolução da garantia,
-cobertura e análise estática fazem parte da avaliação. Implantação e código
-verificado na Sepolia serão evidências desta versão quando efetivamente publicados.
+cobertura e análise estática fazem parte da avaliação. O registro e a fábrica atuais foram implantados
+e verificados na Sepolia em 19/10/2026; isso não substitui o aceite pela MetaMask.
 
 A comparação deve demonstrar etapas, falhas testadas e evidências disponíveis,
 sem presumir novidade pela ausência de descrição em outro artigo. A referência
@@ -68,7 +69,7 @@ Indenização escalonada é trabalho futuro, dependente de fundamentação e dad
 solo, cultura, região, fase de desenvolvimento, época do ano e risco coberto,
 com validação agronômica e atuarial. Não basta escolher faixas arbitrárias.
 
-Veja [resultados desta revisão](resultados/clima-integral-2026-10-16/README.md).
+Veja [resultados desta revisão](../testes/evidencias/clima-integral-2026-10-16/README.md).
 
 
 ### Migração de contas do papel retirado

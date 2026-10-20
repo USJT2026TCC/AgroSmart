@@ -7,8 +7,7 @@ const { ethers } = require("ethers");
 
 const { config, lerImplantacao } = require("./config");
 const { ServicoOraculo } = require("./oraculo");
-const { somarDias, diaDe } = require("./consolidador");
-const { CENARIOS, gerarLeituras } = require("./fonteSimulada");
+const { diaDe } = require("./consolidador");
 const { ESTADOS, FilaDePublicacoes, descreverErro } = require("./fila");
 const { RegistroDePublicacoes } = require("./registro");
 
@@ -18,8 +17,6 @@ const { RegistroDePublicacoes } = require("./registro");
  * Comandos:
  *   status                        situacao do oraculo: endereco, saldo, autorizacao
  *   servico                       publica continuamente as apolices ativas do backend
- *   ciclo    --apolice 0x...      roda um cenario climatico ate acionar ou esgotar
- *   publicar --apolice 0x...      consolida e publica um unico periodo
  *   ouvir    --apolice 0x...      acompanha os eventos da apolice em tempo real
  *   fila                          mostra a fila de publicacoes pendentes
  *   estatisticas                  gas e latencia das publicacoes ja realizadas
@@ -89,7 +86,7 @@ async function comandoStatus() {
   const implantacao = lerImplantacao();
 
   titulo("Servico de oraculo");
-  console.log(`Rede...............: ${config.rede} (${config.rpcUrl})`);
+  console.log(`Rede...............: ${config.rede}`);
   console.log(`Endereco do oraculo: ${servico.publicador.endereco}`);
   console.log(`Saldo..............: ${ethers.formatEther(await servico.publicador.saldo())} ETH`);
 
@@ -110,51 +107,9 @@ async function comandoStatus() {
   console.log(JSON.stringify(servico.reputacao.instantaneo(), null, 2));
 }
 
-/**
- * De onde vem o dado de campo.
- *
- *  - "simulada": a serie deterministica de `fonteSimulada.js`, gerada aqui mesmo.
- *    Nao precisa de backend; e o modo usado ate a Sprint 1.
- *  - "backend": leituras assinadas na origem, guardadas pelo backend. E o
- *    modo do sistema integrado.
- *
- * Nos dois casos o oraculo consolida por conta propria. O backend entrega
- * leituras, nao indices.
- */
+/** O sistema operacional usa apenas leituras autenticadas recebidas pela API. */
 function fonteDeDados(servico, opcoes) {
-  const tipo = opcoes.fonte === true || !opcoes.fonte ? "simulada" : opcoes.fonte;
-
-  if (tipo === "simulada") {
-    const cenario = opcoes.cenario === true || !opcoes.cenario ? "estiagem_severa" : opcoes.cenario;
-    if (!CENARIOS[cenario]) {
-      throw new Error(
-        `Cenario desconhecido: ${cenario}. Disponiveis: ${Object.keys(CENARIOS).join(", ")}`,
-      );
-    }
-
-    const cache = new Map();
-
-    return {
-      tipo,
-      descricao: `fonte simulada, cenario ${cenario} — ${CENARIOS[cenario].descricao}`,
-      async leiturasPara(_apolice, periodoFinal) {
-        // A serie cobre tambem os dias anteriores, porque a contagem de dias
-        // secos consecutivos precisa olhar para tras.
-        if (!cache.has(periodoFinal)) {
-          cache.set(
-            periodoFinal,
-            gerarLeituras({
-              cenario,
-              periodoFinal,
-              dias: 90,
-              comFalhas: Boolean(opcoes["com-falhas"]),
-            }),
-          );
-        }
-        return cache.get(periodoFinal);
-      },
-    };
-  }
+  const tipo = "backend";
 
   if (tipo === "backend") {
     if (!servico.backend) {
@@ -187,7 +142,7 @@ function fonteDeDados(servico, opcoes) {
     };
   }
 
-  throw new Error(`Fonte desconhecida: ${tipo}. Use "simulada" ou "backend".`);
+  throw new Error(`Fonte desconhecida: ${tipo}. Use "backend".`);
 }
 
 /** Publica um periodo de uma apolice e imprime a linha da tabela. */
@@ -309,69 +264,6 @@ async function comandoServico(opcoes) {
   } while (!parar);
 }
 
-async function comandoCiclo(opcoes) {
-  const apolice = exigirApolice(opcoes);
-  const periodos = Number(opcoes.periodos && opcoes.periodos !== true ? opcoes.periodos : 8);
-  const periodoFinal = periodoDe(opcoes);
-
-  const servico = criarServico();
-  const fonte = fonteDeDados(servico, opcoes);
-
-  titulo("Ciclo de publicacao");
-  console.log(`Fonte..: ${fonte.descricao}`);
-  console.log(`Apolice: ${apolice}`);
-  console.log(`Oraculo: ${servico.publicador.endereco}`);
-  console.log(`Publicando os ultimos ${periodos} periodos ate ${periodoFinal}`);
-  if (opcoes["com-falhas"])
-    console.log("Injetando leituras defeituosas para exercitar RF12 e RF13.");
-
-  titulo("Publicacoes");
-  console.log("  periodo    indice     gas       acionou   transacao");
-  console.log(`  ${"-".repeat(75)}`);
-
-  for (let i = periodos - 1; i >= 0; i -= 1) {
-    const periodo = somarDias(periodoFinal, -i);
-
-    if (await servico.publicador.periodoJaPublicado(apolice, periodo)) {
-      console.log(`  ${periodo}   ja publicado anteriormente, seguindo`);
-      continue;
-    }
-
-    const recibo = await publicarPeriodo(servico, fonte, apolice, periodo);
-
-    if (recibo?.acionouPagamento) {
-      titulo("Pagamento executado");
-      console.log(`Transacao: ${recibo.txHash}`);
-      console.log(`Bloco....: ${recibo.bloco}`);
-      console.log(`Latencia.: ${new Date(recibo.confirmadoEm) - new Date(recibo.enviadoEm)} ms`);
-      console.log("");
-      console.log("A condicao foi avaliada e liquidada dentro da mesma transacao que");
-      console.log("publicou o indice. Nenhum ser humano aprovou o pagamento.");
-      break;
-    }
-  }
-
-  titulo("Resumo da fila");
-  console.log(JSON.stringify(servico.fila.resumo(), null, 2));
-}
-
-async function comandoPublicar(opcoes) {
-  const apolice = exigirApolice(opcoes);
-  const periodo = periodoDe(opcoes);
-
-  const servico = criarServico();
-  const fonte = fonteDeDados(servico, opcoes);
-
-  titulo(`Publicando o periodo ${periodo}`);
-  console.log(`Fonte: ${fonte.descricao}`);
-  console.log("  periodo    indice     gas       acionou   transacao");
-
-  await publicarPeriodo(servico, fonte, apolice, periodo);
-
-  console.log("");
-  console.log(JSON.stringify(servico.fila.resumo(), null, 2));
-}
-
 async function comandoOuvir(opcoes) {
   const apolice = exigirApolice(opcoes);
   const servico = criarServico();
@@ -455,8 +347,6 @@ function comandoEstatisticas() {
 const COMANDOS = {
   status: comandoStatus,
   servico: comandoServico,
-  ciclo: comandoCiclo,
-  publicar: comandoPublicar,
   ouvir: comandoOuvir,
   fila: comandoFila,
   estatisticas: comandoEstatisticas,
@@ -474,18 +364,11 @@ async function main() {
     console.log(
       "  servico  [--uma-vez]              publica continuamente as apolices ativas do backend",
     );
-    console.log("  ciclo    --apolice 0x... [...]    roda um cenario climatico ate acionar");
-    console.log("  publicar --apolice 0x... [...]    consolida e publica um unico periodo");
     console.log("  ouvir    --apolice 0x...          acompanha os eventos da apolice");
     console.log("  fila     [--reabrir <chave>]      mostra ou reabre a fila de publicacoes");
     console.log("  estatisticas                      gas e latencia das publicacoes");
     console.log("");
-    console.log("Opcoes de ciclo e publicar:");
-    console.log("  --fonte      simulada (padrao) | backend");
-    console.log(`  --cenario    ${Object.keys(CENARIOS).join(" | ")}  (so na fonte simulada)`);
     console.log("  --periodo    dia de referencia em AAAAMMDD (padrao: hoje)");
-    console.log("  --periodos   quantos periodos publicar no ciclo (padrao: 8)");
-    console.log("  --com-falhas injeta leituras defeituosas para exercitar RF12 e RF13");
 
     process.exitCode = comando ? 1 : 0;
     return;

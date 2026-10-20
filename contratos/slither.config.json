@@ -1,5 +1,0 @@
-{
-  "filter_paths": "node_modules|contracts/mocks",
-  "exclude_dependencies": true,
-  "hardhat_ignore_compile": false
-}

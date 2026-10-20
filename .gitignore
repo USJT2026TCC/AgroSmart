@@ -55,3 +55,12 @@ backend/dados/
 
 # Estado do iniciador integrado
 .execucao/
+
+# Saidas de todas as verificacoes
+testes/gerados/
+
+# Caches Python, inclusive das suites centralizadas
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/

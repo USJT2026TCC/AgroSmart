@@ -16,7 +16,7 @@
  *    proprio contrato, e nao esta funcao. Aqui so entra na cotacao, quando ainda
  *    nao ha contrato implantado para consultar.
  *
- * 2. `contratos/test/RegraDeGatilho.test.js` importa este arquivo e compara,
+ * 2. `testes/contratos/unitarios/RegraDeGatilho.test.js` importa este arquivo e compara,
  *    caso a caso, a saida dele com a saida do contrato. Se alguem mexer em um dos
  *    dois lados, a suite de testes quebra.
  *

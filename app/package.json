@@ -10,9 +10,8 @@
     "build": "npm run enderecos && vite build",
     "preview": "vite preview",
     "formatar": "prettier --write \"src/**/*.{js,jsx,css}\" \"scripts/*.mjs\"",
-    "testar": "vitest run",
-    "cobertura": "vitest run --coverage",
-    "dev:sepolia": "npm run enderecos && vite --mode sepolia"
+    "testar": "vitest run --config ../testes/app/vitest.config.mjs",
+    "cobertura": "vitest run --config ../testes/app/vitest.config.mjs --coverage"
   },
   "dependencies": {
     "ethers": "^6.13.4",

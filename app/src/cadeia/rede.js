@@ -9,7 +9,7 @@ import implantacoes from "./implantacoes.json";
  */
 
 /** Rede escolhida por variavel de ambiente, com a local como padrao. */
-export const REDE_ATIVA = import.meta.env.VITE_REDE || "localhost";
+export const REDE_ATIVA = import.meta.env.VITE_REDE || "sepolia";
 
 export const REDES = {
   localhost: {

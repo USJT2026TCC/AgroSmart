@@ -3,7 +3,7 @@
 Cada requisito, história de usuário e caso de uso da **Entrega 3** da documentação de software,
 ligado ao código que o implementa, ao teste que o comprova e à evidência medida. Revisado em 16/10/2026 para o protocolo clima-integral-v1.
 
-**Situação da revisão de 16/10/2026:** a matriz abaixo conserva identificadores históricos, com itens retirados explicitamente indicados. Aprovação de testes e metas medidas estão em [resultados atuais](resultados/clima-integral-2026-10-16/README.md); evidências da Sepolia de versões antigas não validam este código.
+**Situação da revisão de 16/10/2026:** a matriz abaixo conserva identificadores históricos, com itens retirados explicitamente indicados. Aprovação de testes e metas medidas estão em [resultados atuais](../testes/evidencias/clima-integral-2026-10-16/README.md); evidências da Sepolia de versões antigas não validam este código.
 
 **Nesta cópia**, o módulo de visão computacional, o índice de dano, o papel de perito e a
 contestação/retificação foram removidos (ver DECISOES.md): RF14 a RF17, RF28, RNF02, RNF19,
@@ -12,9 +12,9 @@ independentes.
 
 Convenções: caminhos relativos à raiz do repositório; `DECISOES n` aponta para a seção de
 [DECISOES.md](DECISOES.md); "Sepolia 07/10" e "Sepolia 08/10" são
-[resultados/sepolia-2026-10-07](resultados/sepolia-2026-10-07/README.md) e
-[resultados/sepolia-2026-10-08](resultados/sepolia-2026-10-08/README.md); "Medições" é
-[resultados/requisitos-nao-funcionais-2026-10-08](resultados/requisitos-nao-funcionais-2026-10-08/README.md).
+[resultados/sepolia-2026-10-07](../testes/evidencias/sepolia-2026-10-07/README.md) e
+[resultados/sepolia-2026-10-08](../testes/evidencias/sepolia-2026-10-08/README.md); "Medições" é
+[resultados/requisitos-nao-funcionais-2026-10-08](../testes/evidencias/requisitos-nao-funcionais-2026-10-08/README.md).
 
 ---
 
@@ -24,55 +24,55 @@ Convenções: caminhos relativos à raiz do repositório; `DECISOES n` aponta pa
 
 | RF | Requisito | Implementação | Testes |
 |---|---|---|---|
-| RF01 | Login com identificador, senha e segundo fator | `backend/src/rotas/autenticacao.js` (bcrypt, TOTP com segredo cifrado); `app/src/paginas/Entrar.jsx`, `Conta.jsx` | `backend/test/autenticacao.test.js`; `app/test/telas/autenticacao.test.jsx`, `produtor.test.jsx` |
-| RF02 | Carteira vinculada por assinatura de mensagem | `backend/src/rotas/carteira.js` (desafio único, `verifyMessage`); `app/src/paginas/produtor/VincularCarteira.jsx` | `backend/test/carteira.test.js`; `app/test/telas/produtor.test.jsx` |
-| RF03 | Cadastro e edição de produtores, propriedades e talhões em polígono | `backend/src/rotas/cadastro.js` (PostGIS, `ST_IsValid`); `app/src/componentes/DesenhoDoTalhao.jsx` (Leaflet), importação de GeoJSON | `backend/test/cadastro.test.js`; `app/test/telas/seguradora.test.jsx`, `app/test/geografia.test.mjs` |
-| RF04 | Acesso por perfil | `backend/src/seguranca/sessoes.js` (`exigirPerfil`); `app/src/componentes/RotaProtegida.jsx`, `app/src/sessao/perfis.js` | `backend/test/autenticacao.test.js`; `app/test/telas/autenticacao.test.jsx` |
+| RF01 | Login com identificador, senha e segundo fator | `backend/src/rotas/autenticacao.js` (bcrypt, TOTP com segredo cifrado); `app/src/paginas/Entrar.jsx`, `Conta.jsx` | `testes/backend/unitarios/autenticacao.test.js`; `testes/app/telas/autenticacao.test.jsx`, `produtor.test.jsx` |
+| RF02 | Carteira vinculada por assinatura de mensagem | `backend/src/rotas/carteira.js` (desafio único, `verifyMessage`); `app/src/paginas/produtor/VincularCarteira.jsx` | `testes/backend/unitarios/carteira.test.js`; `testes/app/telas/produtor.test.jsx` |
+| RF03 | Cadastro e edição de produtores, propriedades e talhões em polígono | `backend/src/rotas/cadastro.js` (PostGIS, `ST_IsValid`); `app/src/componentes/DesenhoDoTalhao.jsx` (Leaflet), importação de GeoJSON | `testes/backend/unitarios/cadastro.test.js`; `testes/app/telas/seguradora.test.jsx`, `testes/app/geografia.test.mjs` |
+| RF04 | Acesso por perfil | `backend/src/seguranca/sessoes.js` (`exigirPerfil`); `app/src/componentes/RotaProtegida.jsx`, `app/src/sessao/perfis.js` | `testes/backend/unitarios/autenticacao.test.js`; `testes/app/telas/autenticacao.test.jsx` |
 
 ### Ciclo da apólice
 
 | RF | Requisito | Implementação | Testes e evidência |
 |---|---|---|---|
-| RF05 | Produtos indexados | `backend/src/rotas/cadastro.js` (produtos); `app/src/paginas/seguradora/TalhoesEProdutos.jsx` | `backend/test/cadastro.test.js`; `app/test/telas/seguradora.test.jsx` |
-| RF06 | Cotação pela área, cultura e histórico climático | `backend/src/dominio/cotacao.js`, `historicoClimatico.js` (INMET 2015–2025, estações a até 100 km, regra do oráculo); `app/src/paginas/produtor/Cotacao.jsx` | `backend/test/historicoClimatico.test.js`, `propostas.test.js`; `app/test/telas/cotacao.test.jsx` · DECISOES 1.17 |
-| RF07 | Contrato implantado na contratação | `contratos/contracts/ApoliceFactory.sol` (`emitirApolice`); `backend/src/rotas/propostas.js`; `app/src/paginas/seguradora/Propostas.jsx` | `contratos/test/ApoliceFactory.test.js`; `backend/test/propostas.test.js` · Sepolia 07/10 e 08/10 |
-| RF08 | Resumo criptográfico dos termos | `ApolicePolicy.sol` (`hashTermos`); `backend/src/dominio/termos.js`; conferência no navegador em `app/src/paginas/ApoliceDetalhe.jsx` | `contratos/test/ApolicePolicy.test.js`; `backend/test/propostas.test.js`; `app/test/telas/apolice.test.jsx` (termos adulterados denunciados) |
-| RF09 | Linha do tempo pelos eventos, com o identificador de cada transação | `app/src/cadeia/contratos.js` (`lerLinhaDoTempo`, leitura em trechos); `ApoliceDetalhe.jsx` com link ao Etherscan | `app/test/telas/apolice.test.jsx`, `app/test/eventosEmTrechos.test.mjs` · DECISOES 2.29 |
-| RF10 | Cancelamento antes da vigência, liberando a garantia | `ApolicePolicy.sol` (`cancelar`); `contratos/scripts/cancelar-apolice.js`; botão em `ApoliceDetalhe.jsx` | `contratos/test/Cancelamento.test.js`; `app/test/telas/apolice.test.jsx` · Sepolia 08/10 · DECISOES 1.15 |
+| RF05 | Produtos indexados | `backend/src/rotas/cadastro.js` (produtos); `app/src/paginas/seguradora/TalhoesEProdutos.jsx` | `testes/backend/unitarios/cadastro.test.js`; `testes/app/telas/seguradora.test.jsx` |
+| RF06 | Cotação pela área, cultura e histórico climático | `backend/src/dominio/cotacao.js`, `historicoClimatico.js` (INMET 2015–2025, estações a até 100 km, regra do oráculo); `app/src/paginas/produtor/Cotacao.jsx` | `testes/backend/unitarios/historicoClimatico.test.js`, `propostas.test.js`; `testes/app/telas/cotacao.test.jsx` · DECISOES 1.17 |
+| RF07 | Contrato implantado na contratação | `contratos/contracts/ApoliceFactory.sol` (`emitirApolice`); `backend/src/rotas/propostas.js`; `app/src/paginas/seguradora/Propostas.jsx` | `testes/contratos/unitarios/ApoliceFactory.test.js`; `testes/backend/unitarios/propostas.test.js` · Sepolia 07/10 e 08/10 |
+| RF08 | Resumo criptográfico dos termos | `ApolicePolicy.sol` (`hashTermos`); `backend/src/dominio/termos.js`; conferência no navegador em `app/src/paginas/ApoliceDetalhe.jsx` | `testes/contratos/unitarios/ApolicePolicy.test.js`; `testes/backend/unitarios/propostas.test.js`; `testes/app/telas/apolice.test.jsx` (termos adulterados denunciados) |
+| RF09 | Linha do tempo pelos eventos, com o identificador de cada transação | `app/src/cadeia/contratos.js` (`lerLinhaDoTempo`, leitura em trechos); `ApoliceDetalhe.jsx` com link ao Etherscan | `testes/app/telas/apolice.test.jsx`, `testes/app/eventosEmTrechos.test.mjs` · DECISOES 2.29 |
+| RF10 | Cancelamento antes da vigência, liberando a garantia | `ApolicePolicy.sol` (`cancelar`); `contratos/scripts/cancelar-apolice.js`; botão em `ApoliceDetalhe.jsx` | `testes/contratos/unitarios/Cancelamento.test.js`; `testes/app/telas/apolice.test.jsx` · Sepolia 08/10 · DECISOES 1.15 |
 
 ### Coleta e validação de dados de campo
 
 | RF | Requisito | Implementação | Testes |
 |---|---|---|---|
-| RF11 | Coleta automática em periodicidade configurável | `simulador/` (`--intervalo`, API ou MQTT, série real do INMET); `backend/src/rotas/leituras.js`; oráculo com `INTERVALO_SERVICO_MS` | `simulador/tests/test_cli.py`, `test_cenarios.py`; `backend/test/leituras.test.js` |
-| RF12 | Plausibilidade e fontes inoperantes | `oraculo/src/consolidador.js` (`validarLeitura`, faixas físicas), usada também pelo backend; coordenada conferida contra a fonte | `oraculo/test/consolidador.test.js`; `backend/test/leituras.test.js` |
-| RF13 | Reputação com limiar mínimo | `oraculo/src/reputacao.js`; `backend/src/dominio/leituras.js` (`atualizarEscore`) | `oraculo/test/reputacao.test.js`; `backend/test/leituras.test.js` |
+| RF11 | Coleta automática em periodicidade configurável | `simulador/` (`--intervalo`, API ou MQTT, série real do INMET); `backend/src/rotas/leituras.js`; oráculo com `INTERVALO_SERVICO_MS` | `testes/simulador/test_cli.py`, `test_cenarios.py`; `testes/backend/unitarios/leituras.test.js` |
+| RF12 | Plausibilidade e fontes inoperantes | `oraculo/src/consolidador.js` (`validarLeitura`, faixas físicas), usada também pelo backend; coordenada conferida contra a fonte | `testes/oraculo/unitarios/consolidador.test.js`; `testes/backend/unitarios/leituras.test.js` |
+| RF13 | Reputação com limiar mínimo | `oraculo/src/reputacao.js`; `backend/src/dominio/leituras.js` (`atualizarEscore`) | `testes/oraculo/unitarios/reputacao.test.js`; `testes/backend/unitarios/leituras.test.js` |
 
 ### Oráculo e ponte
 
 | RF | Requisito | Implementação | Testes e evidência |
 |---|---|---|---|
-| RF18 | Lista de endereços autorizados | `contratos/contracts/OracleRegistry.sol`; `app/src/paginas/seguradora/Oraculos.jsx` | `contratos/test/OracleRegistry.test.js`, `Seguranca.test.js` |
-| RF19 | Índices consolidados, assinados e publicados em uma transação | `oraculo/src/consolidador.js`, `publicador.js` (`publicarIndices`) | `oraculo/test/consolidador.test.js`; `oraculo/integracao/oraculo.test.js` · Sepolia 07/10 |
-| RF20 | Publicação duplicada recusada | `ApolicePolicy.sol` (`PeriodoJaPublicado`) | `contratos/test/ApolicePolicy.test.js` |
-| RF21 | Fila de retomada preservando o período | `oraculo/src/fila.js` (persistida em disco) | `oraculo/test/fila.test.js`; `oraculo/integracao/oraculo.test.js` (falhas injetadas) |
-| RF22 | Transação, gas e instante de confirmação registrados | `oraculo/src/registro.js`; `backend/src/rotas/oraculo.js` (relato ao backend) | `oraculo/test/registro.test.js`; `backend/test/oraculo.test.js` |
+| RF18 | Lista de endereços autorizados | `contratos/contracts/OracleRegistry.sol`; `app/src/paginas/seguradora/Oraculos.jsx` | `testes/contratos/unitarios/OracleRegistry.test.js`, `Seguranca.test.js` |
+| RF19 | Índices consolidados, assinados e publicados em uma transação | `oraculo/src/consolidador.js`, `publicador.js` (`publicarIndices`) | `testes/oraculo/unitarios/consolidador.test.js`; `testes/oraculo/integracao/oraculo.test.js` · Sepolia 07/10 |
+| RF20 | Publicação duplicada recusada | `ApolicePolicy.sol` (`PeriodoJaPublicado`) | `testes/contratos/unitarios/ApolicePolicy.test.js` |
+| RF21 | Fila de retomada preservando o período | `oraculo/src/fila.js` (persistida em disco) | `testes/oraculo/unitarios/fila.test.js`; `testes/oraculo/integracao/oraculo.test.js` (falhas injetadas) |
+| RF22 | Transação, gas e instante de confirmação registrados | `oraculo/src/registro.js`; `backend/src/rotas/oraculo.js` (relato ao backend) | `testes/oraculo/unitarios/registro.test.js`; `testes/backend/unitarios/oraculo.test.js` |
 
 ### Contrato e liquidação
 
 | RF | Requisito | Implementação | Testes e evidência |
 |---|---|---|---|
-| RF23 | Condição avaliada a cada publicação, sem intervenção | `ApolicePolicy.sol` (`publicarIndices` avalia e emite `CondicaoAvaliada`; `_liquidarSeAtendida`, `_percentualDevido`) | `contratos/test/ApolicePolicy.test.js`, `RegraDeGatilho.test.js` |
-| RF24 | Indenização transferida logo após o acionamento | `ApolicePolicy.sol` (`_liquidarSeAtendida`), na mesma transação | `contratos/test/ApolicePolicy.test.js` · Sepolia 07/10 (histórico de versão anterior); teste atual em `scripts/avaliar-integral.js` |
-| RF25 | Indenização integral de 100% em parcela única; configurações parciais recusadas | `ApolicePolicy.sol` (`_percentualDevido`, construtor); `app/src/cadeia/regraDeGatilho.js`; API e migração 008 | `contratos/test/RegraDeGatilho.test.js` (contrato e aplicativo, caso a caso) |
-| RF26 | Sem acionamento duplicado; falha na transferência não deixa estado inconsistente | `ApolicePolicy.sol` (verificação, efeitos, interação; guarda de reentrância) | `contratos/test/Seguranca.test.js` (contrato malicioso, `ProdutorQueRecusa`) |
+| RF23 | Condição avaliada a cada publicação, sem intervenção | `ApolicePolicy.sol` (`publicarIndices` avalia e emite `CondicaoAvaliada`; `_liquidarSeAtendida`, `_percentualDevido`) | `testes/contratos/unitarios/ApolicePolicy.test.js`, `RegraDeGatilho.test.js` |
+| RF24 | Indenização transferida logo após o acionamento | `ApolicePolicy.sol` (`_liquidarSeAtendida`), na mesma transação | `testes/contratos/unitarios/ApolicePolicy.test.js` · Sepolia 07/10 (histórico de versão anterior); teste atual em `scripts/avaliar-integral.js` |
+| RF25 | Indenização integral de 100% em parcela única; configurações parciais recusadas | `ApolicePolicy.sol` (`_percentualDevido`, construtor); `app/src/cadeia/regraDeGatilho.js`; API e migração 008 | `testes/contratos/unitarios/RegraDeGatilho.test.js` (contrato e aplicativo, caso a caso) |
+| RF26 | Sem acionamento duplicado; falha na transferência não deixa estado inconsistente | `ApolicePolicy.sol` (verificação, efeitos, interação; guarda de reentrância) | `testes/contratos/unitarios/Seguranca.test.js` (contrato malicioso, `ProdutorQueRecusa`) |
 
 ### Notificação e gestão
 
 | RF | Requisito | Implementação | Testes e evidência |
 |---|---|---|---|
-| RF27 | Notificação de acionamento, pagamento e falha de publicação | `backend/src/cadeia/indexador.js` (eventos → avisos); `backend/src/rotas/oraculo.js` (falha relatada pelo oráculo); `backend/src/notificacoes/email.js` (Nodemailer) | `backend/test/email.test.js`, `oraculo.test.js`; `backend/integracao/indexador.test.js`; `app/test/telas/produtor.test.jsx` · DECISOES 1.18 |
-| RF29 | Relatórios com filtros por período, cultura e região | `backend/src/rotas/acompanhamento.js`; `app/src/paginas/seguradora/CarteiraDaSeguradora.jsx` | `backend/test/relatorios.test.js`; `app/test/telas/seguradora.test.jsx` |
+| RF27 | Notificação de acionamento, pagamento e falha de publicação | `backend/src/cadeia/indexador.js` (eventos → avisos); `backend/src/rotas/oraculo.js` (falha relatada pelo oráculo); `backend/src/notificacoes/email.js` (Nodemailer) | `testes/backend/unitarios/email.test.js`, `oraculo.test.js`; `testes/backend/integracao/indexador.test.js`; `testes/app/telas/produtor.test.jsx` · DECISOES 1.18 |
+| RF29 | Relatórios com filtros por período, cultura e região | `backend/src/rotas/acompanhamento.js`; `app/src/paginas/seguradora/CarteiraDaSeguradora.jsx` | `testes/backend/unitarios/relatorios.test.js`; `testes/app/telas/seguradora.test.jsx` |
 
 ---
 
@@ -84,7 +84,7 @@ Convenções: caminhos relativos à raiz do repositório; `DECISOES n` aponta pa
 |---|---|---|---|
 | RNF01 | 95% das consultas pelo banco em até 2 s; leituras da rede medidas | Consultas indexadas por endereço e carteira; eventos lidos em trechos | p95 de 90 ms com 20 usuários; tela de detalhe em 0,8 s na Sepolia · Medições |
 | RNF03 | Guia de estilo e cobertura mínima de 70% fora da cadeia | Prettier (JavaScript) e ruff (Python), configurados no repositório | 79,5% a 100% por módulo (contratos 100%, oráculo 90,7%, aplicativo 80,9%, backend 79,5%) — medido em 16/10/2026 |
-| RNF04 | Condições em linguagem simples, com exemplos que acionam e que não acionam | `Cotacao.jsx`, `app/src/cadeia/regraDeGatilho.js` (exemplos calculados pela mesma regra do contrato) | `contratos/test/RegraDeGatilho.test.js`; `app/test/telas/cotacao.test.jsx` |
+| RNF04 | Condições em linguagem simples, com exemplos que acionam e que não acionam | `Cotacao.jsx`, `app/src/cadeia/regraDeGatilho.js` (exemplos calculados pela mesma regra do contrato) | `testes/contratos/unitarios/RegraDeGatilho.test.js`; `testes/app/telas/cotacao.test.jsx` |
 | RNF05 | Chrome, Firefox e Edge, com carteira injetada | Provedor EIP-1193; pacote para `baseline-widely-available` | Chrome 154 e Edge 153 por `app/scripts/verificar-navegadores.mjs` · Medições |
 
 ### Execução em cadeia
@@ -94,22 +94,22 @@ Convenções: caminhos relativos à raiz do repositório; `DECISOES n` aponta pa
 | RNF06 | Lógica determinística | Sem aleatoriedade; o tempo do bloco só decide a vigência, nunca entropia | Slither sem achados · [ANALISE-ESTATICA.md](ANALISE-ESTATICA.md) |
 | RNF07 | Gas medido; nenhuma função acima do limite do bloco | `hardhat-gas-reporter`; a operação mais cara, implantar a fábrica, usa 3,2% do limite do bloco na rede local; `emitirApolice`, 2,3% | [CONTRATOS.md §4](CONTRATOS.md) |
 | RNF08 | Custo do ciclo até 1% do prêmio | Publicação diária; agregação documentada | 0,35% na Sepolia; acima de 1% na rede principal para apólices pequenas · Medições |
-| RNF09 | Imune a reentrância | Verificação, efeitos, interação; `naoReentrante` | `contratos/test/Seguranca.test.js` (ataque falha) |
-| RNF10 | Controle de acesso por papel | Modificadores de seguradora, oráculo autorizado e produtor titular | `contratos/test/*.test.js` (caminhos de recusa) · carteiras distintas na Sepolia |
+| RNF09 | Imune a reentrância | Verificação, efeitos, interação; `naoReentrante` | `testes/contratos/unitarios/Seguranca.test.js` (ataque falha) |
+| RNF10 | Controle de acesso por papel | Modificadores de seguradora, oráculo autorizado e produtor titular | `testes/contratos/unitarios/*.test.js` (caminhos de recusa) · carteiras distintas na Sepolia |
 | RNF11 | Análise estática antes da implantação | Slither | Nenhum achado aberto · [ANALISE-ESTATICA.md](ANALISE-ESTATICA.md) |
 | RNF12 | 100% dos caminhos condicionais | `solidity-coverage` | 100% de comandos, ramos, funções e linhas · 89 testes |
-| RNF13 | Atomicidade | Publicação e pagamento na mesma transação; falha reverte tudo | `contratos/test/Seguranca.test.js` (`ProdutorQueRecusa`) |
+| RNF13 | Atomicidade | Publicação e pagamento na mesma transação; falha reverte tudo | `testes/contratos/unitarios/Seguranca.test.js` (`ProdutorQueRecusa`) |
 | RNF14 | Chave da seguradora fora do código | `.env` no `.gitignore`; modelos em `.env.example` | Nenhum arquivo `.env` em todo o histórico do repositório (`git log --all`) |
-| RNF15 | Chave do produtor nunca armazenada | Vínculo por assinatura; a chave fica na MetaMask | `backend/test/carteira.test.js` · produtor da Sepolia criado na MetaMask |
+| RNF15 | Chave do produtor nunca armazenada | Vínculo por assinatura; a chave fica na MetaMask | `testes/backend/unitarios/carteira.test.js` · produtor da Sepolia criado na MetaMask |
 
 ### Oráculo e dados
 
 | RNF | Requisito | Como é atendido | Evidência |
 |---|---|---|---|
-| RNF16 | Duas fontes climáticas independentes | `oraculo/src/consolidador.js` (`minimoDeFontes = 2`); aviso no cadastro do talhão | `oraculo/test/consolidador.test.js` · A770 e A747 na demonstração |
-| RNF17 | Leitura autenticada na origem e por canal cifrado | Lote assinado pela chave da fonte; HTTPS no backend e TLS no MQTT, com o certificado conferido | `backend/test/leituras.test.js`; `simulador/tests/test_cli.py` |
-| RNF18 | Decisão reconstituível pela cadeia | Índices e transações nos eventos; linha do tempo lida da rede | `app/test/telas/apolice.test.jsx` · links do Etherscan nos resultados da Sepolia |
-| RNF20 | Indisponibilidade não perde dados | Leituras no banco; fila do oráculo em disco, com o período original | `oraculo/integracao/oraculo.test.js`; `oraculo/test/fila.test.js` |
+| RNF16 | Duas fontes climáticas independentes | `oraculo/src/consolidador.js` (`minimoDeFontes = 2`); aviso no cadastro do talhão | `testes/oraculo/unitarios/consolidador.test.js` · A770 e A747 na demonstração |
+| RNF17 | Leitura autenticada na origem e por canal cifrado | Lote assinado pela chave da fonte; HTTPS no backend e TLS no MQTT, com o certificado conferido | `testes/backend/unitarios/leituras.test.js`; `testes/simulador/test_cli.py` |
+| RNF18 | Decisão reconstituível pela cadeia | Índices e transações nos eventos; linha do tempo lida da rede | `testes/app/telas/apolice.test.jsx` · links do Etherscan nos resultados da Sepolia |
+| RNF20 | Indisponibilidade não perde dados | Leituras no banco; fila do oráculo em disco, com o período original | `testes/oraculo/integracao/oraculo.test.js`; `testes/oraculo/unitarios/fila.test.js` |
 | RNF21 | Indenização em até 72 h do acionamento | Pagamento na mesma transação da publicação | ~27 s na Sepolia; 0,89 h do fim do dia acionador · Medições |
 
 ---
@@ -118,16 +118,16 @@ Convenções: caminhos relativos à raiz do repositório; `DECISOES n` aponta pa
 
 | HU | Critérios | Onde se comprova |
 |---|---|---|
-| HU01 Contrato em rede local | 1 construtor com condição, carteira e oráculo · 2 resumo dos termos legível · 3 implantação válida e inválida · 4 gas da implantação | `contratos/test/ApolicePolicy.test.js`, `ApoliceFactory.test.js`; CONTRATOS.md §4 |
-| HU02 Endereços autorizados | 1 não autorizado revertido com motivo · 2 período duplicado revertido · 3 só a seguradora autoriza · 4 evento a cada publicação · 5 os três caminhos | `contratos/test/OracleRegistry.test.js`, `ApolicePolicy.test.js` |
-| HU03 Liquidação atômica | 1 verificar, atualizar, transferir · 2 guarda de reentrância · 3 duplicado rejeitado · 4 falha não altera a situação · 5 ataque de reentrância falha | `contratos/test/Seguranca.test.js` |
-| HU04 Simulador | 1 MQTT em intervalo configurável · 2 série do INMET · 3 três cenários · 4 data, hora, fonte e **coordenada** em cada leitura | `simulador/tests/test_cli.py`, `test_cenarios.py`, `test_serie.py`; `backend/test/leituras.test.js` (critério 4, corrigido em 08/10) |
-| HU05 Consolidação | 1 fora de faixa descartada e registrada · 2 fonte inoperante · 3 reputação a cada ciclo · 4 fontes usadas registradas | `oraculo/test/consolidador.test.js`, `reputacao.test.js`; `backend/test/leituras.test.js` |
-| HU06 Publicação assinada | 1 dois índices em uma transação · 2 chave por variável de ambiente · 3 transação, gas e instante gravados · 4 evento capturado | `oraculo/test/registro.test.js`; `oraculo/integracao/oraculo.test.js`; `backend/integracao/indexador.test.js` |
-| HU07 Vínculo da carteira | 1 mensagem única · 2 assinatura verificada no servidor · 3 chave nunca trafega · 4 endereço de outro produtor recusado | `backend/test/carteira.test.js`; `app/test/telas/produtor.test.jsx` |
-| HU09 Talhões e produtos | 1 desenhado no mapa ou importado em GeoJSON · 2 área calculada · 3 autointerseção recusada · 4 produto completo | `backend/test/cadastro.test.js`; `app/test/telas/seguradora.test.jsx` |
-| HU10 Cotação e contratação | 1 prêmio, limite e condição em linguagem simples · 2 exemplo do que aciona e não aciona · 3 implantação e endereço exibido · 4 falha não registra a apólice | `app/test/telas/cotacao.test.jsx`, `seguradora.test.jsx`; `backend/test/propostas.test.js` (transação revertida não registra apólice; a apólice só entra pelo recibo) |
-| HU13 Autenticação e perfis | 1 senha com hash e sal · 2 menus por perfil · 3 sessão expirada volta ao login · 4 rota de outro perfil recusada | `backend/test/autenticacao.test.js`; `app/test/telas/autenticacao.test.jsx` |
+| HU01 Contrato em rede local | 1 construtor com condição, carteira e oráculo · 2 resumo dos termos legível · 3 implantação válida e inválida · 4 gas da implantação | `testes/contratos/unitarios/ApolicePolicy.test.js`, `ApoliceFactory.test.js`; CONTRATOS.md §4 |
+| HU02 Endereços autorizados | 1 não autorizado revertido com motivo · 2 período duplicado revertido · 3 só a seguradora autoriza · 4 evento a cada publicação · 5 os três caminhos | `testes/contratos/unitarios/OracleRegistry.test.js`, `ApolicePolicy.test.js` |
+| HU03 Liquidação atômica | 1 verificar, atualizar, transferir · 2 guarda de reentrância · 3 duplicado rejeitado · 4 falha não altera a situação · 5 ataque de reentrância falha | `testes/contratos/unitarios/Seguranca.test.js` |
+| HU04 Simulador | 1 MQTT em intervalo configurável · 2 série do INMET · 3 três cenários · 4 data, hora, fonte e **coordenada** em cada leitura | `testes/simulador/test_cli.py`, `test_cenarios.py`, `test_serie.py`; `testes/backend/unitarios/leituras.test.js` (critério 4, corrigido em 08/10) |
+| HU05 Consolidação | 1 fora de faixa descartada e registrada · 2 fonte inoperante · 3 reputação a cada ciclo · 4 fontes usadas registradas | `testes/oraculo/unitarios/consolidador.test.js`, `reputacao.test.js`; `testes/backend/unitarios/leituras.test.js` |
+| HU06 Publicação assinada | 1 dois índices em uma transação · 2 chave por variável de ambiente · 3 transação, gas e instante gravados · 4 evento capturado | `testes/oraculo/unitarios/registro.test.js`; `testes/oraculo/integracao/oraculo.test.js`; `testes/backend/integracao/indexador.test.js` |
+| HU07 Vínculo da carteira | 1 mensagem única · 2 assinatura verificada no servidor · 3 chave nunca trafega · 4 endereço de outro produtor recusado | `testes/backend/unitarios/carteira.test.js`; `testes/app/telas/produtor.test.jsx` |
+| HU09 Talhões e produtos | 1 desenhado no mapa ou importado em GeoJSON · 2 área calculada · 3 autointerseção recusada · 4 produto completo | `testes/backend/unitarios/cadastro.test.js`; `testes/app/telas/seguradora.test.jsx` |
+| HU10 Cotação e contratação | 1 prêmio, limite e condição em linguagem simples · 2 exemplo do que aciona e não aciona · 3 implantação e endereço exibido · 4 falha não registra a apólice | `testes/app/telas/cotacao.test.jsx`, `seguradora.test.jsx`; `testes/backend/unitarios/propostas.test.js` (transação revertida não registra apólice; a apólice só entra pelo recibo) |
+| HU13 Autenticação e perfis | 1 senha com hash e sal · 2 menus por perfil · 3 sessão expirada volta ao login · 4 rota de outro perfil recusada | `testes/backend/unitarios/autenticacao.test.js`; `testes/app/telas/autenticacao.test.jsx` |
 | HU12 (reserva) Linha do tempo | RF09 | ver RF09 |
 | HU14 (reserva) Notificações | RF27 | ver RF27 |
 
