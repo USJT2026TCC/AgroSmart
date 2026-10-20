@@ -1,9 +1,9 @@
 [project]
 name = "agrosmart-simulador"
 version = "0.1.0"
-description = "Simulador de estacoes meteorologicas do AgroSmart, com dados reais do INMET"
+description = "ETL historico do INMET: extracao, validacao e consolidacao de precipitacao"
 requires-python = ">=3.10"
-dependencies = ["requests>=2.32", "eth-account>=0.13", "paho-mqtt>=2.1"]
+dependencies = ["requests>=2.32"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.4", "pytest-cov>=5", "ruff>=0.6"]
@@ -29,3 +29,6 @@ extend-exclude = ["*.ipynb"]
 # Erros, avisos, ordem dos imports, sintaxe moderna e padroes que costumam ser defeito.
 select = ["E", "F", "W", "I", "UP", "B"]
 ignore = ["B008"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["simulador"]

@@ -109,7 +109,7 @@ async function comandoStatus() {
   console.log(JSON.stringify(servico.reputacao.instantaneo(), null, 2));
 }
 
-/** O sistema operacional usa apenas leituras autenticadas recebidas pela API. */
+/** Fonte do percurso legado de leituras; o modo historico usa prepararHistorico via API. */
 function fonteDeDados(servico, opcoes) {
   const tipo = "backend";
 

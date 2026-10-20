@@ -2,14 +2,10 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-/**
- * Carga do historico de chuva do INMET (RF06).
- *
- * O CSV vem do comando `simulador historico` e fica versionado em
- * src/banco/dados/: algumas centenas de KB, contra ~100 MB por ano no ZIP
- * original. A carga e idempotente — so roda com a tabela vazia — e acontece na
- * inicializacao, inclusive em producao: diferente da semente, isto nao e dado de
- * demonstracao, e dado publico do INMET.
+/** Carga do CSV legado de chuva para cotacoes anteriores (historico_chuva).
+ * O arquivo versionado permanece por compatibilidade; o comando que o gerava
+ * foi retirado do ETL. A demonstracao historica atual usa importarInmet.js e
+ * inmet_dias, com A770 e datas originais. Esta carga nao alimenta esse percurso.
  */
 
 const AQUI = dirname(fileURLToPath(import.meta.url));

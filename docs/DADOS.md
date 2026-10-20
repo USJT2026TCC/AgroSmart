@@ -1,109 +1,48 @@
-# Fontes de dados
+# Dados do INMET
 
-**Recorte operacional atual:** somente Sao Simao/SP (A770), de 2020 a 30/09/2026.
-Preparacao unica descrita em [simulador/README.md](../simulador/README.md).
-Os trechos abaixo sobre outras estacoes e periodos registram estudos anteriores;
-nao definem as fontes da demonstracao historica atual.
+A demonstracao usa somente Sao Simao/SP, estacao automatica A770, de 01/01/2020
+a 30/09/2026. O talhao e ficticio e considerado coincidente com a estacao por
+hipotese. Os registros meteorologicos sao reais e mantem suas datas originais.
+Nao ha sensores em tempo real nem estimativa de perda agricola.
 
+Fonte oficial: [INMET — dados historicos](https://portal.inmet.gov.br/dadoshistoricos).
+Os ZIPs anuais nacionais sao baixados somente para reconstruir o pacote.
+O ETL seleciona A770, interpreta o CSV, valida valores, trata duplicatas e agrega
+precipitacao diaria. Os CSVs originais, diarios, procedencia e hashes ficam em
+`backend/recursos/inmet/A770`. Nao e necessario baixar novamente para usar o sistema.
 
-Todo número que aparece na demonstração vem de algum lugar. Este documento diz de onde, sob que
-licença, e o que foi feito com ele. Nenhum dado usado no projeto é inventado sem que a própria
-tela diga que é simulado.
+## Qualidade
 
----
+Ausentes e sentinelas nao viram zero. Valores nao finitos, negativos ou acima de
+500 mm/h sao invalidos no preparo. Duplicatas identicas nao sao somadas;
+duplicatas conflitantes invalidam a hora. Sao mantidas as contagens de horas
+validas, invalidas e ausentes. Dia utilizavel exige pelo menos 20 horas validas:
+isso nao comprova ausencia de chuva nas horas sem medicao.
 
-## 1. Dados meteorológicos — INMET
+Soma diaria abaixo de 1 mm conta como dia seco. Uma lacuna interrompe a sequencia;
+a proposta rejeita coberturas com dias incompletos. A contagem comeca em zero no
+inicio da cobertura hipotetica. O gatilho configuravel e experimental, nao um
+limite agronomico validado para culturas, solos, fases ou regioes.
 
-**Fonte:** Instituto Nacional de Meteorologia (INMET), Ministério da Agricultura e Pecuária.
-Dados Históricos das estações automáticas — <https://portal.inmet.gov.br/dadoshistoricos>
+## Preparacao e uso
 
-**O que é:** um arquivo ZIP por ano, de 2000 a 2026, com um CSV por estação automática. Cada
-CSV tem uma linha por hora, com chuva, temperatura, umidade, pressão, radiação e vento. São
-dados públicos, distribuídos gratuitamente pelo instituto.
+Para reconstruir, veja [ETL](../simulador/README.md): `npm run dados:preparar`
+prepara e atualiza o pacote publico. Requer o ambiente Python instalado.
+Para usar o projeto com o pacote existente, basta configurar a Sepolia, abrir
+Docker Desktop e executar `npm start`. Python nao participa desse uso normal.
 
-**Como citar no TCC:**
+O backend importa `inmet_arquivos` e `inmet_dias` automaticamente e ignora anos
+com hashes identicos. O volume Docker preserva os dados localmente; nao sincroniza
+bancos entre computadores. O pacote publico no Git permite reproduzir a carga
+em outra instalacao, sem distribuir usuarios, senhas ou carteiras.
 
-> INSTITUTO NACIONAL DE METEOROLOGIA (INMET). *Dados históricos — estações automáticas*.
-> Brasília: INMET. Disponível em: https://portal.inmet.gov.br/dadoshistoricos. Acesso em:
-> 22 set. 2026.
+O oraculo consulta `/oraculo/serie-historica` com autenticacao de servico. A API
+confere o hash da serie congelada na proposta e busca `inmet_dias`; o oraculo
+confere datas e gatilho contra a cadeia e recalcula o primeiro acionamento. `historico_chuva` e `leituras` pertencem a
+caminhos anteriores de cotacao/ingestao e nao alimentam esse percurso historico.
 
-**Como baixar:**
-
-```bash
-cd simulador && python -m simulador baixar --ano 2024
-```
-
-O arquivo fica em `simulador/dados/`, que está no `.gitignore` — são ~100 MB por ano, e dado
-público de terceiro não entra no repositório do trabalho.
-
-> O portal fecha a conexão quando o cabeçalho de agente não parece o de um navegador. O
-> simulador envia um cabeçalho de navegador por isso, e apenas por isso: o arquivo é público e é
-> o mesmo que o navegador baixa.
-
-### A estação escolhida, e por quê
-
-| Estação | Local | Distância do talhão | Por que |
-|---|---|---:|---|
-| **A770** | São Simão/SP | 0,1 km | Fonte principal. Série de 2024 completa: 366 dias com 20 h ou mais de medição |
-| **A747** | Pradópolis/SP | 57 km | Segunda fonte. O consolidador exige no mínimo duas, e uma estação sozinha não pode decidir um pagamento |
-| A708 | Franca/SP | 79 km | **Descartada:** apenas 106 dias completos em 2024 |
-
-O talhão da demonstração foi posicionado ao lado da A770 justamente por isso: seguro indexado
-por estação distante mede outra lavoura que não a segurada.
-
-### A estiagem real de 2024
-
-Na janela de 25/06 a 09/08/2024, a A770 registra **39 dias consecutivos com menos de 1 mm de
-chuva**, e a A747 registra a mesma estiagem. É a seca histórica do Sudeste em 2024, e ela cruza
-o limiar de 30 dias do produto contratado — o pagamento da demonstração acontece por causa de um
-evento climático que realmente ocorreu.
-
-**Os dados de chuva são reais; o talhão é fictício, criado para a demonstração.** A janela de
-junho a agosto cai no vazio sanitário da soja em São Paulo, quando a lei proíbe soja viva no campo
-(para 2025/26, de 1º/06 a 31/08 na Região 1 e até 12 ou 15/09 nas Regiões 2 e 3). Nenhuma lavoura
-de soja real estaria sujeita a essa seca. Ver DECISOES.md 1.23.
-
-Conferido com:
-
-```bash
-python -m simulador analisar --estacao A770 --ano 2024
-```
-
-### O que foi feito com os dados
-
-| Operação | Feita? | Observação |
-|---|---|---|
-| Valores medidos (chuva, temperatura, umidade) | **inalterados** | Vão para a cadeia como o INMET publicou |
-| Recorte de janela de datas | sim | `--de` e `--ate` |
-| Deslocamento das datas | sim, quando pedido | `--ate-hoje` move a série para terminar ontem, porque a apólice da demonstração tem vigência agora. O comando **avisa na tela** quantos dias deslocou |
-| Preenchimento de horas sem medição | **não** | Hora sem medição continua sem medição. Presumir zero transformaria sensor quebrado em dia seco, e dia seco é o que aciona o pagamento |
-
-### Qualidade do dado, tratada como parte do problema
-
-O pluviômetro falha. Em 2025, a estação A747 tem medição de chuva em 3.406 das 8.760 horas do
-ano. Isso não é defeito de importação: é o estado real da rede de estações, e o sistema precisa
-se comportar bem diante dele.
-
-Por isso a contagem de dias secos **para quando falta dado**, em vez de presumir que o dia foi
-seco (ver [DECISOES.md](DECISOES.md), 1.8). E por isso a reputação da fonte cai quando ela envia
-leitura implausível (RF13).
-
----
-
-## 2. O que continua simulado, e está marcado como tal
-
-| Peça | Situação |
-|---|---|
-| Sensor de solo do talhão | Sem equivalente real. Cadastrado como fonte, sem série, até existir o hardware |
-| `oraculo/src/fonteSimulada.js` | Série sintética determinística, dos três cenários da HU04. Continua no projeto para os testes rodarem sem depender de arquivo externo |
-| Carteira simulada do aplicativo | Ferramenta de desenvolvimento, com faixa de aviso permanente na tela. Não usar em apresentação |
-
----
-
-## 3. Regras que valem para qualquer dado novo
-
-1. **Citar a fonte** no documento e no código que a lê.
-2. **Conferir a licença** antes de usar, e registrar aqui.
-3. **Não versionar** o arquivo baixado: script de download, sim; dado de terceiro, não.
-4. **Não preencher buraco** de série com valor inventado. Falta de dado é informação.
-5. **Declarar toda transformação** — a que o simulador faz aparece na tela quando ele roda.
+Hashes permitem conferir integridade; nao sao assinaturas digitais do INMET.
+O contrato confia no oraculo autorizado para o indice e nao acessa os arquivos
+nem consulta o PostgreSQL. Uma consulta de estiagem nao significa pagamento;
+a emissao, a garantia, a publicacao e o recibo on-chain sao etapas distintas.
+O estado da fabrica publica e registrado em [escopo atual](ESCOPO-ATUAL.md).

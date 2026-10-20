@@ -8,7 +8,7 @@ caso que nao pode virar zero.
 Fonte: INMET — https://portal.inmet.gov.br/dadoshistoricos
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from simulador.inmet import ler_csv
 
@@ -45,7 +45,7 @@ def test_converte_decimal_com_virgula_e_hora_utc():
 
     assert leituras[1].chuva_mm == 0.2
     assert leituras[1].temperatura_c == 17.9
-    assert leituras[1].instante == datetime(2024, 7, 2, 1, tzinfo=timezone.utc)
+    assert leituras[1].instante == datetime(2024, 7, 2, 1, tzinfo=UTC)
 
 
 def test_hora_sem_medicao_vira_none_e_nao_zero():
@@ -97,7 +97,7 @@ def test_le_tambem_o_formato_ate_2018():
     assert estacao.codigo == "A747"
     assert len(leituras) == 2
     assert leituras[1].chuva_mm == 1.4
-    assert leituras[1].instante == datetime(2018, 1, 1, 1, tzinfo=timezone.utc)
+    assert leituras[1].instante == datetime(2018, 1, 1, 1, tzinfo=UTC)
 
 
 def test_cada_leitura_recebe_a_posicao_da_estacao():

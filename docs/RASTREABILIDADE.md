@@ -1,14 +1,15 @@
 # Rastreabilidade
 
 Cada requisito, história de usuário e caso de uso da **Entrega 3** da documentação de software,
-ligado ao código que o implementa, ao teste que o comprova e à evidência medida. Revisado em 16/10/2026 para o protocolo clima-integral-v1.
+ligado ao código que o implementa, ao teste que o comprova e à evidência medida. ETL e referencias operacionais atualizados em 20/10/2026; o estado do protocolo publico consta em ESCOPO-ATUAL.md.
 
 **Situação da revisão de 16/10/2026:** a matriz abaixo conserva identificadores históricos, com itens retirados explicitamente indicados. Aprovação de testes e metas medidas estão em [resultados atuais](../testes/evidencias/clima-integral-2026-10-16/README.md); evidências da Sepolia de versões antigas não validam este código.
 
 **Nesta cópia**, o módulo de visão computacional, o índice de dano, o papel de perito e a
 contestação/retificação foram removidos (ver DECISOES.md): RF14 a RF17, RF28, RNF02, RNF19,
-HU11, UC08, UC09 e UC14 deixam de existir, e o RNF16 passa a exigir só duas fontes climáticas
-independentes.
+HU11, UC08, UC09 e UC14 deixam de existir, e o fluxo historico atual usa somente A770, conforme ESCOPO-ATUAL.md.
+Os identificadores abaixo conservam requisitos anteriores; ingestao multifonte
+nao e exigida no percurso historico.
 
 Convenções: caminhos relativos à raiz do repositório; `DECISOES n` aponta para a seção de
 [DECISOES.md](DECISOES.md); "Sepolia 07/10" e "Sepolia 08/10" são
@@ -44,7 +45,7 @@ Convenções: caminhos relativos à raiz do repositório; `DECISOES n` aponta pa
 
 | RF | Requisito | Implementação | Testes |
 |---|---|---|---|
-| RF11 | Coleta automática em periodicidade configurável | `simulador/` (`--intervalo`, API ou MQTT, série real do INMET); `backend/src/rotas/leituras.js`; oráculo com `INTERVALO_SERVICO_MS` | `testes/simulador/test_cli.py`, `test_cenarios.py`; `testes/backend/unitarios/leituras.test.js` |
+| RF11 | Preparo historico substitui simulacao de sensores no recorte atual | `simulador/src/simulador/preparacao.py`; `backend/src/banco/importarInmet.js` | `testes/simulador/test_preparacao.py`; `testes/backend/unitarios/reproducao.test.js` |
 | RF12 | Plausibilidade e fontes inoperantes | `oraculo/src/consolidador.js` (`validarLeitura`, faixas físicas), usada também pelo backend; coordenada conferida contra a fonte | `testes/oraculo/unitarios/consolidador.test.js`; `testes/backend/unitarios/leituras.test.js` |
 | RF13 | Reputação com limiar mínimo | `oraculo/src/reputacao.js`; `backend/src/dominio/leituras.js` (`atualizarEscore`) | `testes/oraculo/unitarios/reputacao.test.js`; `testes/backend/unitarios/leituras.test.js` |
 
@@ -107,7 +108,7 @@ Convenções: caminhos relativos à raiz do repositório; `DECISOES n` aponta pa
 | RNF | Requisito | Como é atendido | Evidência |
 |---|---|---|---|
 | RNF16 | Duas fontes climáticas independentes | `oraculo/src/consolidador.js` (`minimoDeFontes = 2`); aviso no cadastro do talhão | `testes/oraculo/unitarios/consolidador.test.js` · A770 e A747 na demonstração |
-| RNF17 | Leitura autenticada na origem e por canal cifrado | Lote assinado pela chave da fonte; HTTPS no backend e TLS no MQTT, com o certificado conferido | `testes/backend/unitarios/leituras.test.js`; `testes/simulador/test_cli.py` |
+| RNF17 | Lotes assinados permanecem na API legada; o ETL nao fabrica assinaturas de estacao | `backend/src/rotas/leituras.js`; canal configuravel na API | `testes/backend/unitarios/leituras.test.js`; isso nao valida assinatura dos CSVs INMET |
 | RNF18 | Decisão reconstituível pela cadeia | Índices e transações nos eventos; linha do tempo lida da rede | `testes/app/telas/apolice.test.jsx` · links do Etherscan nos resultados da Sepolia |
 | RNF20 | Indisponibilidade não perde dados | Leituras no banco; fila do oráculo em disco, com o período original | `testes/oraculo/integracao/oraculo.test.js`; `testes/oraculo/unitarios/fila.test.js` |
 | RNF21 | Indenização em até 72 h do acionamento | Pagamento na mesma transação da publicação | ~27 s na Sepolia; 0,89 h do fim do dia acionador · Medições |
@@ -121,7 +122,7 @@ Convenções: caminhos relativos à raiz do repositório; `DECISOES n` aponta pa
 | HU01 Contrato em rede local | 1 construtor com condição, carteira e oráculo · 2 resumo dos termos legível · 3 implantação válida e inválida · 4 gas da implantação | `testes/contratos/unitarios/ApolicePolicy.test.js`, `ApoliceFactory.test.js`; CONTRATOS.md §4 |
 | HU02 Endereços autorizados | 1 não autorizado revertido com motivo · 2 período duplicado revertido · 3 só a seguradora autoriza · 4 evento a cada publicação · 5 os três caminhos | `testes/contratos/unitarios/OracleRegistry.test.js`, `ApolicePolicy.test.js` |
 | HU03 Liquidação atômica | 1 verificar, atualizar, transferir · 2 guarda de reentrância · 3 duplicado rejeitado · 4 falha não altera a situação · 5 ataque de reentrância falha | `testes/contratos/unitarios/Seguranca.test.js` |
-| HU04 Simulador | 1 MQTT em intervalo configurável · 2 série do INMET · 3 três cenários · 4 data, hora, fonte e **coordenada** em cada leitura | `testes/simulador/test_cli.py`, `test_cenarios.py`, `test_serie.py`; `testes/backend/unitarios/leituras.test.js` (critério 4, corrigido em 08/10) |
+| HU04 Preparo historico | MQTT e cenarios simulados retirados; comando unico de ETL, datas originais e qualidade diaria | `testes/simulador/test_cli.py`, `test_preparacao.py`, `test_inmet.py` |
 | HU05 Consolidação | 1 fora de faixa descartada e registrada · 2 fonte inoperante · 3 reputação a cada ciclo · 4 fontes usadas registradas | `testes/oraculo/unitarios/consolidador.test.js`, `reputacao.test.js`; `testes/backend/unitarios/leituras.test.js` |
 | HU06 Publicação assinada | 1 dois índices em uma transação · 2 chave por variável de ambiente · 3 transação, gas e instante gravados · 4 evento capturado | `testes/oraculo/unitarios/registro.test.js`; `testes/oraculo/integracao/oraculo.test.js`; `testes/backend/integracao/indexador.test.js` |
 | HU07 Vínculo da carteira | 1 mensagem única · 2 assinatura verificada no servidor · 3 chave nunca trafega · 4 endereço de outro produtor recusado | `testes/backend/unitarios/carteira.test.js`; `testes/app/telas/produtor.test.jsx` |
@@ -149,7 +150,7 @@ com o módulo de visão computacional.
 | UC04 | Simular cotação | RF06 · `Cotacao.jsx`, `dominio/cotacao.js` |
 | UC05 | Contratar apólice | RF07, RF08 · proposta em `Cotacao.jsx`, emissão em `Propostas.jsx`; a seguradora assina a implantação (DECISOES 1.20) |
 | UC06 | Consultar apólice e linha do tempo | RF09 · `ApoliceDetalhe.jsx` |
-| UC07 | Coletar dados de campo | RF11–RF13 · `simulador/`, `rotas/leituras.js`, `consolidador.js` |
+| UC07 | Preparar dados historicos oficiais; substitui coleta simulada | `simulador/`, `backend/src/banco/importarInmet.js`, `/oraculo/serie-historica` |
 | UC10 | Publicar dados via oráculo | RF19–RF22 · `oraculo/` |
 | UC11 | Avaliar condição contratada | RF23 · `ApolicePolicy.sol` |
 | UC12 | Executar pagamento | RF24–RF26 · `ApolicePolicy.sol` |
@@ -172,7 +173,7 @@ Os fluxos UC05, UC10, UC11 e UC12 possuem evidencia historica na Sepolia de 07/1
 | Serviço de oráculo | Node.js + ethers.js | Node.js 24, ethers 6 |
 | API e ingestão | Node.js + Express | Express 5 |
 | Banco de dados | PostgreSQL + PostGIS | PostgreSQL com PostGIS: polígono do talhão, estações a até 100 km. Em desenvolvimento, o mesmo banco embutido (PGlite) |
-| Simulador de sensores | Python + MQTT, séries do INMET | Python 3.12, paho-mqtt (com TLS), estações A770 e A747 do INMET |
+| ETL historico | Python + requests; uma estacao INMET | A770; carga PostgreSQL automatica; sem MQTT |
 | Interfaces | React + ethers.js | React 18, react-router 7, Vite 8, ethers 6 |
 | Carteira do produtor | MetaMask | Provedor EIP-1193; o produtor da Sepolia foi criado na MetaMask |
 | Serviço de notificação | Nodemailer | Nodemailer 10 (DECISOES 1.18) |

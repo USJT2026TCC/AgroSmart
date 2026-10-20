@@ -11,23 +11,11 @@ import {
   texto,
 } from "../validacao.js";
 
-/**
- * Interface entre o backend e o servico de oraculo.
- *
- * A documentacao descreve o fluxo assim: o back-end entrega os indices ao
- * oraculo, o oraculo assina e publica. Na implementacao, a divisao ficou:
- *
- *  - o BACKEND guarda as leituras autenticadas na origem e diz ao oraculo
- *    quais apolices estao ativas;
- *  - o ORACULO busca as leituras, consolida o indice, assina e publica — e
- *    depois relata aqui o que fez.
- *
- * A consolidacao fica no oraculo, e nao no backend, porque quem assina o numero
- * e quem precisa responder por ele. O oraculo nao publica um indice que ele
- * mesmo nao calculou a partir das leituras; ele revalida tudo, com a mesma
- * funcao de plausibilidade que o backend usou na ingestao.
- *
- * Todas as rotas exigem a chave de servico.
+/** Interface autenticada entre backend e oraculo.
+ * No modo historico, a API entrega dias de inmet_dias e termos congelados;
+ * o oraculo recalcula a serie, o indice e assina a publicacao em cadeia.
+ * As rotas de leituras e reputacao abaixo pertencem ao percurso legado.
+ * O INMET nao assina os arquivos com a chave do servico ou do oraculo.
  */
 
 /** Formato de periodo AAAAMMDD para data UTC no fim daquele dia. */

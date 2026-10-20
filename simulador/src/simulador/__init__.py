@@ -1,3 +1,3 @@
-"""Simulador de estacoes meteorologicas do AgroSmart (HU04)."""
+"""Extracao e preparo historico do INMET para o AgroSmart."""
 
-__all__ = ["inmet", "serie", "assinatura", "envio", "mqtt", "cli"]
+__all__ = ["inmet", "preparacao", "cli"]

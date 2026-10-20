@@ -20,11 +20,9 @@ FORMATO DO CSV (que nao e o formato padrao de CSV)
     ausente     : campo vazio ou valor negativo sentinela (-9999)
     horario     : UTC, na coluna "Hora UTC", no formato "0300 UTC"
 
-O campo ausente e comum: em 2025, a estacao de Pradopolis (A747) tem chuva em
-3.406 das 8.760 horas do ano. Nao e ruido de importacao, e falha de sensor — e
-o sistema precisa tratar isso como o que e. Por isso a leitura sem medicao de
-chuva vira `None` aqui, e nao zero: presumir zero transformaria sensor quebrado
-em dia seco, e dia seco e exatamente o que aciona o pagamento.
+Valores ausentes ou sentinelas nao viram zero: presumir ausencia de chuva
+poderia criar uma falsa indicacao de estiagem. O preparo diario preserva a
+contagem de horas ausentes e invalidas para a avaliacao da qualidade.
 """
 
 from __future__ import annotations

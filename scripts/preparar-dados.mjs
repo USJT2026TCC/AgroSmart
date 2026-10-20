@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { executar } from "./processos.mjs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 const raiz = fileURLToPath(new URL("../", import.meta.url));
@@ -19,10 +20,24 @@ filho.on("error", (erro) => {
   console.error(erro.message);
   process.exitCode = 1;
 });
-filho.on("exit", (codigo) => {
+filho.on("exit", async (codigo) => {
   process.exitCode = codigo ?? 1;
-  if (codigo === 0)
-    console.log(
-      "Preparacao concluida. Execute npm run dados:empacotar para atualizar o pacote publico; depois reinicie a API.",
+  if (
+    codigo !== 0 ||
+    process.argv.slice(2).some((a) => ["--help", "-h"].includes(a))
+  )
+    return;
+  try {
+    await executar(
+      process.execPath,
+      [path.join(raiz, "scripts/empacotar-dados.mjs")],
+      { cwd: raiz },
     );
+    console.log(
+      "Preparo e pacote concluidos. Na proxima inicializacao da API, a carga no PostgreSQL sera automatica.",
+    );
+  } catch (erro) {
+    console.error(erro.message);
+    process.exitCode = 1;
+  }
 });

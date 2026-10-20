@@ -17,13 +17,13 @@ Na raiz do projeto, com Python 3.10+ instalado:
 python -m venv simulador/.venv
 .\simulador\.venv\Scripts\python.exe -m pip install -e "./simulador[dev]"
 npm run dados:preparar
-npm run dados:empacotar
 ```
 
 O comando baixa os ZIPs anuais oficiais necessarios (arquivos nacionais, tamanho
 variavel), extrai somente A770, confere valores e duplicatas, agrega chuva diaria
 e registra qualidade e procedencia. Nao requer chave de estacao nem envia transacao.
-Apos empacotar, na proxima inicializacao da API (`npm start`), os anos sao importados no
+O mesmo comando atualiza o pacote publico apos conferir seus hashes. Na proxima
+inicializacao da API (`npm start`), os anos sao importados no
 banco persistente. Anos com os mesmos hashes nao sao importados novamente.
 Nao execute `dados:preparar` a cada abertura do sistema.
 
@@ -54,19 +54,27 @@ cobertura atendam ao criterio. Contagem comeca em zero no inicio da cobertura, c
 datas inclusivas e dias em UTC. Gatilho entre 1 e 366 dias, experimental e fixado
 na proposta. Ao primeiro acionamento, paga-se integralmente uma unica vez.
 
-## Modulos
+## Arquivos do modulo
+
+A pasta conserva o nome `simulador` para manter os caminhos de instalacao,
+mas agora contem somente o ETL. Nao envia dados como se fossem sensores.
 
 | Arquivo | Responsabilidade |
 |---|---|
-| `inmet.py` | Download e interpretacao do CSV original |
-| `preparacao.py` | Limpeza, diario, cache e manifesto |
-| `cli.py`, `__main__.py` | Comandos de execucao |
-| `serie.py`, `historico.py` | Utilitarios e exportacao do historico legado |
-| `assinatura.py`, `envio.py`, `mqtt.py` | Ingestao manual legada; nao necessaria a demonstracao historica |
+| `inmet.py` | Download oficial, leitura do CSV e metadados da estacao |
+| `preparacao.py` | Validacao, duplicatas, consolidacao diaria, cache e manifesto |
+| `cli.py` | Unico comando: `preparar` |
+| `__main__.py`, `__init__.py` | Entrada e identificacao do pacote Python |
+| `pyproject.toml`, `requirements.txt` | Instalacao e dependencias |
 
-O envio manual assinado autentica a aplicacao que reproduz os dados, nao o INMET.
-O deslocamento `--ate-hoje` e legado e nao deve ser usado no fluxo historico atual.
-MQTT exige broker e ponte; o percurso principal nao depende deles.
+Sem MQTT, chaves de estacao, envio assinado, cenarios de sensores ou deslocamento
+de datas. A carga fica em `backend/src/banco/importarInmet.js`, para nao duplicar
+a logica de banco em Python. O oraculo consulta `inmet_dias` pela API autenticada
+`/oraculo/serie-historica`; nao recebe credenciais diretas do PostgreSQL.
+
+Docker executa o PostgreSQL; o volume e local a cada instalacao. Os usuarios
+reproduzem a mesma base porque o pacote publico acompanha o Git e e importado
+no primeiro inicio. API, interface e oraculo sao iniciados por `npm start` no host.
 
 ## Verificar
 
