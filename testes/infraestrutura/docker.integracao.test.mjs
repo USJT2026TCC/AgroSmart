@@ -11,7 +11,8 @@ import { semearParaTeste } from "../backend/fixtures/semente.js";
 
 test(
   "PostgreSQL/PostGIS real: preserva legado, importa pacote e reutiliza banco",
-  { timeout: 240000 },
+  // Inclui o primeiro download da imagem; execucoes com cache sao mais rapidas.
+  { timeout: 1800000 },
   async () => {
     const porta = await new Promise((resolve, reject) => {
       const s = net.createServer();
@@ -48,6 +49,9 @@ test(
       await migrar(origem);
       await migrar(banco);
       await semearParaTeste(origem);
+      await origem.query(
+        "INSERT INTO auditoria(acao,instante) VALUES ('fixture','2024-02-07T12:34:56.123456Z')",
+      );
       const identidades = (
         await origem.query(
           "SELECT id,carteira,hash_senha FROM usuarios ORDER BY identificador",
@@ -77,6 +81,14 @@ test(
           )
         ).rows,
         geometrias,
+      );
+      assert.equal(
+        (
+          await banco.query(
+            "SELECT instante::text AS valor FROM auditoria WHERE acao='fixture'",
+          )
+        ).rows[0].valor,
+        "2024-02-07 12:34:56.123456+00",
       );
       assert.deepEqual(await importarInmet(banco), { anos: 7, dias: 2465 });
       await banco.fechar();

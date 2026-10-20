@@ -49,8 +49,7 @@ export async function abrirPGlite(diretorio) {
     transacao: (fn) =>
       db.transaction((tx) =>
         fn({
-          query: async (sql, params = []) =>
-            normalizar(await tx.query(sql, params)),
+          query: async (sql, params = []) => normalizar(await tx.query(sql, params)),
         }),
       ),
     fechar: () => db.close(),
@@ -109,5 +108,7 @@ export async function abrirBanco(opcoes = {}) {
   if (opcoes.emMemoria) return abrirPGlite(null);
   if (config.urlDoBanco) return abrirPostgres(config.urlDoBanco);
 
-  return abrirPGlite(config.dirBanco);
+  throw new Error(
+    "DATABASE_URL obrigatoria. Inicie pela raiz com npm start para usar PostgreSQL/PostGIS no Docker.",
+  );
 }

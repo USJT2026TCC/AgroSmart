@@ -252,7 +252,7 @@ if (acao === "status") {
       cwd: path.join(raiz, "app"),
       env,
     });
-    console.log("Iniciando API, banco separado e indexador...");
+    console.log("Iniciando API e indexador com PostgreSQL...");
     iniciar("backend", "backend", ["src/index.js"]);
     await aguardar(
       async () =>

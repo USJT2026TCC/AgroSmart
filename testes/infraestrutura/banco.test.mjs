@@ -35,3 +35,27 @@ test("sem Docker, falha claramente sem trocar para PGlite", async () => {
     /Docker nao encontrado/,
   );
 });
+
+// Sem URL, uma execucao direta nao pode recriar o banco persistente antigo.
+test("backend sem URL recusa banco persistente alternativo", async () => {
+  const { spawnSync } = await import("node:child_process");
+  const { fileURLToPath } = await import("node:url");
+  const resultado = spawnSync(
+    process.execPath,
+    [
+      "--input-type=module",
+      "-e",
+      `
+    import assert from "node:assert/strict";
+    import { abrirBanco } from "./backend/src/banco/conexao.js";
+    await assert.rejects(() => abrirBanco(), /DATABASE_URL obrigatoria/);
+  `,
+    ],
+    {
+      cwd: fileURLToPath(new URL("../../", import.meta.url)),
+      env: { ...process.env, DATABASE_URL: "" },
+      encoding: "utf8",
+    },
+  );
+  assert.equal(resultado.status, 0, resultado.stderr);
+});

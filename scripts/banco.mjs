@@ -60,7 +60,7 @@ export async function iniciarBanco(config, rodar = executar) {
   } catch (erro) {
     throw new Error(
       erro.code === "ENOENT"
-        ? "Docker nao encontrado. Instale e abra o Docker Desktop com Compose antes de iniciar. O banco PGlite anterior permanece preservado."
+        ? "Docker nao encontrado. Instale e abra o Docker Desktop com Compose antes de iniciar."
         : "Nao foi possivel iniciar o PostgreSQL no Docker. Confira Docker Desktop, porta e a mensagem acima. Nenhum volume foi apagado.",
     );
   }

@@ -54,8 +54,8 @@ export const config = {
   tlsChave: process.env.TLS_CHAVE || "",
 
   /**
-   * Endereco do PostgreSQL. Vazio significa usar o PostgreSQL embutido (PGlite),
-   * com PostGIS, gravado em `dirBanco`. O SQL e o mesmo nos dois casos.
+   * Endereco obrigatorio do PostgreSQL/PostGIS no uso. O iniciador da raiz
+   * configura o Docker; banco em memoria e reservado aos testes.
    */
   urlDoBanco: process.env.DATABASE_URL || "",
   dirBanco: process.env.DIR_BANCO || join(RAIZ, "dados", "pg"),

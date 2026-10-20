@@ -27,11 +27,15 @@ as migracoes. A serie publica A770 ja acompanha o projeto em `backend/recursos/i
 sete anos, de 2020 a 30/09/2026, com originais e hashes. A carga e automatica na primeira
 execucao; nas seguintes, o volume `dados_pg` preserva o banco e anos identicos sao ignorados.
 Nao precisa instalar Python nem baixar/processar os ZIPs do INMET para usar o aplicativo.
+No primeiro uso, Docker baixa a imagem PostgreSQL/PostGIS (aproximadamente 213 MB
+na plataforma Linux/amd64). Esse download pode demorar conforme a conexao.
 
 Se houver banco PGlite desta instancia, o inicio transfere seus dados somente para
 um PostgreSQL vazio, preservando a origem e os vinculos de carteira. Recusa mesclar
 com outro banco preenchido. Essa transferencia e local; usuarios e segredos nao sao
-distribuidos no Git. `DATABASE_URL` explicita permite um PostgreSQL externo, sem
+distribuidos no Git. Depois da transferencia conferida, a origem pode ser removida;
+o uso normal aceita somente PostgreSQL. Banco PGlite em memoria e restrito aos testes.
+`DATABASE_URL` explicita permite um PostgreSQL externo, sem
 iniciar Docker nem transferir automaticamente dados locais para outro servidor.
 
 `npm stop` encerra a aplicacao e deixa o banco disponivel. `npm run banco:parar`

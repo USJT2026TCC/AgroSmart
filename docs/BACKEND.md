@@ -50,7 +50,8 @@ originais baixados e segredos ficam fora do Git. Todos os testes estao em `teste
 
 `npm start` inicia o banco e aguarda seu healthcheck. A API aplica migracoes,
 transfere o PGlite anterior se o destino local estiver vazio, importa os sete anos
-meteorologicos e inicia os servicos. A origem nunca e apagada. A transferencia
+meteorologicos e inicia os servicos. A rotina de transferencia nao apaga a origem;
+a remocao autorizada e feita depois da comparacao dos registros. A transferencia
 recusa mesclar cadastros e registra conclusao para nao repetir.
 
 Geometrias sao transferidas em EWKB; numericos nao passam por Number, e sequencias
@@ -61,3 +62,6 @@ meteorologia publica e seus hashes.
 `DATABASE_URL` explicita usa servidor externo; essa opcao nao inicia Docker nem
 transfere identidades locais automaticamente. Credenciais de demonstracao do Compose
 servem apenas para desenvolvimento local, com porta vinculada a 127.0.0.1.
+
+O uso normal exige PostgreSQL; sem DATABASE_URL a API recusa iniciar. Isso impede
+recriar silenciosamente o banco antigo. PGlite em memoria continua restrito aos testes.

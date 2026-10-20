@@ -13,6 +13,7 @@ const IGNORADAS = new Set([
 /** Copia somente tabelas da aplicacao em uma unica transacao, sem apagar origem.
  * Destino precisa estar vazio. Nenhum dump com dados pessoais e criado no disco.
  * Geometrias sao transportadas em EWKB, JSON em texto e numericos sem Number.
+ * Datas seguem como texto SQL para preservar microssegundos (Date limita a ms).
  */
 export async function transferirDados(origem, destino, chaveOrigem) {
   const { rows: marcas } = await destino.query(
@@ -73,7 +74,9 @@ export async function transferirDados(origem, destino, chaveOrigem) {
         .map((c) =>
           c.tipo === "geometry"
             ? `encode(ST_AsEWKB(${nomeSQL(c.nome)}),'hex') AS ${nomeSQL(c.nome)}`
-            : nomeSQL(c.nome),
+            : ["timestamp", "timestamptz", "date", "time", "timetz"].includes(c.tipo)
+              ? `${nomeSQL(c.nome)}::text AS ${nomeSQL(c.nome)}`
+              : nomeSQL(c.nome),
         )
         .join(",");
       const { rows } = await origem.query(
