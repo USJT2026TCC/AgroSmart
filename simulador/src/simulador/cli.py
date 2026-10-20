@@ -1,5 +1,7 @@
 """
-Linha de comando do simulador de estacoes (HU04).
+Preparacao historica (principal) e envio manual legado.
+
+    python -m simulador preparar --de 2020-01-01 --ate 2026-09-30
 
     python -m simulador baixar --ano 2024
     python -m simulador estacoes --uf SP --perto -21.46,-47.58
@@ -70,6 +72,19 @@ def _data(texto: str, fim_do_dia: bool = False) -> datetime:
 
 
 # ----------------------------------------------------------------- comandos
+
+
+def comando_preparar(opcoes) -> None:
+    from datetime import date
+
+    from .preparacao import preparar
+
+    manifesto = preparar(
+        DIR_DADOS, date.fromisoformat(opcoes.de), date.fromisoformat(opcoes.ate), opcoes.estacao
+    )
+    print(f"Manifesto: {DIR_DADOS / 'preparado' / opcoes.estacao / 'manifesto.json'}")
+    if any(a["status"] in {"falha", "estacao_ambigua"} for a in manifesto["anos"].values()):
+        raise SystemExit("Preparacao parcial: consulte as falhas no manifesto e execute novamente.")
 
 
 def comando_baixar(opcoes) -> None:
@@ -187,7 +202,7 @@ def comando_enviar(opcoes) -> None:
 
     if deslocamento:
         print(
-            f"ATENCAO: datas deslocadas em {deslocamento.days} dias para terminarem hoje. "
+            f"ATENCAO: datas deslocadas em {deslocamento.days} dias para terminarem ontem. "
             "Os valores medidos sao os originais do INMET; as datas, nao."
         )
 
@@ -254,6 +269,14 @@ def construir_parser() -> argparse.ArgumentParser:
     )
     sub = parser.add_subparsers(dest="comando", required=True)
 
+    preparar = sub.add_parser(
+        "preparar", help="prepara uma estacao uma unica vez, sem mudar as datas"
+    )
+    preparar.add_argument("--estacao", default="A770")
+    preparar.add_argument("--de", default="2020-01-01")
+    preparar.add_argument("--ate", default="2026-09-30")
+    preparar.set_defaults(funcao=comando_preparar)
+
     baixar = sub.add_parser("baixar", help="baixa o ZIP anual do INMET")
     baixar.add_argument("--ano", type=int, default=2024)
     baixar.set_defaults(funcao=comando_baixar)
@@ -305,7 +328,7 @@ def construir_parser() -> argparse.ArgumentParser:
     enviar.add_argument(
         "--ate-hoje",
         action="store_true",
-        help="desloca as datas para a serie terminar hoje, sem alterar os valores",
+        help="desloca as datas para a serie terminar ontem, sem alterar os valores",
     )
     enviar.add_argument(
         "--incluir-falhas",

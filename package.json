@@ -9,7 +9,8 @@
     "instalar": "npm ci",
     "test": "node testes/executar.mjs",
     "verificar": "node testes/executar.mjs",
-    "stop": "node scripts/iniciar.mjs parar"
+    "stop": "node scripts/iniciar.mjs parar",
+    "dados:preparar": "node scripts/preparar-dados.mjs"
   },
   "workspaces": [
     "contratos",

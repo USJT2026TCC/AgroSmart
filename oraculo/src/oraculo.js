@@ -22,11 +22,17 @@ const { ClienteBackend } = require("./clienteBackend");
  * o custo e a latencia vao para o registro de auditoria (RF22).
  */
 class ServicoOraculo {
-  constructor({ publicador, fila, registro, reputacao, backend = null, opcoes = {} }) {
+  constructor({
+    publicador,
+    fila,
+    registro,
+    reputacao,
+    backend = null,
+    opcoes = {},
+  }) {
     this.publicador = publicador;
 
-    // Opcional: sem backend, o servico funciona sozinho, com a fonte simulada,
-    // como antes. Com backend, relata cada publicacao e cada falha definitiva.
+    // O servico operacional consulta dados no backend e relata suas publicacoes.
     this.backend = backend;
     this.fila = fila;
     this.registro = registro;
@@ -36,6 +42,43 @@ class ServicoOraculo {
     this.limiarReputacao = opcoes.limiarReputacao ?? config.limiarReputacao;
     this.esperaBaseMs = opcoes.esperaBaseMs ?? config.esperaBaseMs;
     this.maxTentativas = opcoes.maxTentativas ?? config.maxTentativas;
+  }
+
+  async prepararHistorico(apolice) {
+    const { avaliarHistorico } = require("./historico");
+    const { termos, linhas } = await this.backend.serieHistorica(apolice);
+    const cadeia = await this.publicador.termosHistoricos(apolice);
+    const iso = (t) => new Date(Number(t) * 1000).toISOString().slice(0, 10);
+    if (
+      iso(cadeia.vigenciaInicio) !== termos.inicioHistorico ||
+      iso(cadeia.vigenciaFim) !== termos.fimHistorico ||
+      Number(cadeia.limiarClimatico) !== Number(termos.limiarClimatico)
+    )
+      throw new Error("Termos historicos divergentes na cadeia.");
+    const resultado = avaliarHistorico({
+      linhas,
+      inicio: termos.inicioHistorico,
+      fim: termos.fimHistorico,
+      gatilho: Number(termos.limiarClimatico),
+    });
+    const data = resultado.primeiroAcionamento ?? resultado.fim;
+    const periodo = Number(data.replaceAll("-", ""));
+    const dia = resultado.dias.find((d) => d.data === data);
+    const payload = {
+      indiceClimatico: dia.indiceClimatico,
+      procedencia: {
+        modo: "reproducao-historica",
+        estacao: "A770",
+        hashSerie: termos.hashSerie,
+        inicio: resultado.inicio,
+        fim: resultado.fim,
+        diasValidos: resultado.diasValidos,
+        diasIncompletos: resultado.diasIncompletos,
+        contagem: "inicio-da-cobertura",
+        parametroExperimental: true,
+      },
+    };
+    return this.fila.enfileirar({ apolice, periodo, payload }).entrada;
   }
 
   /** Monta o servico a partir da configuracao de ambiente. */
@@ -65,8 +108,12 @@ class ServicoOraculo {
       fila: new FilaDePublicacoes(path.join(dirDados, "fila.json"), {
         maxTentativas: opcoes.maxTentativas ?? config.maxTentativas,
       }),
-      registro: new RegistroDePublicacoes(path.join(dirDados, "publicacoes.jsonl")),
-      reputacao: new RegistroReputacao({ arquivo: path.join(dirDados, "reputacao.json") }),
+      registro: new RegistroDePublicacoes(
+        path.join(dirDados, "publicacoes.jsonl"),
+      ),
+      reputacao: new RegistroReputacao({
+        arquivo: path.join(dirDados, "reputacao.json"),
+      }),
       backend:
         opcoes.backend ??
         (config.apiUrl && config.chaveDeServico
@@ -103,10 +150,13 @@ class ServicoOraculo {
 
     this.reputacao.salvar();
 
-    // Sem o segundo canal de dados, nenhuma publicacao pode mover a garantia.
+    // Caminho legado de ingestao assinada: exige dois canais.
+    // A demonstracao historica usa prepararHistorico, uma estacao e datas originais.
     // Nao ha substituicao por fotografia nem liberacao manual neste protocolo.
     if (consolidacao.fontesUsadas.length < 2) {
-      throw new Error("RNF16: publicacao bloqueada; exigidas duas fontes climaticas validas.");
+      throw new Error(
+        "RNF16: publicacao bloqueada; exigidas duas fontes climaticas validas.",
+      );
     }
     const alertas = [...consolidacao.alertas];
 
@@ -123,7 +173,11 @@ class ServicoOraculo {
       },
     };
 
-    const { entrada, novo } = this.fila.enfileirar({ apolice, periodo, payload });
+    const { entrada, novo } = this.fila.enfileirar({
+      apolice,
+      periodo,
+      payload,
+    });
 
     return { consolidacao, entrada, novo, alertas };
   }
@@ -218,7 +272,9 @@ class ServicoOraculo {
     try {
       await this.backend[metodo](dados);
     } catch (erro) {
-      console.warn(`[oraculo] nao foi possivel relatar ao backend (${metodo}): ${erro.message}`);
+      console.warn(
+        `[oraculo] nao foi possivel relatar ao backend (${metodo}): ${erro.message}`,
+      );
     }
   }
 
@@ -251,8 +307,16 @@ class ServicoOraculo {
 
       if (resultado.sucesso) {
         publicadas += 1;
-        detalhes.push({ chave: entrada.chave, sucesso: true, recibo: resultado.recibo });
-        aoProgredir({ tipo: "publicada", chave: entrada.chave, recibo: resultado.recibo });
+        detalhes.push({
+          chave: entrada.chave,
+          sucesso: true,
+          recibo: resultado.recibo,
+        });
+        aoProgredir({
+          tipo: "publicada",
+          chave: entrada.chave,
+          recibo: resultado.recibo,
+        });
       } else {
         aoProgredir({
           tipo: "erro",
@@ -263,7 +327,11 @@ class ServicoOraculo {
 
         if (entrada.estado === ESTADOS.FALHA) {
           falhas += 1;
-          detalhes.push({ chave: entrada.chave, sucesso: false, erro: resultado.erro.message });
+          detalhes.push({
+            chave: entrada.chave,
+            sucesso: false,
+            erro: resultado.erro.message,
+          });
         }
       }
     }

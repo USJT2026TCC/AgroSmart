@@ -1,11 +1,14 @@
 """
 Da serie do INMET ao lote que a API do AgroSmart aceita.
 
-Tres operacoes, e cada uma existe por um motivo:
+Utilitarios legados de envio manual. A demonstracao atual usa preparacao.py,
+sem deslocar datas. Este modulo tambem fornece a agregacao diaria basica.
+
+Operacoes do envio manual:
 
 RECORTE       escolhe a janela de datas que sera enviada.
 
-DESLOCAMENTO  move as datas para terminarem hoje, SEM tocar nos valores. A
+DESLOCAMENTO  ferramenta LEGADA: termina ontem, sem tocar nos valores. A
               apolice da demonstracao tem vigencia agora; a estiagem real de
               Sao Simao aconteceu em 2024. Sem deslocar, as leituras cairiam
               fora da janela que o backend consulta e nada seria publicado.

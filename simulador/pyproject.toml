@@ -28,5 +28,4 @@ extend-exclude = ["*.ipynb"]
 [tool.ruff.lint]
 # Erros, avisos, ordem dos imports, sintaxe moderna e padroes que costumam ser defeito.
 select = ["E", "F", "W", "I", "UP", "B"]
-# B008: File(...) como valor padrao e o idioma documentado do FastAPI.
 ignore = ["B008"]

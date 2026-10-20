@@ -172,3 +172,69 @@ describe("cotacao e contratacao (RF06, RNF04, HU10)", () => {
     ).toBe(true);
   });
 });
+
+test("modo historico envia datas e gatilho escolhidos, sem transacao na consulta", async () => {
+  const { chamadas } = await abrir("/produtor/cotacao", {
+    perfil: "produtor",
+    rotas: {
+      "GET /talhoes": { talhoes: [TALHAO] },
+      "GET /produtos": { produtos: [PRODUTO] },
+      "POST /cotacoes": ({ corpo }) => ({
+        cotacao: {
+          areaSeguradaHa: "1",
+          valorIndenizacaoWei: "100",
+          premioWei: "1",
+          termos: { ...PRODUTO, limiarClimatico: corpo.gatilhoDias ?? 30 },
+        },
+      }),
+      "POST /historico/avaliar": {
+        resultado: {
+          acionaria: true,
+          primeiroAcionamento: "2024-07-11",
+          maiorSequencia: 39,
+          diasIncompletos: 0,
+        },
+      },
+      "POST /propostas": {
+        status: 201,
+        corpo: { proposta: { id: "historica", situacao: "pendente" } },
+      },
+    },
+  });
+  fireEvent.click(
+    await screen.findByRole("checkbox", { name: /Usar dados historicos/ }),
+  );
+  fireEvent.change(screen.getByLabelText("Gatilho experimental (dias secos)"), {
+    target: { value: "10" },
+  });
+  fireEvent.click(
+    screen.getByRole("button", { name: "Analisar periodo no banco" }),
+  );
+  expect(await achar(/Acionaria em 2024-07-11/)).toBeTruthy();
+  expect(
+    chamadas.find((c) => c.caminho === "/historico/avaliar").corpo,
+  ).toEqual({ inicio: "2024-02-07", fim: "2025-02-07", gatilho: 10 });
+  fireEvent.change(screen.getByLabelText("Produto"), {
+    target: { value: "pr1" },
+  });
+  await waitFor(() =>
+    expect(
+      screen.getByRole("button", { name: "Enviar proposta a seguradora" })
+        .disabled,
+    ).toBe(false),
+  );
+  fireEvent.click(
+    screen.getByRole("button", { name: "Enviar proposta a seguradora" }),
+  );
+  await waitFor(() =>
+    expect(
+      chamadas.some(
+        (c) =>
+          c.caminho === "/propostas" &&
+          c.corpo.reproducaoHistorica === true &&
+          c.corpo.gatilhoDias === 10 &&
+          c.corpo.fimDaVigencia === "2025-02-07",
+      ),
+    ).toBe(true),
+  );
+});

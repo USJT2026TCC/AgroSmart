@@ -1058,3 +1058,21 @@ Isso evita que o banco inicial falhe na remoção do perfil antigo. A migração
 conferida sobre uma cópia do banco local; o banco original não foi modificado.
 O oráculo agora bloqueia o preparo de publicação com menos de duas fontes válidas,
 em vez de apenas exibir o alerta herdado; não há alternativa por imagem.
+
+
+## Reproducao historica de uma estacao — 20/10/2026
+
+O fluxo principal usa Sao Simao/A770 de 2020 a setembro de 2026. A escolha reduz
+o escopo de dados e dispensa transporte de sensores na demonstracao. Talhao ficticio
+considerado coincidente com a estacao, sem afirmar medicao real dentro de uma lavoura.
+Datas originais preservadas; contagem inicia na cobertura inclusiva em UTC.
+Gatilho experimental escolhido na contratacao e imutavel na apolice; indenizacao
+integral unica. Precipitacao inferior a 1 mm/dia, minimo de 20 horas validas.
+Falhas nao sao preenchidas e coberturas historicas com dias insuficientes sao recusadas.
+
+Python prepara uma vez e preserva originais e hashes. Backend importa por ano,
+sem reprocessar versoes ja carregadas. O oraculo reavalia a janela do banco e
+publica somente o primeiro acionamento ou ultimo dia sem acionamento. A cadeia
+nao volta no tempo: contrato de demonstracao distingue o relogio historico do
+timestamp real do bloco. O percurso antigo de duas fontes assinadas permanece
+para compatibilidade, nao como exigencia da reproducao atual.

@@ -13,7 +13,8 @@
  *  RF13 - atribuir a cada fonte um escore de reputacao, condicionando o uso dos
  *         dados a um limiar minimo;
  *  RF19 - consolidar os indices do periodo para submissao em transacao unica;
- *  RNF16 - exigir pelo menos duas fontes climaticas por talhao.
+ *  Duas fontes pertencem ao caminho legado de ingestao assinada.
+ *  A demonstracao historica de uma estacao usa historico.js e termos proprios.
  *
  * Todas as funcoes aqui sao puras: recebem leituras, devolvem um resultado, e nao
  * tocam em rede nem em disco. Isso e o que torna a regra testavel sem blockchain
@@ -96,7 +97,11 @@ function dataDe(periodo) {
   const texto = String(periodo);
 
   return new Date(
-    Date.UTC(Number(texto.slice(0, 4)), Number(texto.slice(4, 6)) - 1, Number(texto.slice(6, 8))),
+    Date.UTC(
+      Number(texto.slice(0, 4)),
+      Number(texto.slice(4, 6)) - 1,
+      Number(texto.slice(6, 8)),
+    ),
   );
 }
 
@@ -137,7 +142,10 @@ function agruparPorDia(leiturasValidas) {
     if (!porDia.has(dia)) porDia.set(dia, new Map());
 
     const porFonte = porDia.get(dia);
-    porFonte.set(leitura.fonte, (porFonte.get(leitura.fonte) ?? 0) + leitura.chuvaMm);
+    porFonte.set(
+      leitura.fonte,
+      (porFonte.get(leitura.fonte) ?? 0) + leitura.chuvaMm,
+    );
   }
 
   const resultado = new Map();
@@ -221,7 +229,8 @@ function consolidarIndiceClimatico(leituras, opcoes) {
     minimoDeFontes = 2,
   } = opcoes;
 
-  if (!periodo) throw new Error("consolidarIndiceClimatico exige o periodo de referencia");
+  if (!periodo)
+    throw new Error("consolidarIndiceClimatico exige o periodo de referencia");
 
   const validas = [];
   const descartes = [];
@@ -239,7 +248,8 @@ function consolidarIndiceClimatico(leituras, opcoes) {
       });
 
       if (leitura?.fonte) fontesDescartadas.add(leitura.fonte);
-      if (reputacao && leitura?.fonte) reputacao.registrar(leitura.fonte, false);
+      if (reputacao && leitura?.fonte)
+        reputacao.registrar(leitura.fonte, false);
 
       continue;
     }
@@ -263,7 +273,11 @@ function consolidarIndiceClimatico(leituras, opcoes) {
   }
 
   const porDia = agruparPorDia(validas);
-  const { dias, interrompidoPor } = contarDiasSecosConsecutivos(porDia, periodo, limiarChuvaMm);
+  const { dias, interrompidoPor } = contarDiasSecosConsecutivos(
+    porDia,
+    periodo,
+    limiarChuvaMm,
+  );
 
   const fontesUsadas = [...new Set(validas.map((l) => l.fonte))].sort();
   const alertas = [];

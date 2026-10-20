@@ -15,21 +15,10 @@ import { gerarHashDeSenha } from "../seguranca/cripto.js";
  */
 
 /**
- * Fontes do talhao-01.
- *
- * As duas primeiras sao estacoes REAIS do INMET, nas coordenadas publicadas
- * pelo proprio instituto: A770, em Sao Simao/SP, ao lado do talhao, e A747, em
- * Pradopolis/SP, a 57 km. O simulador (`simulador/`) envia a serie historica
- * delas — inclusive as horas em que o pluviometro nao mediu nada.
- *
- * Fonte: INMET — https://portal.inmet.gov.br/dadoshistoricos
- *
- * Sao duas, e nao uma, porque o consolidador exige no minimo duas fontes para
- * publicar um indice: uma estacao sozinha decidindo um pagamento e exatamente o
- * ponto unico de confianca que o projeto tenta evitar.
- *
- * A terceira e um sensor de solo no talhao, que ainda nao tem equivalente real
- * e por isso fica sem serie ate o hardware existir.
+ * Fontes do percurso legado de ingestao assinada.
+ * A demonstracao historica atual usa somente A770 na tabela inmet_dias;
+ * nao depende destes cadastros nem de uma chave simulando o INMET.
+ * Preservados para compatibilidade com a API de lotes autenticados.
  */
 export const FONTES_DE_DEMONSTRACAO = [
   {
@@ -56,7 +45,8 @@ export const FONTES_DE_DEMONSTRACAO = [
 ];
 
 export async function semear(banco) {
-  if (config.emProducao) throw new Error("A semente de demonstracao nao roda em producao.");
+  if (config.emProducao)
+    throw new Error("A semente de demonstracao nao roda em producao.");
 
   const { rows } = await banco.query("SELECT count(*)::int AS n FROM usuarios");
   if (rows[0].n > 0) return false;
@@ -64,7 +54,13 @@ export async function semear(banco) {
   const senha = await gerarHashDeSenha("agrosmart");
 
   await banco.transacao(async (tx) => {
-    const inserir = async (identificador, nome, perfil, documento, carteira = null) =>
+    const inserir = async (
+      identificador,
+      nome,
+      perfil,
+      documento,
+      carteira = null,
+    ) =>
       (
         await tx.query(
           `INSERT INTO usuarios (identificador, nome, perfil, documento, hash_senha, carteira,
@@ -127,7 +123,10 @@ export async function semear(banco) {
     const ids = {};
 
     for (const t of talhoes) {
-      const geojson = JSON.stringify({ type: "Polygon", coordinates: [t.anel] });
+      const geojson = JSON.stringify({
+        type: "Polygon",
+        coordinates: [t.anel],
+      });
 
       const { rows: novo } = await tx.query(
         `WITH g AS (SELECT ST_SetSRID(ST_GeomFromGeoJSON($4), 4326) AS geom)
@@ -156,7 +155,16 @@ export async function semear(banco) {
                                limiar_climatico_integral, valor_por_hectare_wei, taxa_premio_bps,
                                vigencia_dias)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-        [nome, cultura, modo, lc, lci, ethers.parseEther(porHa).toString(), taxa, dias],
+        [
+          nome,
+          cultura,
+          modo,
+          lc,
+          lci,
+          ethers.parseEther(porHa).toString(),
+          taxa,
+          dias,
+        ],
       );
     }
 

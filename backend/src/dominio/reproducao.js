@@ -1,0 +1,58 @@
+import { createHash } from "node:crypto";
+import { pedidoInvalido } from "../erros.js";
+
+export function dataHistorica(valor) {
+  if (typeof valor !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(valor))
+    throw pedidoInvalido("Data historica invalida.");
+  const t = Date.parse(`${valor}T00:00:00Z`);
+  if (!Number.isFinite(t) || new Date(t).toISOString().slice(0, 10) !== valor)
+    throw pedidoInvalido("Data historica invalida.");
+  return valor;
+}
+export async function hashDaSerie(banco, inicio, fim) {
+  const { rows } = await banco.query(
+    "SELECT ano,sha256_original,sha256_diario FROM inmet_arquivos WHERE estacao='A770' AND ano BETWEEN $1 AND $2 ORDER BY ano",
+    [Number(inicio.slice(0, 4)), Number(fim.slice(0, 4))],
+  );
+  if (!rows.length)
+    throw pedidoInvalido(
+      "Prepare os dados do INMET antes de contratar a demonstracao historica.",
+    );
+  return createHash("sha256").update(JSON.stringify(rows)).digest("hex");
+}
+export async function termosHistoricos(banco, corpo, base) {
+  if (corpo.reproducaoHistorica !== true) return base;
+  const inicio = dataHistorica(corpo.inicioDaVigencia),
+    fim = dataHistorica(corpo.fimDaVigencia);
+  const dias = (Date.parse(fim) - Date.parse(inicio)) / 86400000 + 1;
+  if (inicio < "2020-01-01" || fim > "2026-09-30" || dias < 1 || dias > 3660)
+    throw pedidoInvalido(
+      "Cobertura historica deve estar entre 2020 e setembro de 2026, com ate 3660 dias.",
+    );
+  const gatilho = corpo.gatilhoDias;
+  if (!Number.isInteger(gatilho) || gatilho < 1 || gatilho > 366)
+    throw pedidoInvalido(
+      "Gatilho experimental deve ser inteiro entre 1 e 366 dias.",
+    );
+  const { rows } = await banco.query(
+    "SELECT count(*)::int AS total,count(*) FILTER (WHERE horas_validas>=20)::int AS validos FROM inmet_dias WHERE estacao='A770' AND data BETWEEN $1 AND $2",
+    [inicio, fim],
+  );
+  if (!rows[0]?.validos)
+    throw pedidoInvalido("Nao ha dias validos importados para essa cobertura.");
+  if (rows[0].validos < dias)
+    throw pedidoInvalido(
+      `Cobertura contem ${dias - rows[0].validos} dias incompletos ou ausentes. Escolha um periodo completo; lacunas nao sao preenchidas.`,
+    );
+  return {
+    ...base,
+    modoHistorico: true,
+    estacao: "A770",
+    inicioHistorico: inicio,
+    fimHistorico: fim,
+    limiarClimatico: gatilho,
+    vigenciaDias: dias,
+    hashSerie: await hashDaSerie(banco, inicio, fim),
+    diasIncompletos: dias - rows[0].validos,
+  };
+}

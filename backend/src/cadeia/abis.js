@@ -19,6 +19,7 @@ export const ABI_FACTORY = [
 export const ABI_APOLICE = [
   `function verTermos() view returns (${TUPLA_TERMOS})`,
   "function seguradora() view returns (address)",
+  "function modoHistorico() view returns (bool)",
   "function situacao() view returns (uint8)",
   "function valorPago() view returns (uint256)",
   "function periodoAcionador() view returns (uint256)",

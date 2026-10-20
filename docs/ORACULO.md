@@ -1,27 +1,33 @@
-# Oráculo
+# Oraculo
 
-O processo é iniciado por `npm start`, junto dos demais serviços. Na operação, usa somente leituras recebidas pela API. Não há geração de cenário sintético no serviço de uso.
+## Demonstracao historica atual
 
-## Processamento
+1. Consulta apolices ativas no backend, apos deposito de garantia.
+2. Para proposta historica, busca os dias originais de Sao Simao/A770 no banco.
+3. Confere os termos de datas e gatilho com os gravados na apolice historica.
+4. Avalia cronologicamente a cobertura com `src/historico.js`: comeca em zero,
+   soma dias com chuva inferior a 1 mm e interrompe por chuva ou dado insuficiente.
+5. Enfileira o primeiro periodo acionador. Se nao houver, enfileira o ultimo dia.
+6. Assina a transacao com a chave do oraculo autorizado e relata o recibo ao backend.
 
-1. Consulta à API as apólices ativas e as leituras do talhão.
-2. Valida os dados e considera a reputação das fontes.
-3. Soma chuva por estação em cada dia e calcula a média entre as estações. Menos de 1 mm conta como dia seco; ausência de dado válido interrompe a sequência.
-4. Usa uma janela de até 90 dias, que pode incluir dias anteriores à vigência. A publicação é bloqueada se a consolidação não tiver duas fontes válidas. Isso não significa um quorum independente de duas fontes em cada dia.
-5. Persiste a publicação na fila e envia o índice ao contrato com a chave própria do oráculo. Registra recibo e falhas, com tentativas controladas.
+Nao publica todos os dias em cadeia. O indice e calculado pelo oraculo, a partir
+dos dias preparados; a consulta previa da aplicacao usa a mesma funcao pura.
+A API recusa a serie se o conjunto de hashes diferir do fixado na proposta.
+O banco e a importacao continuam fronteiras de confianca: hash nao prova a verdade
+meteorologica. A fonte e unica, nao descentralizada; o servico tambem e de no unico.
 
-A chave do produtor não entra nesse processo. O oráculo é um único serviço autorizado: autenticação de fontes não comprova a verdade física da chuva. A API entrega leituras, não decide o pagamento. Quem paga é a apólice.
+`npm start` inicia o servico. O usuario nao precisa iniciar um comando por periodo.
+A seguradora assina emissao e garantia; o produtor nao assina para receber.
 
-## Código
+## Falhas e compatibilidade
 
-| Arquivo em oraculo/src | Função |
-|---|---|
-| index.js | Serviço contínuo e comandos operacionais |
-| clienteBackend.js | Comunicação autenticada com a API |
-| consolidador.js | Regra de chuva e contagem de dias secos |
-| reputacao.js | Estado de reputação das fontes |
-| fila.js | Persistência, repetição e tratamento de falhas |
-| publicador.js | Comunicação e assinatura na blockchain |
-| registro.js | Registro das publicações |
+Fila em disco, reenvio com espera, controle de publicacao repetida e registro de
+recibos permanecem ativos. Uma falha no relato nao desfaz pagamento confirmado.
+Os registros ficam no diretorio privado da instancia, fora do Git.
 
-As fontes artificiais, a linha de comando de cenários e as verificações ficam exclusivamente em testes/oraculo. Para conferir o conjunto em execução, use `npm run status`.
+O caminho anterior de leituras assinadas permanece para compatibilidade e testes;
+usa `consolidador.js` e duas fontes. Ele nao e a regra da demonstracao historica,
+que utiliza uma estacao e nunca desloca as datas.
+
+Todos os testes estao em `testes/oraculo` e a integracao historica em
+`testes/contratos/unitarios/FluxoHistorico.test.js`. Execute `npm test` na raiz.

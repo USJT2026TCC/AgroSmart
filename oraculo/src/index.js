@@ -88,7 +88,9 @@ async function comandoStatus() {
   titulo("Servico de oraculo");
   console.log(`Rede...............: ${config.rede}`);
   console.log(`Endereco do oraculo: ${servico.publicador.endereco}`);
-  console.log(`Saldo..............: ${ethers.formatEther(await servico.publicador.saldo())} ETH`);
+  console.log(
+    `Saldo..............: ${ethers.formatEther(await servico.publicador.saldo())} ETH`,
+  );
 
   const registry = implantacao.contratos.OracleRegistry;
   const autorizado = await servico.publicador.estaAutorizado(registry);
@@ -113,7 +115,9 @@ function fonteDeDados(servico, opcoes) {
 
   if (tipo === "backend") {
     if (!servico.backend) {
-      throw new Error("A fonte backend exige API_URL e CHAVE_DE_SERVICO no .env do oraculo.");
+      throw new Error(
+        "A fonte backend exige API_URL e CHAVE_DE_SERVICO no .env do oraculo.",
+      );
     }
 
     const talhoes = new Map();
@@ -156,7 +160,9 @@ async function publicarPeriodo(servico, fonte, apolice, periodo) {
     if (evento.tipo === "espera")
       console.log(`  aguardando ${evento.ms}ms antes de nova tentativa`);
     if (evento.tipo === "erro") {
-      console.log(`  [erro] tentativa ${evento.tentativa}: ${descreverErro(evento.erro)}`);
+      console.log(
+        `  [erro] tentativa ${evento.tentativa}: ${descreverErro(evento.erro)}`,
+      );
     }
   });
 
@@ -205,17 +211,22 @@ async function publicarPeriodo(servico, fonte, apolice, periodo) {
  */
 async function comandoServico(opcoes) {
   const servico = criarServico();
-  if (!servico.backend) throw new Error("O modo servico exige API_URL e CHAVE_DE_SERVICO no .env.");
+  if (!servico.backend)
+    throw new Error("O modo servico exige API_URL e CHAVE_DE_SERVICO no .env.");
 
   const fonte = fonteDeDados(servico, { ...opcoes, fonte: "backend" });
   const intervalo = Number(
-    opcoes.intervalo && opcoes.intervalo !== true ? opcoes.intervalo : config.intervaloDoServicoMs,
+    opcoes.intervalo && opcoes.intervalo !== true
+      ? opcoes.intervalo
+      : config.intervaloDoServicoMs,
   );
 
   titulo("Oraculo em modo servico");
   console.log(`Oraculo..: ${servico.publicador.endereco}`);
   console.log(`Fonte....: ${fonte.descricao}`);
-  console.log(`Intervalo: ${intervalo / 1000}s${opcoes["uma-vez"] ? " (um unico ciclo)" : ""}`);
+  console.log(
+    `Intervalo: ${intervalo / 1000}s${opcoes["uma-vez"] ? " (um unico ciclo)" : ""}`,
+  );
 
   let parar = false;
   process.on("SIGINT", () => {
@@ -229,7 +240,9 @@ async function comandoServico(opcoes) {
     try {
       ativas = await servico.backend.apolicesAtivas();
     } catch (erro) {
-      console.log(`[${new Date().toISOString()}] backend indisponivel: ${erro.message}`);
+      console.log(
+        `[${new Date().toISOString()}] backend indisponivel: ${erro.message}`,
+      );
     }
 
     console.log(
@@ -243,7 +256,23 @@ async function comandoServico(opcoes) {
       }
 
       try {
-        if (await servico.publicador.periodoJaPublicado(a.endereco, periodo)) continue;
+        if (a.termos?.modoHistorico) {
+          const entrada = await servico.prepararHistorico(a.endereco);
+          if (
+            await servico.publicador.periodoJaPublicado(
+              a.endereco,
+              entrada.periodo,
+            )
+          )
+            continue;
+          const resultado = await servico.drenarFila();
+          console.log(
+            `  ${a.endereco}: reproducao historica ${entrada.periodo}: ${resultado.detalhes.some((d) => d.sucesso) ? "confirmada" : entrada.estado}`,
+          );
+          continue;
+        }
+        if (await servico.publicador.periodoJaPublicado(a.endereco, periodo))
+          continue;
 
         if (!(await servico.publicador.dentroDaVigencia(a.endereco))) {
           console.log(`  ${a.endereco}: fora da vigencia, nada a publicar`);
@@ -329,7 +358,9 @@ function comandoFila(opcoes) {
 }
 
 function comandoEstatisticas() {
-  const registro = new RegistroDePublicacoes(path.join(config.dirDados, "publicacoes.jsonl"));
+  const registro = new RegistroDePublicacoes(
+    path.join(config.dirDados, "publicacoes.jsonl"),
+  );
   const estatisticas = registro.estatisticas();
 
   titulo("Publicacoes registradas");
@@ -360,13 +391,21 @@ async function main() {
     console.log("");
     console.log("Uso: node src/index.js <comando> [opcoes]");
     console.log("");
-    console.log("  status                            endereco, saldo e autorizacao do oraculo");
+    console.log(
+      "  status                            endereco, saldo e autorizacao do oraculo",
+    );
     console.log(
       "  servico  [--uma-vez]              publica continuamente as apolices ativas do backend",
     );
-    console.log("  ouvir    --apolice 0x...          acompanha os eventos da apolice");
-    console.log("  fila     [--reabrir <chave>]      mostra ou reabre a fila de publicacoes");
-    console.log("  estatisticas                      gas e latencia das publicacoes");
+    console.log(
+      "  ouvir    --apolice 0x...          acompanha os eventos da apolice",
+    );
+    console.log(
+      "  fila     [--reabrir <chave>]      mostra ou reabre a fila de publicacoes",
+    );
+    console.log(
+      "  estatisticas                      gas e latencia das publicacoes",
+    );
     console.log("");
     console.log("  --periodo    dia de referencia em AAAAMMDD (padrao: hoje)");
 

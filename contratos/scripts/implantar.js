@@ -34,8 +34,10 @@ async function main() {
   // Em rede local o oraculo e sempre a conta 2. ENDERECO_ORACULO vale so para
   // rede publica: o .env guarda o oraculo da Sepolia, e usa-lo aqui autorizaria
   // um endereco que nao existe no no local (DECISOES.md 2.25).
-  const redeLocal = Number((await ethers.provider.getNetwork()).chainId) === 31337;
-  const enderecoOraculo = (redeLocal ? null : process.env.ENDERECO_ORACULO) || contas[2]?.address;
+  const redeLocal =
+    Number((await ethers.provider.getNetwork()).chainId) === 31337;
+  const enderecoOraculo =
+    (redeLocal ? null : process.env.ENDERECO_ORACULO) || contas[2]?.address;
 
   if (!enderecoOraculo) {
     throw new Error(
@@ -56,7 +58,9 @@ async function main() {
   const blocoInicial = await ethers.provider.getBlockNumber();
 
   // ---------------------------------------------------------------- registro
-  const registry = await ethers.deployContract("OracleRegistry", [seguradora.address]);
+  const registry = await ethers.deployContract("OracleRegistry", [
+    seguradora.address,
+  ]);
   await registry.waitForDeployment();
   const enderecoRegistry = await registry.getAddress();
   console.log(`OracleRegistry implantado em ${enderecoRegistry}`);
@@ -76,7 +80,7 @@ async function main() {
 
   // ---------------------------------------------------------------- registro em disco
   const implantacao = {
-    versaoProtocolo: "clima-integral-v1",
+    versaoProtocolo: "clima-integral-historico-v2",
     rede: network.name,
     chainId: Number((await ethers.provider.getNetwork()).chainId),
     implantadoEm: new Date().toISOString(),

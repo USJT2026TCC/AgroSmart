@@ -66,6 +66,8 @@ try {
       "../testes/simulador",
       "-c",
       "../testes/configuracao/pytest.ini",
+      "--basetemp",
+      "../testes/gerados/simulador/temporarios",
       "--cov=simulador",
       "--cov-report=term",
       "--cov-config=../testes/configuracao/coverage.ini",

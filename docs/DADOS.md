@@ -1,5 +1,11 @@
 # Fontes de dados
 
+**Recorte operacional atual:** somente Sao Simao/SP (A770), de 2020 a 30/09/2026.
+Preparacao unica descrita em [simulador/README.md](../simulador/README.md).
+Os trechos abaixo sobre outras estacoes e periodos registram estudos anteriores;
+nao definem as fontes da demonstracao historica atual.
+
+
 Todo número que aparece na demonstração vem de algum lugar. Este documento diz de onde, sob que
 licença, e o que foi feito com ele. Nenhum dado usado no projeto é inventado sem que a própria
 tela diga que é simulado.

@@ -1,4 +1,10 @@
-import { contratoApolice, enderecos, interfaceFactory, provedor } from "./rede.js";
+import { lerImplantacao } from "../config.js";
+import {
+  contratoApolice,
+  enderecos,
+  interfaceFactory,
+  provedor,
+} from "./rede.js";
 
 /**
  * Leitor da cadeia usado pelas rotas.
@@ -14,6 +20,12 @@ export function criarLeitorDaCadeia() {
   return {
     disponivel() {
       return Boolean(enderecos());
+    },
+
+    suportaHistorico() {
+      return (
+        lerImplantacao()?.versaoProtocolo === "clima-integral-historico-v2"
+      );
     },
 
     enderecoDaFabrica() {
@@ -52,9 +64,19 @@ export function criarLeitorDaCadeia() {
 
     async termosDaApolice(endereco) {
       const c = contratoApolice(endereco);
-      const [t, seguradora] = await Promise.all([c.verTermos(), c.seguradora()]);
+      const [t, seguradora] = await Promise.all([
+        c.verTermos(),
+        c.seguradora(),
+      ]);
+      let modoHistorico = false;
+      try {
+        modoHistorico = await c.modoHistorico();
+      } catch (erro) {
+        if (erro.code !== "CALL_EXCEPTION") throw erro;
+      }
 
       return {
+        modoHistorico,
         produtor: t.produtor.toLowerCase(),
         talhao: t.talhao,
         cultura: t.cultura,
@@ -95,7 +117,10 @@ export function apoliceDoRecibo(recibo, enderecoDaFabrica) {
     if (log.endereco !== enderecoDaFabrica) continue;
 
     try {
-      const evento = interfaceFactory.parseLog({ topics: log.topics, data: log.data });
+      const evento = interfaceFactory.parseLog({
+        topics: log.topics,
+        data: log.data,
+      });
 
       if (evento?.name === "ApoliceEmitida") {
         return {

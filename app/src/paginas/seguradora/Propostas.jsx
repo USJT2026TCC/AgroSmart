@@ -30,8 +30,15 @@ const ROTULOS = {
 };
 
 export default function Propostas() {
-  const { signatario, conta, provedorLeitura, redeCorreta, rede, trocarDeRede, conectar } =
-    useCarteira();
+  const {
+    signatario,
+    conta,
+    provedorLeitura,
+    redeCorreta,
+    rede,
+    trocarDeRede,
+    conectar,
+  } = useCarteira();
 
   const [propostas, setPropostas] = useState(null);
   const [ocupada, setOcupada] = useState(null);
@@ -51,10 +58,17 @@ export default function Propostas() {
       const situacoes = await Promise.all(
         emitidas.map(async (p) => [
           p.id,
-          Number(await contratoApolice(p.apolice.endereco, provedorLeitura).situacao()),
+          Number(
+            await contratoApolice(
+              p.apolice.endereco,
+              provedorLeitura,
+            ).situacao(),
+          ),
         ]),
       );
-      setGarantidas(Object.fromEntries(situacoes.map(([id, s]) => [id, s >= 1])));
+      setGarantidas(
+        Object.fromEntries(situacoes.map(([id, s]) => [id, s >= 1])),
+      );
     } catch (falha) {
       setErro(falha.message);
     }
@@ -81,15 +95,24 @@ export default function Propostas() {
     setOcupada(proposta.id);
 
     try {
-      setAviso("1/3 · O servidor esta preparando os termos e o resumo criptografico…");
-      const preparo = await api(`/propostas/${proposta.id}/preparar`, { metodo: "POST" });
+      setAviso(
+        "1/3 · O servidor esta preparando os termos e o resumo criptografico…",
+      );
+      const preparo = await api(`/propostas/${proposta.id}/preparar`, {
+        metodo: "POST",
+      });
 
       setAviso(
         `2/3 · Confirme a emissao na carteira. Resumo dos termos: ${hashCurto(preparo.hashTermos)}`,
       );
-      const transacao = await contratoFactory(signatario).emitirApolice(preparo.termos);
+      const fabrica = contratoFactory(signatario);
+      const transacao = await fabrica[
+        preparo.modoHistorico ? "emitirApoliceHistorica" : "emitirApolice"
+      ](preparo.termos);
 
-      setAviso(`2/3 · Transacao enviada (${hashCurto(transacao.hash)}). Aguardando confirmacao…`);
+      setAviso(
+        `2/3 · Transacao enviada (${hashCurto(transacao.hash)}). Aguardando confirmacao…`,
+      );
       await transacao.wait();
 
       setAviso("3/3 · O servidor esta conferindo a emissao na cadeia…");
@@ -103,7 +126,9 @@ export default function Propostas() {
       );
       await carregar();
     } catch (falha) {
-      setErro(falha.status !== undefined ? falha.message : mensagemDeErro(falha));
+      setErro(
+        falha.status !== undefined ? falha.message : mensagemDeErro(falha),
+      );
     } finally {
       setOcupada(null);
     }
@@ -145,7 +170,9 @@ export default function Propostas() {
   }
 
   const carteiraErrada =
-    conta && seguradoraDaFabrica && conta.toLowerCase() !== seguradoraDaFabrica.toLowerCase();
+    conta &&
+    seguradoraDaFabrica &&
+    conta.toLowerCase() !== seguradoraDaFabrica.toLowerCase();
 
   const podeAssinar = Boolean(signatario) && redeCorreta && !carteiraErrada;
 
@@ -162,8 +189,9 @@ export default function Propostas() {
         </button>
       </div>
       <p className="silencioso">
-        Emitir implanta um contrato novo na rede. O servidor prepara os termos, a sua carteira
-        assina, e o servidor confere na cadeia que o contrato implantado e o que foi acordado.
+        Emitir implanta um contrato novo na rede. O servidor prepara os termos,
+        a sua carteira assina, e o servidor confere na cadeia que o contrato
+        implantado e o que foi acordado.
       </p>
 
       {erro ? <Aviso tipo="erro">{erro}</Aviso> : null}
@@ -183,11 +211,15 @@ export default function Propostas() {
           </button>
         </Aviso>
       ) : carteiraErrada ? (
-        <Aviso tipo="erro" titulo="A conta selecionada na MetaMask nao e a da seguradora.">
+        <Aviso
+          tipo="erro"
+          titulo="A conta selecionada na MetaMask nao e a da seguradora."
+        >
           Para emitir, abra a MetaMask e selecione a conta{" "}
-          <span className="mono">{seguradoraDaFabrica}</span>, a unica que a fabrica aceita. A
-          MetaMask nao sabe quem entrou no aplicativo: ela assina com a conta que estiver
-          selecionada nela, e qualquer outra teria a transacao recusada pelo contrato com{" "}
+          <span className="mono">{seguradoraDaFabrica}</span>, a unica que a
+          fabrica aceita. A MetaMask nao sabe quem entrou no aplicativo: ela
+          assina com a conta que estiver selecionada nela, e qualquer outra
+          teria a transacao recusada pelo contrato com{" "}
           <code>NaoEhSeguradora</code> (RNF10).
         </Aviso>
       ) : null}
@@ -197,12 +229,15 @@ export default function Propostas() {
       ) : propostas.length === 0 ? (
         <div className="cartao">
           <p>Nenhuma proposta recebida.</p>
-          <p className="silencioso">O produtor envia propostas pela tela de cotacao.</p>
+          <p className="silencioso">
+            O produtor envia propostas pela tela de cotacao.
+          </p>
         </div>
       ) : (
         propostas.map((p) => {
           const [cor, rotulo] = ROTULOS[p.situacao] ?? ["neutro", p.situacao];
-          const aberta = p.situacao === "pendente" || p.situacao === "preparada";
+          const aberta =
+            p.situacao === "pendente" || p.situacao === "preparada";
           const semGarantia = p.apolice && !garantidas[p.id];
           const ocupadaAqui = ocupada === p.id;
 
@@ -222,18 +257,24 @@ export default function Propostas() {
                       <th>Produtor</th>
                       <td>
                         {p.produtor.nome} —{" "}
-                        <LinkDaCadeia valor={p.carteiraProdutor} tipo="address" />
+                        <LinkDaCadeia
+                          valor={p.carteiraProdutor}
+                          tipo="address"
+                        />
                       </td>
                     </tr>
                     <tr>
                       <th>Area segurada</th>
                       <td>
-                        {Number(p.areaSeguradaHa).toFixed(2)} ha de {p.talhao.cultura}
+                        {Number(p.areaSeguradaHa).toFixed(2)} ha de{" "}
+                        {p.talhao.cultura}
                       </td>
                     </tr>
                     <tr>
                       <th>Condicao</th>
-                      <td>{p.termos.limiarClimatico} dias consecutivos sem chuva</td>
+                      <td>
+                        {p.termos.limiarClimatico} dias consecutivos sem chuva
+                      </td>
                     </tr>
                     <tr>
                       <th>Limite / premio</th>
@@ -253,9 +294,17 @@ export default function Propostas() {
                       <tr>
                         <th>Contrato</th>
                         <td>
-                          <LinkDaCadeia valor={p.apolice.endereco} tipo="address" curto={false} />
+                          <LinkDaCadeia
+                            valor={p.apolice.endereco}
+                            tipo="address"
+                            curto={false}
+                          />
                           <div className="silencioso">
-                            emissao <LinkDaCadeia valor={p.apolice.txEmissao} tipo="tx" />
+                            emissao{" "}
+                            <LinkDaCadeia
+                              valor={p.apolice.txEmissao}
+                              tipo="tx"
+                            />
                           </div>
                         </td>
                       </tr>
@@ -267,24 +316,36 @@ export default function Propostas() {
               <div className="linha-de-botoes" style={{ marginTop: 14 }}>
                 {aberta ? (
                   <>
-                    <button onClick={() => emitir(p)} disabled={ocupadaAqui || !podeAssinar}>
+                    <button
+                      onClick={() => emitir(p)}
+                      disabled={ocupadaAqui || !podeAssinar}
+                    >
                       {ocupadaAqui ? "Emitindo…" : "Emitir apolice na rede"}
                     </button>
-                    <button className="perigo" onClick={() => recusar(p)} disabled={ocupadaAqui}>
+                    <button
+                      className="perigo"
+                      onClick={() => recusar(p)}
+                      disabled={ocupadaAqui}
+                    >
                       Recusar
                     </button>
                   </>
                 ) : null}
 
                 {semGarantia ? (
-                  <button onClick={() => depositar(p)} disabled={ocupadaAqui || !podeAssinar}>
+                  <button
+                    onClick={() => depositar(p)}
+                    disabled={ocupadaAqui || !podeAssinar}
+                  >
                     {ocupadaAqui
                       ? "Aguardando a carteira…"
                       : `Depositar garantia de ${emEth(p.valorIndenizacaoWei)}`}
                   </button>
                 ) : null}
 
-                {p.apolice ? <Link to={`/apolice/${p.apolice.endereco}`}>Ver apolice</Link> : null}
+                {p.apolice ? (
+                  <Link to={`/apolice/${p.apolice.endereco}`}>Ver apolice</Link>
+                ) : null}
               </div>
             </div>
           );

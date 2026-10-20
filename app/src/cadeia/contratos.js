@@ -20,7 +20,11 @@ export function contratoFactory(provedorOuSignatario) {
     );
   }
 
-  return new ethers.Contract(enderecos.ApoliceFactory, ABI_FACTORY, provedorOuSignatario);
+  return new ethers.Contract(
+    enderecos.ApoliceFactory,
+    ABI_FACTORY,
+    provedorOuSignatario,
+  );
 }
 
 export function contratoRegistry(provedorOuSignatario) {
@@ -28,7 +32,11 @@ export function contratoRegistry(provedorOuSignatario) {
 
   if (!enderecos) throw new Error("Nenhum contrato implantado para esta rede.");
 
-  return new ethers.Contract(enderecos.OracleRegistry, ABI_REGISTRY, provedorOuSignatario);
+  return new ethers.Contract(
+    enderecos.OracleRegistry,
+    ABI_REGISTRY,
+    provedorOuSignatario,
+  );
 }
 
 export function contratoApolice(endereco, provedorOuSignatario) {
@@ -66,7 +74,13 @@ async function consultarTrecho(contrato, filtro, de, ate, espera) {
  * Eventos de `contrato` entre `desde` e o bloco atual, em trechos de
  * BLOCOS_POR_CONSULTA, no maximo CONSULTAS_SIMULTANEAS de cada vez.
  */
-export async function eventosEmTrechos(contrato, filtro, desde, provedor, { espera = 300 } = {}) {
+export async function eventosEmTrechos(
+  contrato,
+  filtro,
+  desde,
+  provedor,
+  { espera = 300 } = {},
+) {
   const ate = await provedor.getBlockNumber();
   const trechos = [];
   for (let de = desde; de <= ate; de += BLOCOS_POR_CONSULTA) {
@@ -76,12 +90,20 @@ export async function eventosEmTrechos(contrato, filtro, desde, provedor, { espe
   const resultados = new Array(trechos.length);
   let proximo = 0;
   await Promise.all(
-    Array.from({ length: Math.min(CONSULTAS_SIMULTANEAS, trechos.length) }, async () => {
-      while (proximo < trechos.length) {
-        const i = proximo++;
-        resultados[i] = await consultarTrecho(contrato, filtro, ...trechos[i], espera);
-      }
-    }),
+    Array.from(
+      { length: Math.min(CONSULTAS_SIMULTANEAS, trechos.length) },
+      async () => {
+        while (proximo < trechos.length) {
+          const i = proximo++;
+          resultados[i] = await consultarTrecho(
+            contrato,
+            filtro,
+            ...trechos[i],
+            espera,
+          );
+        }
+      },
+    ),
   );
 
   return resultados.flat();
@@ -113,18 +135,38 @@ function normalizarTermos(bruto) {
 export async function lerApolice(endereco, provedor) {
   const contrato = contratoApolice(endereco, provedor);
 
-  const [termos, situacao, valorPago, periodoAcionador, garantiaRetida, total, seguradora] =
-    await Promise.all([
-      contrato.verTermos(),
-      contrato.situacao(),
-      contrato.valorPago(),
-      contrato.periodoAcionador(),
-      contrato.garantiaRetida(),
-      contrato.totalPeriodos(),
-      contrato.seguradora(),
-    ]);
+  const [
+    termos,
+    situacao,
+    valorPago,
+    periodoAcionador,
+    garantiaRetida,
+    total,
+    seguradora,
+  ] = await Promise.all([
+    contrato.verTermos(),
+    contrato.situacao(),
+    contrato.valorPago(),
+    contrato.periodoAcionador(),
+    contrato.garantiaRetida(),
+    contrato.totalPeriodos(),
+    contrato.seguradora(),
+  ]);
 
+  let modoHistorico = false,
+    instanteHistorico = null;
+  try {
+    modoHistorico = await contrato.modoHistorico();
+    if (modoHistorico)
+      instanteHistorico = Number(await contrato.instanteHistorico());
+  } catch (erro) {
+    // Contratos anteriores nao possuem esses seletores. Falhas de rede continuam visiveis.
+    if (erro.code !== "CALL_EXCEPTION" && !(erro instanceof TypeError))
+      throw erro;
+  }
   return {
+    modoHistorico,
+    instanteHistorico,
     endereco,
     seguradora,
     termos: normalizarTermos(termos),
@@ -148,7 +190,9 @@ export async function listarApolices(provedor, { produtor = null } = {}) {
         ),
       );
 
-  return Promise.all(enderecos.map((endereco) => lerApolice(endereco, provedor)));
+  return Promise.all(
+    enderecos.map((endereco) => lerApolice(endereco, provedor)),
+  );
 }
 
 /** Publicacoes registradas em uma apolice, da mais recente para a mais antiga. */
@@ -156,7 +200,9 @@ export async function lerPublicacoes(endereco, provedor) {
   const contrato = contratoApolice(endereco, provedor);
   const total = Number(await contrato.totalPeriodos());
 
-  const periodos = await Promise.all(Array.from({ length: total }, (_, i) => contrato.periodos(i)));
+  const periodos = await Promise.all(
+    Array.from({ length: total }, (_, i) => contrato.periodos(i)),
+  );
 
   const publicacoes = await Promise.all(
     periodos.map(async (periodo) => {
@@ -197,16 +243,19 @@ export async function lerLinhaDoTempo(endereco, provedor) {
 
   // Uma consulta por trecho para todos os eventos do contrato ("*"), e nao uma
   // por evento: sete vezes menos pedidos ao no.
-  const eventos = (await eventosEmTrechos(contrato, "*", desde, provedor)).filter(
-    (evento) => evento.fragment && nomes.includes(evento.fragment.name),
-  );
+  const eventos = (
+    await eventosEmTrechos(contrato, "*", desde, provedor)
+  ).filter((evento) => evento.fragment && nomes.includes(evento.fragment.name));
 
   // Os blocos sao buscados uma unica vez por numero: varias publicacoes costumam
   // cair em blocos diferentes, mas os eventos de uma mesma transacao nao.
   const numerosDeBloco = [...new Set(eventos.map((e) => e.blockNumber))];
   const blocos = new Map(
     await Promise.all(
-      numerosDeBloco.map(async (numero) => [numero, await provedor.getBlock(numero)]),
+      numerosDeBloco.map(async (numero) => [
+        numero,
+        await provedor.getBlock(numero),
+      ]),
     ),
   );
 
@@ -218,7 +267,10 @@ export async function lerLinhaDoTempo(endereco, provedor) {
       txHash: evento.transactionHash,
       em: blocos.get(evento.blockNumber)?.timestamp ?? null,
       argumentos: Object.fromEntries(
-        evento.fragment.inputs.map((entrada, i) => [entrada.name, evento.args[i]]),
+        evento.fragment.inputs.map((entrada, i) => [
+          entrada.name,
+          evento.args[i],
+        ]),
       ),
     }))
     .sort((a, b) => a.bloco - b.bloco || a.indiceNoBloco - b.indiceNoBloco);
@@ -257,7 +309,10 @@ export function resumirCarteira(apolices) {
 
   const exposicao = apolices.reduce((soma, a) => soma + a.garantiaRetida, 0n);
   const pago = apolices.reduce((soma, a) => soma + a.valorPago, 0n);
-  const limiteTotal = apolices.reduce((soma, a) => soma + a.termos.valorIndenizacao, 0n);
+  const limiteTotal = apolices.reduce(
+    (soma, a) => soma + a.termos.valorIndenizacao,
+    0n,
+  );
 
   return {
     total,

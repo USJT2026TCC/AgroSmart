@@ -20,9 +20,16 @@ class Publicador {
    * @param {string} opcoes.chavePrivada Chave do endereco autorizado no registro.
    * @param {number} [opcoes.confirmacoes=1] Confirmacoes aguardadas.
    */
-  constructor({ rpcUrl, chavePrivada, confirmacoes = 1, timeoutMs = 10_000, chainId = null }) {
+  constructor({
+    rpcUrl,
+    chavePrivada,
+    confirmacoes = 1,
+    timeoutMs = 10_000,
+    chainId = null,
+  }) {
     if (!rpcUrl) throw new Error("Publicador exige rpcUrl");
-    if (!chavePrivada) throw new Error("Publicador exige a chave privada do oraculo");
+    if (!chavePrivada)
+      throw new Error("Publicador exige a chave privada do oraculo");
 
     // O tempo limite padrao do ethers para uma requisicao e de 300 segundos, e
     // na deteccao inicial de rede ele ainda repete a tentativa varias vezes. Com
@@ -34,10 +41,14 @@ class Publicador {
     requisicao.timeout = timeoutMs;
     requisicao.retryFunc = async () => false;
 
-    this.provider = new ethers.JsonRpcProvider(requisicao, chainId ?? undefined, {
-      staticNetwork: Boolean(chainId),
-      batchMaxCount: 1,
-    });
+    this.provider = new ethers.JsonRpcProvider(
+      requisicao,
+      chainId ?? undefined,
+      {
+        staticNetwork: Boolean(chainId),
+        batchMaxCount: 1,
+      },
+    );
 
     this.signatario = new ethers.Wallet(chavePrivada, this.provider);
 
@@ -67,7 +78,11 @@ class Publicador {
    * endereco, e descobrir isso por uma revert custa gas a toa.
    */
   async estaAutorizado(enderecoRegistry) {
-    const registry = new ethers.Contract(enderecoRegistry, ABI_REGISTRY, this.provider);
+    const registry = new ethers.Contract(
+      enderecoRegistry,
+      ABI_REGISTRY,
+      this.provider,
+    );
 
     return registry.ehAutorizado(this.signatario.address);
   }
@@ -83,16 +98,35 @@ class Publicador {
     this.provider.destroy();
   }
 
+  async termosHistoricos(endereco) {
+    const c = new ethers.Contract(
+      endereco,
+      [...ABI_APOLICE, "function modoHistorico() view returns (bool)"],
+      this.provider,
+    );
+    if (!(await c.modoHistorico()))
+      throw new Error("Contrato nao e historico.");
+    return c.verTermos();
+  }
+
   /** Situacao atual de uma apolice, como rotulo legivel. */
   async situacaoDaApolice(enderecoApolice) {
-    const apolice = new ethers.Contract(enderecoApolice, ABI_APOLICE, this.provider);
+    const apolice = new ethers.Contract(
+      enderecoApolice,
+      ABI_APOLICE,
+      this.provider,
+    );
 
     return SITUACOES[Number(await apolice.situacao())];
   }
 
   /** Se o periodo ja foi publicado nessa apolice (RF20). */
   async periodoJaPublicado(enderecoApolice, periodo) {
-    const apolice = new ethers.Contract(enderecoApolice, ABI_APOLICE, this.provider);
+    const apolice = new ethers.Contract(
+      enderecoApolice,
+      ABI_APOLICE,
+      this.provider,
+    );
 
     return apolice.periodoPublicado(periodo);
   }
@@ -108,7 +142,10 @@ class Publicador {
    * @returns {Promise<object>} Recibo com txHash, gas, custo, bloco e latencia.
    */
   async publicar({ apolice: enderecoApolice, periodo, indiceClimatico }) {
-    return this._enviar(enderecoApolice, "publicarIndices", [periodo, indiceClimatico]);
+    return this._enviar(enderecoApolice, "publicarIndices", [
+      periodo,
+      indiceClimatico,
+    ]);
   }
 
   /**
@@ -119,7 +156,11 @@ class Publicador {
    * registrar como falha o que e so uma apolice que ainda nao comecou.
    */
   async dentroDaVigencia(enderecoApolice) {
-    const apolice = new ethers.Contract(enderecoApolice, ABI_APOLICE, this.provider);
+    const apolice = new ethers.Contract(
+      enderecoApolice,
+      ABI_APOLICE,
+      this.provider,
+    );
     const [termos, bloco] = await Promise.all([
       apolice.verTermos(),
       this.provider.getBlock("latest"),
@@ -133,7 +174,11 @@ class Publicador {
 
   /** Ensaia, estima, envia e confirma uma escrita na apolice. */
   async _enviar(enderecoApolice, metodo, argumentos) {
-    const apolice = new ethers.Contract(enderecoApolice, ABI_APOLICE, this.carteira);
+    const apolice = new ethers.Contract(
+      enderecoApolice,
+      ABI_APOLICE,
+      this.carteira,
+    );
 
     let recibo;
     let gasEstimado;
@@ -190,7 +235,11 @@ class Publicador {
    * @returns {Promise<() => void>} Funcao que encerra a escuta.
    */
   async ouvir(enderecoApolice, aoReceber) {
-    const apolice = new ethers.Contract(enderecoApolice, ABI_APOLICE, this.provider);
+    const apolice = new ethers.Contract(
+      enderecoApolice,
+      ABI_APOLICE,
+      this.provider,
+    );
 
     const tratar =
       (nome) =>
@@ -202,10 +251,14 @@ class Publicador {
           apolice: enderecoApolice,
           argumentos: evento?.args
             ? Object.fromEntries(
-                evento.fragment.inputs.map((entrada, i) => [entrada.name, evento.args[i]]),
+                evento.fragment.inputs.map((entrada, i) => [
+                  entrada.name,
+                  evento.args[i],
+                ]),
               )
             : {},
-          txHash: evento?.log?.transactionHash ?? evento?.transactionHash ?? null,
+          txHash:
+            evento?.log?.transactionHash ?? evento?.transactionHash ?? null,
           bloco: evento?.log?.blockNumber ?? evento?.blockNumber ?? null,
         });
       };

@@ -103,7 +103,7 @@ contract ApolicePolicy {
      *      struct inteira de uma vez evita o problema e ainda gasta menos gas na
      *      leitura pelo back-end, que precisa de todos os campos juntos.
      */
-    Termos private termos;
+    Termos internal termos;
 
     /// @notice Estado atual do ciclo de vida.
     Situacao public situacao;
@@ -281,7 +281,7 @@ contract ApolicePolicy {
      */
     function resgatarGarantia() external naoReentrante somenteSeguradora {
         if (situacao == Situacao.ATIVA) {
-            uint64 agora = uint64(block.timestamp);
+            uint64 agora = _relogioDaCobertura();
             // A marca de tempo do bloco e usada como relogio, nao como fonte de
             // aleatoriedade — o RNF06 proibe a segunda, nao a primeira. O
             // validador consegue desviar alguns segundos, o que e irrelevante
@@ -336,7 +336,7 @@ contract ApolicePolicy {
             revert SituacaoInvalida(situacao, Situacao.ATIVA);
         }
 
-        uint64 agora = uint64(block.timestamp);
+        uint64 agora = _relogioDaCobertura();
         // Relogio, nao entropia: ver o comentario equivalente em resgatarGarantia.
         // slither-disable-next-line timestamp
         if (agora >= termos.vigenciaInicio) revert VigenciaIniciada(agora, termos.vigenciaInicio);
@@ -384,7 +384,7 @@ contract ApolicePolicy {
     ) external naoReentrante somenteOraculoAutorizado naSituacao(Situacao.ATIVA) {
         // ---------- Verificacoes ----------
         if (periodoPublicado[periodo]) revert PeriodoJaPublicado(periodo);
-        _exigirVigencia();
+        _exigirVigencia(periodo, indiceClimatico);
 
         // ---------- Efeitos ----------
         periodoPublicado[periodo] = true;
@@ -401,8 +401,12 @@ contract ApolicePolicy {
     }
 
     /// @dev Publicacoes so valem dentro da vigencia.
-    function _exigirVigencia() private view {
-        uint64 agora = uint64(block.timestamp);
+    function _relogioDaCobertura() internal view virtual returns (uint64) {
+        return uint64(block.timestamp);
+    }
+
+    function _exigirVigencia(uint256, uint32) internal virtual {
+        uint64 agora = _relogioDaCobertura();
         // Relogio, nao entropia: ver o comentario equivalente em resgatarGarantia.
         // slither-disable-next-line timestamp
         if (agora < termos.vigenciaInicio || agora > termos.vigenciaFim) {

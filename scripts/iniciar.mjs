@@ -30,7 +30,12 @@ function configuracaoSepolia() {
   const implantacao = JSON.parse(
     readFileSync(path.join(raiz, "contratos", "implantacoes", "sepolia.json")),
   );
-  if (implantacao.legado || implantacao.versaoProtocolo !== "clima-integral-v1")
+  if (
+    implantacao.legado ||
+    !["clima-integral-v1", "clima-integral-historico-v2"].includes(
+      implantacao.versaoProtocolo,
+    )
+  )
     throw new Error("Implantacao Sepolia atual ausente.");
   const { Wallet } = requireContratosConfig("ethers");
   if (
@@ -42,6 +47,11 @@ function configuracaoSepolia() {
     rpc: e.RPC_SEPOLIA,
     chave: e.CHAVE_PRIVADA_ORACULO,
     fabrica: implantacao.contratos.ApoliceFactory,
+    instanciaDados: /^sepolia-0x[0-9a-f]{40}$/.test(
+      implantacao.instanciaDados ?? "",
+    )
+      ? implantacao.instanciaDados
+      : null,
   };
 }
 let rpcAlvo = "http://127.0.0.1:8545";
@@ -161,7 +171,8 @@ if (acao === "status") {
     if (Number(BigInt(await rpc("eth_chainId"))) !== 11155111)
       throw new Error("O RPC informado nao e Sepolia.");
     mkdirSync(estadoDir, { recursive: true });
-    const instancia = `sepolia-${publica.fabrica.toLowerCase()}`;
+    const instancia =
+      publica.instanciaDados ?? `sepolia-${publica.fabrica.toLowerCase()}`;
     const env = {
       ...process.env,
       NODE_ENV: "desenvolvimento",

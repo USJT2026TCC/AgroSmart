@@ -1,5 +1,5 @@
 /**
- * Carregado antes de qualquer teste (`node --import ./test/preparar.js`).
+ * Carregado antes de qualquer teste (`node --import ../testes/backend/unitarios/preparar.js`).
  *
  * As variaveis precisam existir ANTES de `src/config.js` ser avaliado, e em ESM
  * as importacoes estaticas acontecem antes do corpo do arquivo de teste. Por isso

@@ -104,9 +104,19 @@ def baixar_ano(ano: int, destino: Path) -> Path:
     if destino.exists() and destino.stat().st_size > 0:
         return destino
 
-    resposta = requests.get(URL_DO_ANO.format(ano=ano), headers=CABECALHOS, timeout=600)
-    resposta.raise_for_status()
-    destino.write_bytes(resposta.content)
+    # Grava em arquivo temporario: interrupcao nunca deixa um ZIP parcial como cache.
+    temporario = destino.with_suffix(".zip.part")
+    with requests.get(
+        URL_DO_ANO.format(ano=ano), headers=CABECALHOS, timeout=(30, 120), stream=True
+    ) as resposta:
+        resposta.raise_for_status()
+        with temporario.open("wb") as arquivo:
+            for bloco in resposta.iter_content(chunk_size=1024 * 1024):
+                arquivo.write(bloco)
+    with zipfile.ZipFile(temporario) as arquivo:
+        if not arquivo.namelist():
+            raise ValueError("ZIP anual vazio.")
+    temporario.replace(destino)
 
     return destino
 

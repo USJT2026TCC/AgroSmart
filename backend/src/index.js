@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import https from "node:https";
+import { importarInmet } from "./banco/importarInmet.js";
 
 import { criarApp } from "./app.js";
 import { config } from "./config.js";
@@ -22,11 +23,20 @@ async function iniciar() {
   const banco = await abrirBanco();
   const aplicadas = await migrar(banco);
 
-  if (aplicadas.length > 0) console.log(`Migracoes aplicadas: ${aplicadas.join(", ")}`);
+  if (aplicadas.length > 0)
+    console.log(`Migracoes aplicadas: ${aplicadas.join(", ")}`);
+
+  const importacao = await importarInmet(banco);
+  if (importacao.anos)
+    console.log(
+      `INMET importado: ${importacao.anos} anos, ${importacao.dias} dias. Datas originais preservadas.`,
+    );
 
   const diasDeHistorico = await carregarHistoricoClimatico(banco);
   if (diasDeHistorico > 0)
-    console.log(`Historico de chuva do INMET carregado: ${diasDeHistorico} dias.`);
+    console.log(
+      `Historico de chuva do INMET carregado: ${diasDeHistorico} dias.`,
+    );
 
   if (!config.emProducao && (await semear(banco))) {
     console.log(
@@ -45,7 +55,9 @@ async function iniciar() {
     console.log(
       `AgroSmart backend em ${comTls ? "https" : "http"}://localhost:${config.porta}/api`,
     );
-    console.log(`Banco: ${banco.motor}${config.urlDoBanco ? "" : ` (${config.dirBanco})`}`);
+    console.log(
+      `Banco: ${banco.motor}${config.urlDoBanco ? "" : ` (${config.dirBanco})`}`,
+    );
     console.log(
       cadeia.disponivel()
         ? `Cadeia: ${config.rede}, fabrica ${cadeia.enderecoDaFabrica()}`
@@ -57,7 +69,10 @@ async function iniciar() {
   const servidor = comTls
     ? https
         .createServer(
-          { cert: readFileSync(config.tlsCertificado), key: readFileSync(config.tlsChave) },
+          {
+            cert: readFileSync(config.tlsCertificado),
+            key: readFileSync(config.tlsChave),
+          },
           app,
         )
         .listen(config.porta, aoOuvir)

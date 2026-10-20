@@ -7,7 +7,12 @@ import { api } from "../api/cliente";
 import { useCarteira } from "../cadeia/CarteiraContexto";
 import { useSessao } from "../sessao/SessaoContexto";
 import { PERFIS } from "../sessao/perfis";
-import { contratoApolice, lerApolice, lerLinhaDoTempo, lerPublicacoes } from "../cadeia/contratos";
+import {
+  contratoApolice,
+  lerApolice,
+  lerLinhaDoTempo,
+  lerPublicacoes,
+} from "../cadeia/contratos";
 import {
   deBytes32,
   emData,
@@ -99,15 +104,17 @@ function ConferenciaDosTermos({ descricao, hashNoContrato }) {
       <div className="cartao">
         <h2>Conferencia dos termos</h2>
         <p className="silencioso">
-          O backend nao tem o texto dos termos desta apolice — ela foi emitida fora do aplicativo. O
-          resumo gravado no contrato continua disponivel acima para conferencia manual.
+          O backend nao tem o texto dos termos desta apolice — ela foi emitida
+          fora do aplicativo. O resumo gravado no contrato continua disponivel
+          acima para conferencia manual.
         </p>
       </div>
     );
   }
 
   const recalculado = ethers.keccak256(ethers.toUtf8Bytes(descricao));
-  const confere = recalculado.toLowerCase() === String(hashNoContrato).toLowerCase();
+  const confere =
+    recalculado.toLowerCase() === String(hashNoContrato).toLowerCase();
 
   return (
     <div className="cartao">
@@ -119,7 +126,12 @@ function ConferenciaDosTermos({ descricao, hashNoContrato }) {
       </p>
 
       <Campo rotulo="Texto dos termos">
-        <textarea readOnly rows={4} className="mono" value={descricao.split("|").join("\n")} />
+        <textarea
+          readOnly
+          rows={4}
+          className="mono"
+          value={descricao.split("|").join("\n")}
+        />
       </Campo>
 
       <div className="tabela-rolavel">
@@ -138,8 +150,9 @@ function ConferenciaDosTermos({ descricao, hashNoContrato }) {
       </div>
 
       <RodapeDaFronteira>
-        O resumo e recalculado aqui, e nao informado pelo servidor. A conferencia nao depende de
-        confiar em quem guarda o documento — so no texto e no contrato.
+        O resumo e recalculado aqui, e nao informado pelo servidor. A
+        conferencia nao depende de confiar em quem guarda o documento — so no
+        texto e no contrato.
       </RodapeDaFronteira>
     </div>
   );
@@ -156,11 +169,15 @@ function Procedencia({ relato }) {
     <div className="silencioso">
       {fontes.length} fonte(s)
       {descartadas.length > 0 ? `, ${descartadas.length} descartada(s)` : ""}
-      {relato.gas_usado ? <div>gas {Number(relato.gas_usado).toLocaleString("pt-BR")}</div> : null}
+      {relato.gas_usado ? (
+        <div>gas {Number(relato.gas_usado).toLocaleString("pt-BR")}</div>
+      ) : null}
       {relato.latencia_ms !== null && relato.latencia_ms !== undefined ? (
         <div>{relato.latencia_ms} ms</div>
       ) : null}
-      {!relato.confirmada_na_cadeia ? <Selo tipo="alerta">nao confirmada</Selo> : null}
+      {!relato.confirmada_na_cadeia ? (
+        <Selo tipo="alerta">nao confirmada</Selo>
+      ) : null}
     </div>
   );
 }
@@ -242,7 +259,9 @@ export default function ApoliceDetalhe() {
 
       setAviso(`Transacao enviada: ${transacao.hash}. Aguardando confirmacao…`);
       await transacao.wait();
-      setAviso("Garantia depositada. A apolice esta ativa e pronta para receber indices.");
+      setAviso(
+        "Garantia depositada. A apolice esta ativa e pronta para receber indices.",
+      );
       await carregar();
     } catch (falha) {
       setErro(mensagemDeErro(falha));
@@ -299,7 +318,9 @@ export default function ApoliceDetalhe() {
 
       setAviso(`Transacao enviada: ${transacao.hash}. Aguardando confirmacao…`);
       await transacao.wait();
-      setAviso("Apolice cancelada. A garantia, se ja depositada, voltou para a seguradora.");
+      setAviso(
+        "Apolice cancelada. A garantia, se ja depositada, voltou para a seguradora.",
+      );
       await carregar();
     } catch (falha) {
       setErro(mensagemDeErro(falha));
@@ -334,21 +355,28 @@ export default function ApoliceDetalhe() {
     conta &&
     conta.toLowerCase() === apolice.seguradora.toLowerCase();
 
-  const vigenciaVencida = Date.now() / 1000 > t.vigenciaFim;
+  const relogioCobertura = apolice.modoHistorico
+    ? apolice.instanteHistorico
+    : Date.now() / 1000;
+  const vigenciaVencida = relogioCobertura > t.vigenciaFim;
   // Titular pela carteira conectada: e quem assina o cancelamento na rede.
   const ehProdutorTitular =
-    perfil === PERFIS.PRODUTOR && conta && conta.toLowerCase() === t.produtor.toLowerCase();
+    perfil === PERFIS.PRODUTOR &&
+    conta &&
+    conta.toLowerCase() === t.produtor.toLowerCase();
 
   // A mesma regra do contrato: so antes do inicio da vigencia, e so enquanto a
   // apolice aguarda garantia ou esta ativa.
   const podeCancelar =
     (ehSeguradora || ehProdutorTitular) &&
     (apolice.situacao === 0 || apolice.situacao === 1) &&
-    Date.now() / 1000 < t.vigenciaInicio;
+    relogioCobertura < t.vigenciaInicio;
 
   /** Relato do oraculo sobre um periodo: fontes usadas, descartes, gas, latencia. */
   const relatoDoOraculo = (periodo) =>
-    doBackend?.publicacoes?.find((r) => Number(r.periodo) === Number(periodo)) ?? null;
+    doBackend?.publicacoes?.find(
+      (r) => Number(r.periodo) === Number(periodo),
+    ) ?? null;
 
   /**
    * O contrato aceita o resgate em dois casos: apolice ativa com vigencia vencida,
@@ -384,21 +412,41 @@ export default function ApoliceDetalhe() {
 
       <Aviso tipo="informacao">{explicacaoSituacao(apolice.situacao)}</Aviso>
 
+      {apolice.modoHistorico ? (
+        <Aviso tipo="alerta">
+          Reproducao historica de Sao Simao. Datas da cobertura referem-se aos
+          dados INMET; transacoes e ETH de teste pertencem a Sepolia atual. A
+          contagem comeca no inicio da cobertura. Cancelamento permitido somente
+          antes da primeira publicacao historica.
+        </Aviso>
+      ) : null}
       {podeCancelar ? (
         <div className="cartao">
           <h2>Cancelamento antes da vigencia</h2>
           <p className="silencioso">
-            A cobertura so comeca em {emData(t.vigenciaInicio)}. Ate la, o produtor ou a seguradora
-            podem cancelar; a garantia depositada volta para a seguradora (RF10).
+            {apolice.modoHistorico ? (
+              "A reproducao ainda nao iniciou."
+            ) : (
+              <>A cobertura so comeca em {emData(t.vigenciaInicio)}.</>
+            )}{" "}
+            Ate la, o produtor ou a seguradora podem cancelar; a garantia
+            depositada volta para a seguradora (RF10).
           </p>
-          <button className="secundario" onClick={cancelar} disabled={operando || !signatario}>
+          <button
+            className="secundario"
+            onClick={cancelar}
+            disabled={operando || !signatario}
+          >
             {operando ? "Aguardando a carteira…" : "Cancelar apolice"}
           </button>
         </div>
       ) : null}
 
       <div className="grade">
-        <Indicador rotulo="Limite contratado" valor={emEth(t.valorIndenizacao)} />
+        <Indicador
+          rotulo="Limite contratado"
+          valor={emEth(t.valorIndenizacao)}
+        />
         <Indicador
           rotulo="Garantia retida"
           valor={emEth(apolice.garantiaRetida)}
@@ -425,13 +473,21 @@ export default function ApoliceDetalhe() {
           <h2>Acoes da seguradora</h2>
           <div className="linha-de-botoes">
             {apolice.situacao === 0 ? (
-              <button onClick={depositarGarantia} disabled={operando || !signatario}>
-                {operando ? "Aguardando a carteira…" : `Depositar ${emEth(t.valorIndenizacao)}`}
+              <button
+                onClick={depositarGarantia}
+                disabled={operando || !signatario}
+              >
+                {operando
+                  ? "Aguardando a carteira…"
+                  : `Depositar ${emEth(t.valorIndenizacao)}`}
               </button>
             ) : null}
 
             {podeResgatar ? (
-              <button onClick={resgatarGarantia} disabled={operando || !signatario}>
+              <button
+                onClick={resgatarGarantia}
+                disabled={operando || !signatario}
+              >
                 {operando
                   ? "Aguardando a carteira…"
                   : apolice.situacao === 2
@@ -442,20 +498,23 @@ export default function ApoliceDetalhe() {
 
             {apolice.situacao === 1 && !vigenciaVencida ? (
               <span className="silencioso">
-                A garantia so pode ser resgatada apos {emData(t.vigenciaFim)}, e apenas se a
-                condicao nao tiver sido acionada.
+                A garantia so pode ser resgatada apos {emData(t.vigenciaFim)}, e
+                apenas se a condicao nao tiver sido acionada.
               </span>
             ) : null}
 
             {/* Saldo eventualmente forcado por terceiros pode ser recuperado. */}
             {apolice.situacao === 2 && apolice.garantiaRetida > 0n ? (
               <span className="silencioso">
-                A indenizacao integral ja foi paga. Um saldo excedente pode ser recuperado pela seguradora.
+                A indenizacao integral ja foi paga. Um saldo excedente pode ser
+                recuperado pela seguradora.
               </span>
             ) : null}
 
             {!podeResgatar && !(apolice.situacao === 1 && !vigenciaVencida) ? (
-              <span className="silencioso">Nao ha acoes pendentes nesta apolice.</span>
+              <span className="silencioso">
+                Nao ha acoes pendentes nesta apolice.
+              </span>
             ) : null}
           </div>
         </div>
@@ -470,15 +529,23 @@ export default function ApoliceDetalhe() {
           </Campo>
 
           <Campo rotulo="Seguradora">
-            <LinkDaCadeia valor={apolice.seguradora} tipo="address" curto={false} />
+            <LinkDaCadeia
+              valor={apolice.seguradora}
+              tipo="address"
+              curto={false}
+            />
           </Campo>
 
           <Campo rotulo="Cultura">{deBytes32(t.cultura)}</Campo>
 
-          <Campo rotulo="Condicao contratada">{t.limiarClimatico} dias consecutivos sem chuva</Campo>
+          <Campo rotulo="Condicao contratada">
+            {t.limiarClimatico} dias consecutivos sem chuva
+          </Campo>
 
           <Campo rotulo="Modo de pagamento">
-            {t.modoPagamento === 0 ? "Integral em parcela unica: paga 100% ao atingir o gatilho." : "Apolice legada: consulte os termos originais na cadeia."}
+            {t.modoPagamento === 0
+              ? "Integral em parcela unica: paga 100% ao atingir o gatilho."
+              : "Apolice legada: consulte os termos originais na cadeia."}
           </Campo>
 
           <Campo rotulo="Vigencia">
@@ -507,7 +574,8 @@ export default function ApoliceDetalhe() {
 
           {publicacoes.length === 0 ? (
             <p className="silencioso">
-              Nenhum indice publicado ainda. O oraculo publica um por periodo de referencia.
+              Nenhum indice publicado ainda. O oraculo publica um por periodo de
+              referencia.
             </p>
           ) : (
             <div className="tabela-rolavel">
@@ -524,7 +592,9 @@ export default function ApoliceDetalhe() {
                     <tr key={p.periodo}>
                       <td>
                         {periodoEmData(p.periodo)}
-                        <div className="silencioso">{emDataHora(p.publicadoEm)}</div>
+                        <div className="silencioso">
+                          {emDataHora(p.publicadoEm)}
+                        </div>
                       </td>
                       <td className="numero">{p.indiceClimatico} dias</td>
                       <td>
@@ -538,10 +608,12 @@ export default function ApoliceDetalhe() {
           )}
 
           <RodapeDaFronteira>
-            O contrato nao verifica se o indice esta correto, so se quem publicou estava autorizado.
-            A proveniencia de cada publicacao — quais fontes climaticas foram consultadas, as
-            descartadas, o gas consumido e a latencia — fica registrada no backend do oraculo, ao
-            lado de cada periodo, para que qualquer pessoa possa conferir a leitura (RNF18, RNF19).
+            O contrato nao verifica se o indice esta correto, so se quem
+            publicou estava autorizado. A proveniencia de cada publicacao —
+            quais fontes climaticas foram consultadas, as descartadas, o gas
+            consumido e a latencia — fica registrada no backend do oraculo, ao
+            lado de cada periodo, para que qualquer pessoa possa conferir a
+            leitura (RNF18, RNF19).
           </RodapeDaFronteira>
         </div>
       </div>
@@ -554,8 +626,9 @@ export default function ApoliceDetalhe() {
       <div className="cartao">
         <h2>Linha do tempo</h2>
         <p className="silencioso">
-          Reconstruida a partir dos eventos registrados na rede, e nao de um banco de dados. E o que
-          permite a qualquer parte auditar a decisao de pagamento (RF09, RNF18).
+          Reconstruida a partir dos eventos registrados na rede, e nao de um
+          banco de dados. E o que permite a qualquer parte auditar a decisao de
+          pagamento (RF09, RNF18).
         </p>
 
         {linhaDoTempo.length === 0 ? (
@@ -565,7 +638,9 @@ export default function ApoliceDetalhe() {
             {linhaDoTempo.map((evento) => (
               <li
                 key={`${evento.txHash}-${evento.indiceNoBloco}`}
-                className={evento.nome === "PagamentoExecutado" ? "pagamento" : ""}
+                className={
+                  evento.nome === "PagamentoExecutado" ? "pagamento" : ""
+                }
               >
                 <div className="titulo-evento">
                   {TITULOS[evento.nome] ?? evento.nome}{" "}
@@ -585,8 +660,8 @@ export default function ApoliceDetalhe() {
 
         {!rede.explorador ? (
           <p className="silencioso">
-            A rede local nao tem explorador de blocos publico. Em Sepolia, cada transacao acima vira
-            um link conferivel por qualquer pessoa.
+            A rede local nao tem explorador de blocos publico. Em Sepolia, cada
+            transacao acima vira um link conferivel por qualquer pessoa.
           </p>
         ) : null}
       </div>

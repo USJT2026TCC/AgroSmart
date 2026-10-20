@@ -3,9 +3,17 @@ import { Link } from "react-router-dom";
 
 import { api } from "../../api/cliente";
 import { useSessao } from "../../sessao/SessaoContexto";
-import { exemplosDeAcionamento, condicaoEmPalavras } from "../../cadeia/regraDeGatilho";
+import {
+  exemplosDeAcionamento,
+  condicaoEmPalavras,
+} from "../../cadeia/regraDeGatilho";
 import { emEth, emPercentual } from "../../cadeia/formatos";
-import { Aviso, Campo, Carregando, RodapeDaFronteira } from "../../componentes/ui";
+import {
+  Aviso,
+  Campo,
+  Carregando,
+  RodapeDaFronteira,
+} from "../../componentes/ui";
 
 /**
  * Simulacao de cotacao e envio da proposta (RF06, RNF04, HU10).
@@ -36,17 +44,20 @@ function HistoricoClimatico({ historico, premioBps }) {
     <div className="cartao">
       <h2>Historico da localidade</h2>
       <Aviso tipo={historico.frequencia > 0.5 ? "alerta" : "informacao"}>
-        Nos ultimos {historico.anosAvaliados} anos com dados, esta condicao, com a cobertura
-        comecando nesta data, teria acionado em <strong>{historico.acionamentos}</strong>. O
-        pagamento medio teria sido de <strong>{emPercentual(historico.pagamentoMedioBps)}</strong>{" "}
-        do limite por ano
+        Nos ultimos {historico.anosAvaliados} anos com dados, esta condicao, com
+        a cobertura comecando nesta data, teria acionado em{" "}
+        <strong>{historico.acionamentos}</strong>. O pagamento medio teria sido
+        de <strong>{emPercentual(historico.pagamentoMedioBps)}</strong> do
+        limite por ano
         {premioBps !== undefined ? (
           <>; o premio cobrado e {emPercentual(premioBps)} do limite</>
         ) : null}
         .
       </Aviso>
 
-      {historico.observacao ? <p className="silencioso">{historico.observacao}</p> : null}
+      {historico.observacao ? (
+        <p className="silencioso">{historico.observacao}</p>
+      ) : null}
 
       <div className="tabela-rolavel">
         <table>
@@ -76,13 +87,13 @@ function HistoricoClimatico({ historico, premioBps }) {
       </div>
 
       <p className="silencioso">
-        Estacoes do INMET a ate 100 km do talhao: {historico.estacoes.join(", ")}. Regra do oraculo:{" "}
-        {historico.regra}.{" "}
+        Estacoes do INMET a ate 100 km do talhao:{" "}
+        {historico.estacoes.join(", ")}. Regra do oraculo: {historico.regra}.{" "}
         {avaliados.length < historico.anos.length
           ? "Anos com menos de 90% dos dias medidos ficam fora da conta. "
           : ""}
-        E uma frequencia historica, nao uma probabilidade atuarial. Fonte: INMET,
-        portal.inmet.gov.br/dadoshistoricos.
+        E uma frequencia historica, nao uma probabilidade atuarial. Fonte:
+        INMET, portal.inmet.gov.br/dadoshistoricos.
       </p>
     </div>
   );
@@ -101,6 +112,10 @@ export default function Cotacao() {
   // Data local (sv-SE e AAAA-MM-DD): em UTC, a noite no Brasil ja seria amanha.
   const hoje = new Date().toLocaleDateString("sv-SE");
   const [inicioDaVigencia, setInicioDaVigencia] = useState(hoje);
+  const [reproducaoHistorica, setReproducaoHistorica] = useState(false);
+  const [fimDaVigencia, setFimDaVigencia] = useState("2025-02-07");
+  const [gatilhoDias, setGatilhoDias] = useState(30);
+  const [avaliacaoHistorica, setAvaliacaoHistorica] = useState(null);
   const [cotacao, setCotacao] = useState(null);
   const [enviada, setEnviada] = useState(null);
   const [erro, setErro] = useState(null);
@@ -138,7 +153,15 @@ export default function Cotacao() {
     const temporizador = setTimeout(() => {
       api("/cotacoes", {
         metodo: "POST",
-        corpo: { talhaoId, produtoId, areaHa: areaSegurada, inicioDaVigencia },
+        corpo: {
+          talhaoId,
+          produtoId,
+          areaHa: areaSegurada,
+          inicioDaVigencia,
+          reproducaoHistorica,
+          fimDaVigencia,
+          gatilhoDias,
+        },
       })
         .then(({ cotacao: c }) => {
           setCotacao(c);
@@ -148,18 +171,35 @@ export default function Cotacao() {
     }, 250);
 
     return () => clearTimeout(temporizador);
-  }, [talhaoId, produtoId, areaSegurada, inicioDaVigencia]);
+  }, [
+    talhaoId,
+    produtoId,
+    areaSegurada,
+    inicioDaVigencia,
+    reproducaoHistorica,
+    fimDaVigencia,
+    gatilhoDias,
+  ]);
 
   /** Termos no formato da regra de gatilho, com o limite cotado pelo servidor. */
   const termos = useMemo(
-    () => (cotacao ? { ...cotacao.termos, valorIndenizacao: cotacao.valorIndenizacaoWei } : null),
+    () =>
+      cotacao
+        ? { ...cotacao.termos, valorIndenizacao: cotacao.valorIndenizacaoWei }
+        : null,
     [cotacao],
   );
 
-  const exemplos = useMemo(() => (termos ? exemplosDeAcionamento(termos) : []), [termos]);
+  const exemplos = useMemo(
+    () => (termos ? exemplosDeAcionamento(termos) : []),
+    [termos],
+  );
 
   /** A condicao em linguagem corrente (RNF04). */
-  const textoDaCondicao = useMemo(() => (produto ? condicaoEmPalavras(produto) : null), [produto]);
+  const textoDaCondicao = useMemo(
+    () => (produto ? condicaoEmPalavras(cotacao?.termos ?? produto) : null),
+    [produto, cotacao],
+  );
 
   async function enviarProposta() {
     setErro(null);
@@ -168,7 +208,15 @@ export default function Cotacao() {
     try {
       const { proposta } = await api("/propostas", {
         metodo: "POST",
-        corpo: { talhaoId, produtoId, areaHa: areaSegurada, inicioDaVigencia },
+        corpo: {
+          talhaoId,
+          produtoId,
+          areaHa: areaSegurada,
+          inicioDaVigencia,
+          reproducaoHistorica,
+          fimDaVigencia,
+          gatilhoDias,
+        },
       });
       setEnviada(proposta);
     } catch (falha) {
@@ -196,8 +244,8 @@ export default function Cotacao() {
       <div className="pagina">
         <h1>Simular e contratar</h1>
         <Aviso tipo="alerta" titulo="Nenhum talhao cadastrado.">
-          A seguradora precisa cadastrar o produtor e delimitar os talhoes seguraveis antes da
-          cotacao (UC02).
+          A seguradora precisa cadastrar o produtor e delimitar os talhoes
+          seguraveis antes da cotacao (UC02).
         </Aviso>
       </div>
     );
@@ -207,15 +255,15 @@ export default function Cotacao() {
     <div className="pagina">
       <h1>Simular e contratar</h1>
       <p className="silencioso">
-        A cotacao mostra o limite, o premio e exatamente o que aciona e o que nao aciona o
-        pagamento.
+        A cotacao mostra o limite, o premio e exatamente o que aciona e o que
+        nao aciona o pagamento.
       </p>
 
       {!usuario?.carteira ? (
         <Aviso tipo="alerta" titulo="Carteira nao vinculada.">
           Voce pode simular, mas para enviar a proposta e preciso{" "}
-          <Link to="/produtor/carteira">vincular a carteira</Link> — e para ela que a indenizacao
-          seria transferida.
+          <Link to="/produtor/carteira">vincular a carteira</Link> — e para ela
+          que a indenizacao seria transferida.
         </Aviso>
       ) : null}
 
@@ -223,8 +271,9 @@ export default function Cotacao() {
 
       {enviada ? (
         <Aviso tipo="sucesso" titulo="Proposta enviada a seguradora.">
-          A seguradora precisa emitir a apolice, porque so a carteira dela pode implantar o contrato
-          na rede (RNF10). Voce recebera uma notificacao quando a apolice for emitida.
+          A seguradora precisa emitir a apolice, porque so a carteira dela pode
+          implantar o contrato na rede (RNF10). Voce recebera uma notificacao
+          quando a apolice for emitida.
         </Aviso>
       ) : null}
 
@@ -239,7 +288,9 @@ export default function Cotacao() {
               onChange={(e) => {
                 const escolhido = talhoes.find((t) => t.id === e.target.value);
                 setTalhaoId(e.target.value);
-                setAreaSegurada(String(Number(escolhido?.areaHa ?? 0).toFixed(2)));
+                setAreaSegurada(
+                  String(Number(escolhido?.areaHa ?? 0).toFixed(2)),
+                );
                 setProdutoId("");
               }}
             >
@@ -275,18 +326,118 @@ export default function Cotacao() {
           <Campo
             rotulo="Inicio da cobertura"
             htmlFor="inicio"
-            ajuda="Mude a data para comparar epocas do ano no historico. A proposta aceita de hoje ate 120 dias a frente; antes do inicio, a apolice pode ser cancelada."
+            ajuda={
+              reproducaoHistorica
+                ? "Data original dos dados INMET. Contagem comeca neste dia, em UTC."
+                : "A proposta aceita de hoje ate 120 dias a frente."
+            }
           >
             <input
               id="inicio"
               type="date"
               value={inicioDaVigencia}
-              onChange={(e) => setInicioDaVigencia(e.target.value)}
+              onChange={(e) => {
+                setInicioDaVigencia(e.target.value);
+                setAvaliacaoHistorica(null);
+              }}
             />
           </Campo>
 
+          <Campo rotulo="Demonstracao historica">
+            <label>
+              <input
+                type="checkbox"
+                checked={reproducaoHistorica}
+                onChange={(e) => {
+                  setReproducaoHistorica(e.target.checked);
+                  setInicioDaVigencia(e.target.checked ? "2024-02-07" : hoje);
+                  setAvaliacaoHistorica(null);
+                }}
+              />{" "}
+              Usar dados historicos de Sao Simao (A770)
+            </label>
+          </Campo>
+          {reproducaoHistorica ? (
+            <>
+              <Aviso tipo="alerta">
+                Contratacao hipotetica. Talhao considerado coincidente com a
+                estacao por hipotese. Dados reais do INMET; pagamento de teste
+                ocorre agora na Sepolia. Gatilho experimental, sem estimativa de
+                prejuizo agricola.
+              </Aviso>
+              <Campo
+                rotulo="Fim da cobertura historica"
+                htmlFor="fim-historico"
+              >
+                <input
+                  id="fim-historico"
+                  type="date"
+                  max="2026-09-30"
+                  value={fimDaVigencia}
+                  onChange={(e) => {
+                    setFimDaVigencia(e.target.value);
+                    setAvaliacaoHistorica(null);
+                  }}
+                />
+              </Campo>
+              <Campo
+                rotulo="Gatilho experimental (dias secos)"
+                htmlFor="gatilho-dias"
+              >
+                <input
+                  id="gatilho-dias"
+                  type="number"
+                  min="1"
+                  max="366"
+                  value={gatilhoDias}
+                  onChange={(e) => {
+                    setGatilhoDias(Number(e.target.value));
+                    setAvaliacaoHistorica(null);
+                  }}
+                />
+              </Campo>
+              <button
+                type="button"
+                className="secundario"
+                onClick={async () => {
+                  setErro(null);
+                  setAvaliacaoHistorica(null);
+                  try {
+                    const { resultado } = await api("/historico/avaliar", {
+                      metodo: "POST",
+                      corpo: {
+                        inicio: inicioDaVigencia,
+                        fim: fimDaVigencia,
+                        gatilho: gatilhoDias,
+                      },
+                    });
+                    setAvaliacaoHistorica(resultado);
+                  } catch (falha) {
+                    setErro(falha.message);
+                  }
+                }}
+              >
+                Analisar periodo no banco
+              </button>
+              {avaliacaoHistorica ? (
+                <Aviso tipo="informacao">
+                  {avaliacaoHistorica.acionaria
+                    ? `Acionaria em ${avaliacaoHistorica.primeiroAcionamento}, com pagamento integral.`
+                    : "Nao foi identificado acionamento na serie disponivel."}{" "}
+                  Maior sequencia: {avaliacaoHistorica.maiorSequencia} dias.
+                  Dias incompletos: {avaliacaoHistorica.diasIncompletos}. Esta
+                  consulta nao envia transacao.
+                </Aviso>
+              ) : null}
+            </>
+          ) : null}
+
           <Campo rotulo="Produto" htmlFor="produto">
-            <select id="produto" value={produtoId} onChange={(e) => setProdutoId(e.target.value)}>
+            <select
+              id="produto"
+              value={produtoId}
+              onChange={(e) => setProdutoId(e.target.value)}
+            >
               <option value="">Escolha um produto…</option>
               {produtosCompativeis.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -298,7 +449,8 @@ export default function Cotacao() {
 
           {produtosCompativeis.length === 0 ? (
             <Aviso tipo="alerta">
-              Nenhum produto configurado para a cultura <strong>{talhao?.cultura}</strong>.
+              Nenhum produto configurado para a cultura{" "}
+              <strong>{talhao?.cultura}</strong>.
             </Aviso>
           ) : null}
         </div>
@@ -307,7 +459,9 @@ export default function Cotacao() {
           <h2>2. Cotacao</h2>
 
           {!produto ? (
-            <p className="silencioso">Escolha um produto para ver o limite e o premio.</p>
+            <p className="silencioso">
+              Escolha um produto para ver o limite e o premio.
+            </p>
           ) : !cotacao ? (
             <Carregando>Calculando…</Carregando>
           ) : (
@@ -315,22 +469,29 @@ export default function Cotacao() {
               <div className="grade">
                 <div className="indicador">
                   <div className="rotulo">Limite contratado</div>
-                  <div className="valor">{emEth(cotacao.valorIndenizacaoWei)}</div>
+                  <div className="valor">
+                    {emEth(cotacao.valorIndenizacaoWei)}
+                  </div>
                   <div className="nota">
-                    {cotacao.areaSeguradaHa} ha x {produto.valorPorHectareEth} ETH/ha
+                    {cotacao.areaSeguradaHa} ha x {produto.valorPorHectareEth}{" "}
+                    ETH/ha
                   </div>
                 </div>
                 <div className="indicador">
                   <div className="rotulo">Premio</div>
                   <div className="valor">{emEth(cotacao.premioWei)}</div>
-                  <div className="nota">taxa de {produto.taxaPremioBps / 100}% do limite</div>
+                  <div className="nota">
+                    taxa de {produto.taxaPremioBps / 100}% do limite
+                  </div>
                 </div>
               </div>
 
               <Campo rotulo="Vigencia">
                 <div>
-                  {produto.vigenciaDias} dias a partir de{" "}
-                  {new Date(`${inicioDaVigencia}T12:00:00Z`).toLocaleDateString("pt-BR")}
+                  {cotacao.termos.vigenciaDias} dias a partir de{" "}
+                  {new Date(`${inicioDaVigencia}T12:00:00Z`).toLocaleDateString(
+                    "pt-BR",
+                  )}
                 </div>
               </Campo>
             </>
@@ -338,8 +499,11 @@ export default function Cotacao() {
         </div>
       </div>
 
-      {cotacao?.historico ? (
-        <HistoricoClimatico historico={cotacao.historico} premioBps={produto?.taxaPremioBps} />
+      {cotacao?.historico && !reproducaoHistorica ? (
+        <HistoricoClimatico
+          historico={cotacao.historico}
+          premioBps={produto?.taxaPremioBps}
+        />
       ) : null}
 
       {termos && produto ? (
@@ -351,8 +515,9 @@ export default function Cotacao() {
           </Aviso>
 
           <p className="silencioso">
-            Nao ha vistoria nem pericia. O oraculo publica o indice medido, o contrato compara com o
-            limiar e, se bater, transfere na mesma transacao.
+            Nao ha vistoria nem pericia. O oraculo publica o indice medido, o
+            contrato compara com o limiar e, se bater, transfere na mesma
+            transacao.
           </p>
 
           <div className="tabela-rolavel">
@@ -373,7 +538,9 @@ export default function Cotacao() {
                   >
                     <td>{exemplo.diasSemChuva} dias</td>
                     <td>{exemplo.percentualBps > 0 ? "Sim" : "Nao"}</td>
-                    <td className="numero">{emPercentual(exemplo.percentualBps)}</td>
+                    <td className="numero">
+                      {emPercentual(exemplo.percentualBps)}
+                    </td>
                     <td className="numero">{emEth(exemplo.valorWei)}</td>
                   </tr>
                 ))}
@@ -400,9 +567,9 @@ export default function Cotacao() {
           </div>
 
           <RodapeDaFronteira>
-            Limite e premio calculados pelo servidor, em inteiros sobre wei. Os exemplos vem de{" "}
-            <code>regraDeGatilho.js</code>, a mesma regra que o contrato executa, conferida por
-            teste automatizado caso a caso.
+            Limite e premio calculados pelo servidor, em inteiros sobre wei. Os
+            exemplos vem de <code>regraDeGatilho.js</code>, a mesma regra que o
+            contrato executa, conferida por teste automatizado caso a caso.
           </RodapeDaFronteira>
         </div>
       ) : null}

@@ -38,7 +38,19 @@ export function descreverTermos(t) {
     // v2: formato climatico; nao inclui campos do protocolo anterior. A mudanca de formato do texto canonico muda o hash do RF08, por
     // isso a versao avancou — manter "v1" faria termos antigos e novos, com
     // campos diferentes, colidirem debaixo da mesma tag.
-    "AgroSmart:v2",
+    t.modoHistorico ? "AgroSmart:historico:v1" : "AgroSmart:v2",
+    ...(t.modoHistorico
+      ? [
+          `estacao:${t.estacao}`,
+          `sha256-serie:${t.hashSerie}`,
+          "parametro:experimental",
+          "contagem:inicio-da-cobertura",
+          "dia-seco:chuva-inferior-a-1-mm",
+          "dia-utilizavel:minimo-20-horas-validas",
+          "datas:utc-inclusivas",
+          "talhao:coincidente-com-estacao-por-hipotese",
+        ]
+      : []),
     `apolice-de-proposta:${t.propostaId}`,
     `produtor:${t.carteiraProdutor.toLowerCase()}`,
     `talhao:${t.talhao}`,
@@ -65,8 +77,13 @@ export function resumirTermos(descricao) {
  * Number perderia precisao acima de 2^53. O ethers aceita o texto e converte.
  */
 export function montarStructDeTermos(t, hashTermos) {
-  if (Number(t.modoPagamento) !== 0 || Number(t.limiarClimaticoIntegral) !== 0) {
-    throw new Error("Proposta legada incompativel: refaca a cotacao com pagamento integral.");
+  if (
+    Number(t.modoPagamento) !== 0 ||
+    Number(t.limiarClimaticoIntegral) !== 0
+  ) {
+    throw new Error(
+      "Proposta legada incompativel: refaca a cotacao com pagamento integral.",
+    );
   }
   return {
     produtor: ethers.getAddress(t.carteiraProdutor),

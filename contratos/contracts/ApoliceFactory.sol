@@ -2,6 +2,7 @@
 pragma solidity ^0.8.24;
 
 import {ApolicePolicy} from "./ApolicePolicy.sol";
+import {ApoliceHistorica} from "./ApoliceHistorica.sol";
 import {OracleRegistry} from "./OracleRegistry.sol";
 
 /**
@@ -69,6 +70,19 @@ contract ApoliceFactory {
         ApolicePolicy nova = new ApolicePolicy(seguradora, termos);
         apolice = address(nova);
 
+        _registrar(apolice, termos);
+    }
+
+    /// @notice Emissao explicitamente historica. Nunca representa contratacao passada real.
+    function emitirApoliceHistorica(ApolicePolicy.Termos memory termos)
+        external somenteSeguradora returns (address apolice)
+    {
+        termos.registry = address(registry);
+        apolice = address(new ApoliceHistorica(seguradora, termos));
+        _registrar(apolice, termos);
+    }
+
+    function _registrar(address apolice, ApolicePolicy.Termos memory termos) private {
         apolices.push(apolice);
         _apolicesPorProdutor[termos.produtor].push(apolice);
         _apolicesPorTalhao[termos.talhao].push(apolice);

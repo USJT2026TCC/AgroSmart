@@ -11,6 +11,7 @@
 
 export const ABI_FACTORY = [
   "function emitirApolice((address produtor,address registry,bytes32 cultura,bytes32 talhao,uint8 modoPagamento,uint32 limiarClimatico,uint32 limiarClimaticoIntegral,uint64 vigenciaInicio,uint64 vigenciaFim,uint256 valorIndenizacao,bytes32 hashTermos) termos) returns (address)",
+  "function emitirApoliceHistorica((address produtor,address registry,bytes32 cultura,bytes32 talhao,uint8 modoPagamento,uint32 limiarClimatico,uint32 limiarClimaticoIntegral,uint64 vigenciaInicio,uint64 vigenciaFim,uint256 valorIndenizacao,bytes32 hashTermos) termos) returns (address)",
   "function apolices(uint256) view returns (address)",
   "function totalApolices() view returns (uint256)",
   "function apolicesDoProdutor(address produtor) view returns (address[])",
@@ -24,6 +25,8 @@ export const ABI_FACTORY = [
 
 export const ABI_APOLICE = [
   "function seguradora() view returns (address)",
+  "function modoHistorico() view returns (bool)",
+  "function instanteHistorico() view returns (uint64)",
   "function situacao() view returns (uint8)",
   "function valorPago() view returns (uint256)",
   "function periodoAcionador() view returns (uint256)",

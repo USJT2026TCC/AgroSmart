@@ -1,8 +1,15 @@
 import { Router } from "express";
+import { hashDaSerie } from "../dominio/reproducao.js";
 
 import { naoEncontrado, pedidoInvalido } from "../erros.js";
 import { auditar, exigirServico } from "../seguranca/sessoes.js";
-import { endereco, hashDeTransacao, inteiro, periodo, texto } from "../validacao.js";
+import {
+  endereco,
+  hashDeTransacao,
+  inteiro,
+  periodo,
+  texto,
+} from "../validacao.js";
 
 /**
  * Interface entre o backend e o servico de oraculo.
@@ -27,7 +34,14 @@ import { endereco, hashDeTransacao, inteiro, periodo, texto } from "../validacao
 function fimDoDia(p) {
   const t = String(p);
   return new Date(
-    Date.UTC(Number(t.slice(0, 4)), Number(t.slice(4, 6)) - 1, Number(t.slice(6, 8)), 23, 59, 59),
+    Date.UTC(
+      Number(t.slice(0, 4)),
+      Number(t.slice(4, 6)) - 1,
+      Number(t.slice(6, 8)),
+      23,
+      59,
+      59,
+    ),
   );
 }
 
@@ -43,6 +57,29 @@ export function rotasDoOraculo() {
    * o contrato continua sendo a autoridade, e o oraculo ensaia a chamada antes
    * de gastar gas.
    */
+  r.get("/oraculo/serie-historica", async (req, res) => {
+    const apolice = endereco(req.query.apolice, "apolice");
+    const banco = req.app.locals.banco;
+    const { rows } = await banco.query(
+      "SELECT p.termos FROM propostas p JOIN apolices a ON a.proposta_id=p.id WHERE a.endereco=$1",
+      [apolice],
+    );
+    const t = rows[0]?.termos;
+    if (!t?.modoHistorico) throw pedidoInvalido("Apolice nao e historica.");
+    if (
+      (await hashDaSerie(banco, t.inicioHistorico, t.fimHistorico)) !==
+      t.hashSerie
+    )
+      throw pedidoInvalido(
+        "Serie INMET mudou desde a proposta. Emita outra proposta; nao altere os termos.",
+      );
+    const { rows: linhas } = await banco.query(
+      "SELECT data::text,chuva_mm,horas_validas FROM inmet_dias WHERE estacao='A770' AND data BETWEEN $1 AND $2 ORDER BY data",
+      [t.inicioHistorico, t.fimHistorico],
+    );
+    res.json({ termos: t, linhas });
+  });
+
   r.get("/oraculo/apolices-ativas", async (req, res) => {
     const { rows } = await req.app.locals.banco.query(
       `SELECT a.endereco, a.produtor_carteira, a.valor_indenizacao_wei,
@@ -76,9 +113,10 @@ export function rotasDoOraculo() {
     const ate = periodo(req.query.ate, "ate");
     const dias = inteiro(req.query.dias ?? 90, "dias", { min: 1, max: 366 });
 
-    const { rows: talhoes } = await banco.query("SELECT id FROM talhoes WHERE identificador = $1", [
-      talhao,
-    ]);
+    const { rows: talhoes } = await banco.query(
+      "SELECT id FROM talhoes WHERE identificador = $1",
+      [talhao],
+    );
     if (!talhoes[0]) throw naoEncontrado("Talhao");
 
     const limite = fimDoDia(ate);
@@ -128,7 +166,9 @@ export function rotasDoOraculo() {
     const enviadoEm = c.enviadoEm ? new Date(c.enviadoEm) : null;
     const confirmadoEm = c.confirmadoEm ? new Date(c.confirmadoEm) : null;
     const latencia =
-      enviadoEm && confirmadoEm ? Math.max(0, confirmadoEm.getTime() - enviadoEm.getTime()) : null;
+      enviadoEm && confirmadoEm
+        ? Math.max(0, confirmadoEm.getTime() - enviadoEm.getTime())
+        : null;
 
     const inteiroOuNulo = (v) =>
       v === undefined || v === null || v === "" ? null : String(BigInt(v));
@@ -152,7 +192,10 @@ export function rotasDoOraculo() {
         apolice,
         p,
         txHash,
-        inteiro(c.indiceClimatico, "indiceClimatico", { min: 0, max: 4294967295 }),
+        inteiro(c.indiceClimatico, "indiceClimatico", {
+          min: 0,
+          max: 4294967295,
+        }),
         inteiroOuNulo(c.gasUsado),
         inteiroOuNulo(c.gasEstimado),
         inteiroOuNulo(c.custoWei),
@@ -173,7 +216,9 @@ export function rotasDoOraculo() {
       detalhes: { periodo: p },
     });
 
-    res.status(201).json({ registrada: true, confirmadaNaCadeia: vistos.length > 0 });
+    res
+      .status(201)
+      .json({ registrada: true, confirmadaNaCadeia: vistos.length > 0 });
   });
 
   /**

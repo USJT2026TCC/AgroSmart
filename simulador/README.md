@@ -1,61 +1,74 @@
-# Simulador de estações
+# Preparacao historica do INMET
 
-Faz o papel das estações e sensores do talhão (HU04). Em vez de inventar o clima, envia a
-**série histórica real** de uma estação automática do INMET, assinada, pelo mesmo caminho que um
-equipamento em campo usaria.
+O fluxo principal usa **Sao Simao/SP, estacao A770, de 2020 a 30/09/2026**.
+O talhao e ficticio e considerado coincidente com a estacao por hipotese.
+As precipitacoes e datas sao as publicadas pelo INMET; nao ha medicao ao vivo.
 
-Fonte dos dados: INMET — <https://portal.inmet.gov.br/dadoshistoricos>
+## Preparar uma vez
 
-```
-src/simulador/
-├── inmet.py        le o CSV do INMET (latin-1, ';', decimal com virgula, campo vazio)
-├── serie.py        recorte, deslocamento de datas, agregacao diaria
-├── assinatura.py   assinatura EIP-191 do lote (o outro lado do backend)
-├── envio.py        POST /api/leituras
-├── mqtt.py         publicacao no broker e ponte MQTT -> API
-└── cli.py          linha de comando
+Na raiz do projeto, com Python 3.10+ instalado:
+
+```powershell
+python -m venv simulador/.venv
+.\simulador\.venv\Scripts\python.exe -m pip install -e "./simulador[dev]"
+npm run dados:preparar
 ```
 
-## Instalar
+O comando baixa os ZIPs anuais oficiais necessarios (arquivos nacionais, tamanho
+variavel), extrai somente A770, confere valores e duplicatas, agrega chuva diaria
+e registra qualidade e procedencia. Nao requer chave de estacao nem envia transacao.
+Na proxima inicializacao da API (`npm start`), os anos preparados sao importados no
+banco persistente. Anos com os mesmos hashes nao sao importados novamente.
+Nao execute `dados:preparar` a cada abertura do sistema.
 
-```bash
-python -m venv .venv
+Os arquivos ficam em `dados/`, fora do Git:
+
+| Arquivo | Conteudo |
+|---|---|
+| `AAAA.zip` | Arquivo anual original, reutilizado como cache |
+| `preparado/A770/AAAA-original.csv` | CSV da estacao, nos bytes originais |
+| `preparado/A770/AAAA-diario.csv` | Datas originais, chuva e contagens de horas |
+| `preparado/A770/manifesto.json` | URL, arquivo selecionado, SHA-256, intervalo e qualidade |
+
+Se o ZIP contiver snapshots sobrepostos da mesma estacao, seleciona-se a maior
+data final declarada no nome; snapshots nao sao somados. Ambiguidade permanece erro.
+Falhas de download sao registradas e o comando termina com erro, permitindo retomar.
+Hash local permite detectar alteracao posterior; nao e assinatura digital do INMET.
+
+## Regra e lacunas
+
+Dia utilizavel: pelo menos 20 horas de chuva validas. Dia seco: soma inferior a 1 mm.
+Horas vazias, sentinelas, valores nao finitos, negativos ou acima de 500 mm/h nao
+viram zero. Duplicatas iguais nao sao somadas; conflitantes invalidam a hora.
+Dia ausente/incompleto interrompe a sequencia. Esta tolerancia nao equivale a
+24 horas completas nem garante que nao choveu nas horas ausentes.
+
+A consulta pode mostrar lacunas; a proposta historica exige que todos os dias da
+cobertura atendam ao criterio. Contagem comeca em zero no inicio da cobertura, com
+datas inclusivas e dias em UTC. Gatilho entre 1 e 366 dias, experimental e fixado
+na proposta. Ao primeiro acionamento, paga-se integralmente uma unica vez.
+
+## Modulos
+
+| Arquivo | Responsabilidade |
+|---|---|
+| `inmet.py` | Download e interpretacao do CSV original |
+| `preparacao.py` | Limpeza, diario, cache e manifesto |
+| `cli.py`, `__main__.py` | Comandos de execucao |
+| `serie.py`, `historico.py` | Utilitarios e exportacao do historico legado |
+| `assinatura.py`, `envio.py`, `mqtt.py` | Ingestao manual legada; nao necessaria a demonstracao historica |
+
+O envio manual assinado autentica a aplicacao que reproduz os dados, nao o INMET.
+O deslocamento `--ate-hoje` e legado e nao deve ser usado no fluxo historico atual.
+MQTT exige broker e ponte; o percurso principal nao depende deles.
+
+## Verificar
+
+Na raiz: `npm test`. Todos os testes e configuracoes ficam em `testes/`.
+Para executar so o simulador, a partir desta pasta:
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest ../testes/simulador -c ../testes/configuracao/pytest.ini --basetemp ../testes/gerados/simulador/temporarios -q
 ```
 
-```bash
-.venv/Scripts/python -m pip install -e ".[dev]"
-```
-
-## Usar
-
-```bash
-.venv/Scripts/python -m simulador baixar --ano 2024
-```
-
-```bash
-.venv/Scripts/python -m simulador analisar --estacao A770 --ano 2024
-```
-
-```bash
-.venv/Scripts/python -m simulador enviar --estacao A770 --ano 2024 --de 2024-06-25 --ate 2024-08-09 --fonte estacao-inmet-a770 --ate-hoje
-```
-
-O backend precisa estar rodando, e a fonte precisa estar cadastrada com o endereço da chave que
-assina. As fontes de demonstração já vêm cadastradas.
-
-## Testes
-
-```bash
-.venv/Scripts/python -m pytest
-```
-
-## Chaves
-
-Copie `.env.example` para `.env` e preencha `CHAVE_<FONTE>` com a chave privada de cada estação.
-O `.env` está no `.gitignore` e **nunca** vai para o repositório (RNF14).
-
-## Documentação
-
-- [docs/SIMULADOR.md](../docs/SIMULADOR.md) — comandos, MQTT, decisões
-- [docs/DADOS.md](../docs/DADOS.md) — fontes de dados, licenças e como citar
-- [docs/BACKEND.md](../docs/BACKEND.md) — seção 5: o formato exato do lote assinado
+Fonte: [INMET — dados historicos](https://portal.inmet.gov.br/dadoshistoricos).

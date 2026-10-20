@@ -1,4 +1,5 @@
 import express from "express";
+import { rotasDoHistorico } from "./rotas/historico.js";
 
 import { config } from "./config.js";
 import { naoEncontrado, tratarErros } from "./erros.js";
@@ -55,8 +56,14 @@ export function criarApp({ banco, cadeia, indexador = null }) {
     if (origem && origem === config.origemDoAplicativo) {
       res.set("Access-Control-Allow-Origin", origem);
       res.set("Vary", "Origin");
-      res.set("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Assinatura");
-      res.set("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
+      res.set(
+        "Access-Control-Allow-Headers",
+        "Authorization, Content-Type, X-Assinatura",
+      );
+      res.set(
+        "Access-Control-Allow-Methods",
+        "GET, POST, PATCH, DELETE, OPTIONS",
+      );
     }
 
     if (req.method === "OPTIONS") {
@@ -72,7 +79,10 @@ export function criarApp({ banco, cadeia, indexador = null }) {
   app.use((_req, res, proximo) => {
     res.set("X-Content-Type-Options", "nosniff");
     res.set("X-Frame-Options", "DENY");
-    res.set("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'");
+    res.set(
+      "Content-Security-Policy",
+      "default-src 'none'; frame-ancestors 'none'",
+    );
     res.set("Referrer-Policy", "no-referrer");
     proximo();
   });
@@ -83,6 +93,7 @@ export function criarApp({ banco, cadeia, indexador = null }) {
   api.use(rotasDeCarteira());
   api.use(rotasDeCadastro());
   api.use(rotasDePropostas());
+  api.use(rotasDoHistorico());
   api.use(rotasDeApolices());
   api.use(rotasDeLeituras());
   api.use(rotasDoOraculo());
