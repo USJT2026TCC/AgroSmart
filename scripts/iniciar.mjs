@@ -13,6 +13,11 @@ import { randomBytes } from "node:crypto";
 import net from "node:net";
 import path from "node:path";
 import { executar, raiz } from "./processos.mjs";
+import {
+  ambienteDoBanco,
+  configuracaoDoBanco,
+  iniciarBanco,
+} from "./banco.mjs";
 
 const estadoDir = path.join(raiz, ".execucao");
 const estadoArquivo = path.join(estadoDir, "estado.json");
@@ -126,7 +131,7 @@ if (acao === "status") {
     )
       throw new Error("Fluxo incompleto: confira .execucao e o indexador.");
     console.log(
-      `Interface: http://localhost:5173 | API e banco: conectados | Blockchain: ${rede} | Fabrica: codigo presente | Indexador: ativo | Oraculo: processo ativo`,
+      `Interface: http://localhost:5173 | API e banco (${saude.banco.motor}): conectados | Blockchain: ${rede} | Fabrica: codigo presente | Indexador: ativo | Oraculo: processo ativo`,
     );
     console.log(
       "MetaMask: confirme a extensao no navegador e selecione a mesma rede. Status nao valida a extensao nem pagamentos.",
@@ -146,7 +151,9 @@ if (acao === "status") {
       path.join(estadoDir, "parar.json"),
       JSON.stringify({ controle: e.controle }),
     );
-    console.log("Encerramento solicitado ao AgroSmart.");
+    console.log(
+      "Encerramento solicitado ao AgroSmart. Dados preservados. Se usar Docker, npm run banco:parar interrompe o banco sem apagar o volume.",
+    );
   } catch (erro) {
     console.error(erro.message);
     process.exitCode = 1;
@@ -173,13 +180,23 @@ if (acao === "status") {
     mkdirSync(estadoDir, { recursive: true });
     const instancia =
       publica.instanciaDados ?? `sepolia-${publica.fabrica.toLowerCase()}`;
+    const banco = configuracaoDoBanco(ambienteDoBanco());
+    console.log(
+      banco.docker
+        ? "Iniciando PostgreSQL/PostGIS no Docker..."
+        : "Usando PostgreSQL configurado em DATABASE_URL.",
+    );
+    await iniciarBanco(banco);
     const env = {
       ...process.env,
       NODE_ENV: "desenvolvimento",
       REDE: "sepolia",
       RPC_URL: rpcAlvo,
       API_URL: "http://localhost:3001/api",
-      DATABASE_URL: "",
+      DATABASE_URL: banco.url,
+      DIR_BANCO_LEGADO: banco.docker
+        ? path.join(raiz, "backend", "dados", instancia)
+        : "",
       DIR_BANCO: path.join(raiz, "backend", "dados", instancia),
       DIR_DADOS: path.join(estadoDir, instancia, "oraculo"),
       DIR_IMPLANTACOES: path.join(raiz, "contratos", "implantacoes"),
@@ -202,6 +219,10 @@ if (acao === "status") {
       const ambienteFilho = { ...env };
       if (nome !== "oraculo") delete ambienteFilho.CHAVE_PRIVADA_ORACULO;
       if (nome === "app") delete ambienteFilho.CHAVE_DE_SERVICO;
+      if (nome !== "backend") {
+        delete ambienteFilho.DATABASE_URL;
+        delete ambienteFilho.DIR_BANCO_LEGADO;
+      }
       const filho = spawn(process.execPath, argumentos, {
         cwd: path.join(raiz, modulo),
         env: ambienteFilho,

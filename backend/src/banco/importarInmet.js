@@ -3,14 +3,17 @@ import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 export const DIRETORIO_INMET = fileURLToPath(
-  new URL("../../../simulador/dados/preparado/A770/", import.meta.url),
+  new URL("../../recursos/inmet/A770/", import.meta.url),
 );
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
 /** Importacao transacional por ano; anos identicos nao sao reprocessados. */
 export async function importarInmet(banco, diretorio = DIRETORIO_INMET) {
   const manifestoPath = `${diretorio}/manifesto.json`;
-  if (!existsSync(manifestoPath)) return { anos: 0, dias: 0 };
+  if (!existsSync(manifestoPath))
+    throw new Error(
+      "Pacote publico INMET ausente. Confira backend/recursos/inmet ou reconstrua e empacote a serie.",
+    );
   const manifesto = JSON.parse(readFileSync(manifestoPath, "utf8"));
   if (manifesto.versao !== 1 || manifesto.estacao !== "A770")
     throw new Error("Manifesto INMET incompativel.");

@@ -1076,3 +1076,15 @@ publica somente o primeiro acionamento ou ultimo dia sem acionamento. A cadeia
 nao volta no tempo: contrato de demonstracao distingue o relogio historico do
 timestamp real do bloco. O percurso antigo de duas fontes assinadas permanece
 para compatibilidade, nao como exigencia da reproducao atual.
+
+
+## PostgreSQL Docker e carga publica distribuida — 20/10/2026
+
+O iniciador passa a usar PostgreSQL/PostGIS no Docker, com volume persistente.
+O pacote publico A770 inclui originais, diarios e manifesto de 2020 a setembro
+de 2026, sem dados pessoais do banco. A carga inicial e automatica e idempotente;
+reconstruir o pacote com Python e opcional. Instalacoes anteriores podem transferir
+PGlite para PostgreSQL local vazio, preservando origem e vinculos. Destino preenchido
+nao e mesclado automaticamente. Servidor externo explicito nao recebe dados locais
+automaticamente. Docker e um requisito de ambiente; sua ausencia nao deve gerar
+troca silenciosa do banco nem sucesso de validacao de contêiner inexistente.

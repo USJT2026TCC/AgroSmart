@@ -28,8 +28,8 @@ validado nem prova de adequacao agronomica ou atuarial do gatilho.
 
 | Componente | Responsabilidade |
 |---|---|
-| Python/simulador | Baixar e preparar uma vez; registrar lacunas e origem |
-| Backend e banco | Importar uma vez por versao, consultar dados e guardar propostas/eventos |
+| Python/simulador | Reconstruir opcionalmente o pacote publico; registrar lacunas e origem |
+| Backend e banco | Carga automatica do pacote no PostgreSQL Docker, consulta e propostas/eventos |
 | Oraculo | Recalcular indice, selecionar primeiro acionamento e assinar publicacao |
 | Contrato | Conferir autorizacao, datas e garantia; executar pagamento unico |
 | Aplicativo | Definir cobertura/gatilho, consultar resultado e acompanhar transacoes |

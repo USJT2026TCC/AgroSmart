@@ -4,13 +4,10 @@ Demonstração acadêmica de seguro por estiagem com pagamento integral, uma ún
 
 ## Executar
 
-Use Node.js 20.19+ ou 22.12+. Na raiz do repositório:
+Use Node.js 20.19+ ou 22.12+ e Docker Desktop instalado e aberto, com Compose v2 e contêineres Linux. Na raiz do repositório:
 
 ```powershell
 npm ci
-python -m venv simulador/.venv
-.\simulador\.venv\Scripts\python.exe -m pip install -e "./simulador[dev]"
-npm run dados:preparar
 npm start
 ```
 
@@ -25,10 +22,21 @@ npm run status
 npm stop
 ```
 
-`dados:preparar` e executado uma vez: baixa os arquivos anuais oficiais, prepara
-Sao Simao/A770 de 2020 a 30/09/2026 e preserva os originais. A API importa os anos
-novos no banco ao iniciar; o que ja foi importado nao e reprocessado. Depois,
-para abrir o sistema basta `npm start`. [Detalhes](simulador/README.md).
+O inicio sobe PostgreSQL/PostGIS no Docker, aguarda sua disponibilidade e aplica
+as migracoes. A serie publica A770 ja acompanha o projeto em `backend/recursos/inmet`:
+sete anos, de 2020 a 30/09/2026, com originais e hashes. A carga e automatica na primeira
+execucao; nas seguintes, o volume `dados_pg` preserva o banco e anos identicos sao ignorados.
+Nao precisa instalar Python nem baixar/processar os ZIPs do INMET para usar o aplicativo.
+
+Se houver banco PGlite desta instancia, o inicio transfere seus dados somente para
+um PostgreSQL vazio, preservando a origem e os vinculos de carteira. Recusa mesclar
+com outro banco preenchido. Essa transferencia e local; usuarios e segredos nao sao
+distribuidos no Git. `DATABASE_URL` explicita permite um PostgreSQL externo, sem
+iniciar Docker nem transferir automaticamente dados locais para outro servidor.
+
+`npm stop` encerra a aplicacao e deixa o banco disponivel. `npm run banco:parar`
+interrompe o contêiner sem apagar o volume. Nao remova volumes se quiser preservar cadastros.
+Se o Docker estiver ausente, o inicio avisa; nao troca silenciosamente para outro banco.
 
 ## Fluxo
 
@@ -65,6 +73,10 @@ npm test
 ```
 
 Tudo que serve a testes está em [testes](testes). As redes locais são iniciadas somente pelas suítes automatizadas. Exige Slither no PATH e o ambiente Python `simulador/.venv` com as dependências dev. Os resultados gerados ficam em `testes/gerados`, fora do Git.
+
+A verificacao real do PostgreSQL no Docker e separada: `npm run testar:docker`.
+Ela usa um projeto e volume exclusivos de teste; nao altera o banco da aplicacao.
+Requer Docker instalado e aberto. As suites comuns usam bancos isolados para suas verificacoes.
 
 A configuração entregue não inclui chaves de terceiros. Um professor que queira assinar como seguradora ou operar um novo oráculo precisa de contas próprias e de uma implantação autorizada para essas contas; consultar os contratos públicos não requer essas chaves.
 

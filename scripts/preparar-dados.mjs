@@ -23,6 +23,6 @@ filho.on("exit", (codigo) => {
   process.exitCode = codigo ?? 1;
   if (codigo === 0)
     console.log(
-      "Preparacao concluida. A API importa os anos novos na proxima inicializacao; os demais nao sao reprocessados.",
+      "Preparacao concluida. Execute npm run dados:empacotar para atualizar o pacote publico; depois reinicie a API.",
     );
 });

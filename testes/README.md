@@ -23,3 +23,9 @@ duplicacao. `contratos/unitarios/FluxoHistorico.test.js` integra banco real em
 memoria, API HTTP, oraculo e EVM local; o envio usa o signatario da EVM de teste.
 Os testes do publicador JSON-RPC continuam na suite de integracao do oraculo.
 Nenhum desses testes confirma uma liquidacao historica na Sepolia com MetaMask.
+
+
+`infraestrutura/banco.test.mjs` verifica escolha do servidor, comandos Compose e
+falha sem Docker. `npm run testar:docker` executa `infraestrutura/docker.integracao.test.mjs`
+contra PostgreSQL/PostGIS real, em projeto/volume exclusivos de teste. Precisa de
+Docker disponivel; resultados de bancos em memoria nao substituem essa verificacao.

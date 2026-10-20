@@ -10,7 +10,11 @@
     "test": "node testes/executar.mjs",
     "verificar": "node testes/executar.mjs",
     "stop": "node scripts/iniciar.mjs parar",
-    "dados:preparar": "node scripts/preparar-dados.mjs"
+    "dados:preparar": "node scripts/preparar-dados.mjs",
+    "dados:empacotar": "node scripts/empacotar-dados.mjs",
+    "banco:iniciar": "node scripts/banco.mjs iniciar",
+    "banco:parar": "node scripts/banco.mjs parar",
+    "testar:docker": "node --test testes/infraestrutura/docker.integracao.test.mjs"
   },
   "workspaces": [
     "contratos",

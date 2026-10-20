@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import https from "node:https";
 import { importarInmet } from "./banco/importarInmet.js";
+import { transferirPGliteSeNecessario } from "./banco/transferirLegado.js";
 
 import { criarApp } from "./app.js";
 import { config } from "./config.js";
@@ -26,6 +27,16 @@ async function iniciar() {
   if (aplicadas.length > 0)
     console.log(`Migracoes aplicadas: ${aplicadas.join(", ")}`);
 
+  if (config.urlDoBanco && config.dirBancoLegado) {
+    const transferencia = await transferirPGliteSeNecessario(
+      banco,
+      config.dirBancoLegado,
+    );
+    if (transferencia.transferida)
+      console.log(
+        "Dados do PGlite anterior transferidos para PostgreSQL. Origem preservada; usuarios e carteiras mantidos.",
+      );
+  }
   const importacao = await importarInmet(banco);
   if (importacao.anos)
     console.log(

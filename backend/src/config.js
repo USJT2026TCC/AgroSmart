@@ -31,7 +31,9 @@ function segredo(nome, valorDeDesenvolvimento) {
   if (valor) return valor;
 
   if (emProducao) {
-    throw new Error(`${nome} nao definido. Em producao, todo segredo precisa vir do ambiente.`);
+    throw new Error(
+      `${nome} nao definido. Em producao, todo segredo precisa vir do ambiente.`,
+    );
   }
 
   return valorDeDesenvolvimento;
@@ -57,6 +59,7 @@ export const config = {
    */
   urlDoBanco: process.env.DATABASE_URL || "",
   dirBanco: process.env.DIR_BANCO || join(RAIZ, "dados", "pg"),
+  dirBancoLegado: process.env.DIR_BANCO_LEGADO || "",
 
   /** Origem do aplicativo, para o CORS. */
   origemDoAplicativo: process.env.ORIGEM_APP || "http://localhost:5173",
@@ -68,12 +71,17 @@ export const config = {
    * Chave que o servico de oraculo usa para se autenticar na API. Nao e a
    * chave privada do oraculo na cadeia — essa nunca passa por aqui.
    */
-  chaveDeServico: segredo("CHAVE_DE_SERVICO", "desenvolvimento-apenas-nao-use-em-producao"),
+  chaveDeServico: segredo(
+    "CHAVE_DE_SERVICO",
+    "desenvolvimento-apenas-nao-use-em-producao",
+  ),
 
   /** Rede e enderecos dos contratos, lidos do arquivo de implantacao. */
   rede: process.env.REDE || "localhost",
   rpcUrl: process.env.RPC_URL || "http://127.0.0.1:8545",
-  dirImplantacoes: process.env.DIR_IMPLANTACOES || join(RAIZ, "..", "contratos", "implantacoes"),
+  dirImplantacoes:
+    process.env.DIR_IMPLANTACOES ||
+    join(RAIZ, "..", "contratos", "implantacoes"),
 
   /** Intervalo entre varreduras do indexador de eventos, em milissegundos. */
   intervaloDoIndexador: Number(process.env.INTERVALO_INDEXADOR_MS || 4000),
@@ -86,7 +94,8 @@ export const config = {
    * em arquivos .eml. Ex.: smtps://usuario:senha@smtp.exemplo.com:465
    */
   smtpUrl: process.env.SMTP_URL || "",
-  remetenteEmail: process.env.EMAIL_REMETENTE || "AgroSmart <avisos@agrosmart.test>",
+  remetenteEmail:
+    process.env.EMAIL_REMETENTE || "AgroSmart <avisos@agrosmart.test>",
   dirEmails: process.env.DIR_EMAILS || join(RAIZ, "dados", "emails"),
   intervaloDoEmail: Number(process.env.INTERVALO_EMAIL_MS || 15000),
   emailAtivo: process.env.EMAIL !== "desligado",
@@ -94,7 +103,9 @@ export const config = {
   /** Explorador de blocos, para o link da transacao no e-mail. Vazio em rede local. */
   exploradorDeBlocos:
     process.env.EXPLORADOR_DE_BLOCOS ??
-    ((process.env.REDE || "localhost") === "sepolia" ? "https://sepolia.etherscan.io" : ""),
+    ((process.env.REDE || "localhost") === "sepolia"
+      ? "https://sepolia.etherscan.io"
+      : ""),
 
   /** Janela aceita para a marca de tempo de um lote de leituras (antirrepeticao). */
   janelaDoLoteMin: Number(process.env.JANELA_LOTE_MIN || 10),

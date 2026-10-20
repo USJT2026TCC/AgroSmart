@@ -12,6 +12,11 @@ function npm(modulo, argumentos) {
 
 // Sequencial: cobertura e Slither recompilam os mesmos artefatos usados nas integracoes.
 try {
+  await executar(
+    process.execPath,
+    ["--test", "testes/infraestrutura/banco.test.mjs"],
+    { cwd: raiz },
+  );
   console.log("1/8 Contratos e cobertura");
   await npm("contratos", [
     "exec",

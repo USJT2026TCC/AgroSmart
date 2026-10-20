@@ -4,7 +4,12 @@ O fluxo principal usa **Sao Simao/SP, estacao A770, de 2020 a 30/09/2026**.
 O talhao e ficticio e considerado coincidente com a estacao por hipotese.
 As precipitacoes e datas sao as publicadas pelo INMET; nao ha medicao ao vivo.
 
-## Preparar uma vez
+A serie preparada ja acompanha o repositorio em `backend/recursos/inmet/A770`.
+Para executar a aplicacao, use `npm start` com Docker Desktop aberto: a API faz
+a carga inicial automaticamente. Os passos abaixo sao apenas para reconstruir
+o pacote a partir da fonte; nao sao exigidos em outra instalacao.
+
+## Reconstruir o pacote (opcional)
 
 Na raiz do projeto, com Python 3.10+ instalado:
 
@@ -12,12 +17,13 @@ Na raiz do projeto, com Python 3.10+ instalado:
 python -m venv simulador/.venv
 .\simulador\.venv\Scripts\python.exe -m pip install -e "./simulador[dev]"
 npm run dados:preparar
+npm run dados:empacotar
 ```
 
 O comando baixa os ZIPs anuais oficiais necessarios (arquivos nacionais, tamanho
 variavel), extrai somente A770, confere valores e duplicatas, agrega chuva diaria
 e registra qualidade e procedencia. Nao requer chave de estacao nem envia transacao.
-Na proxima inicializacao da API (`npm start`), os anos preparados sao importados no
+Apos empacotar, na proxima inicializacao da API (`npm start`), os anos sao importados no
 banco persistente. Anos com os mesmos hashes nao sao importados novamente.
 Nao execute `dados:preparar` a cada abertura do sistema.
 

@@ -1,0 +1,18 @@
+services:
+  banco:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: fixture
+      POSTGRES_PASSWORD: fixture_apenas_teste
+      POSTGRES_DB: fixture
+    ports:
+      - "127.0.0.1:${PORTA_POSTGRES_TESTE:?porta de teste obrigatoria}:5432"
+    volumes:
+      - dados_teste:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fixture -d fixture"]
+      interval: 2s
+      timeout: 3s
+      retries: 60
+volumes:
+  dados_teste:

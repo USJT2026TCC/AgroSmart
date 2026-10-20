@@ -1,14 +1,11 @@
-# Preparacao e reproducao historica
+# Preparacao historica
 
-As instrucoes operacionais estao em [simulador/README.md](../simulador/README.md).
-Use `npm run dados:preparar` uma vez e depois `npm start` na raiz.
+A serie publica preparada acompanha o projeto em `backend/recursos/inmet/A770`.
+Outra instalacao nao precisa baixar os ZIPs nacionais nem executar Python: use
+Docker Desktop aberto e `npm start`. A API aplica esquema e carga inicial no
+PostgreSQL; o volume preserva o banco e anos identicos nao sao reimportados.
 
-O Python baixa, interpreta e prepara a serie A770 de 2020 a setembro de 2026.
-A API importa os dias no banco persistente, com controle por ano e SHA-256.
-O oraculo percorre os dias da cobertura, a partir de zero, e publica apenas o
-primeiro periodo acionador; sem acionamento, publica o ultimo periodo com seu indice.
-Nao ha uma transacao por dia. A consulta detalhada de dias e feita no banco.
-
-O modo historico usa uma apolice explicitamente identificada na cadeia.
-A data meteorologica e diferente da data real do bloco. O pagamento ocorre agora
-na Sepolia, com ETH de teste. Nao representa contratacao retroativa real.
+O simulador e uma ferramenta de preparacao da fonte. Para reconstruir a serie,
+consulte [simulador/README.md](../simulador/README.md), execute `dados:preparar` e
+`dados:empacotar`. Os originais e hashes acompanham os diarios, sem qualquer dump
+de usuarios, carteiras ou segredos. Regras de cobertura continuam em ESCOPO-ATUAL.md.

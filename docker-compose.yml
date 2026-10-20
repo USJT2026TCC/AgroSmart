@@ -4,18 +4,18 @@ services:
     container_name: agrosmart-banco
     restart: unless-stopped
     environment:
-      POSTGRES_USER: agrosmart
-      POSTGRES_PASSWORD: agrosmart_dev
-      POSTGRES_DB: agrosmart
+      POSTGRES_USER: ${POSTGRES_USER:-agrosmart}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-agrosmart_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-agrosmart}
     ports:
-      - "5433:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
     volumes:
       - dados_pg:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U agrosmart -d agrosmart"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 20
 
 volumes:
   dados_pg:

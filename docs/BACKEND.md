@@ -2,11 +2,12 @@
 
 A API atende em `http://localhost:3001/api`, iniciada por `npm start` na raiz.
 O banco persistente usa PostgreSQL com PostGIS; sem servidor externo configurado,
-o iniciador usa PGlite, separado pelo endereco da fabrica Sepolia.
+o iniciador sobe PostgreSQL/PostGIS pelo Docker Compose. PGlite e mantido nas suites
+e como origem da transferencia local de instalacoes anteriores.
 
 ## Serie historica
 
-Execute `npm run dados:preparar` uma vez. Na inicializacao, `importarInmet.js`
+A serie publica preparada acompanha o repositorio. Na inicializacao, `importarInmet.js`
 confere o manifesto e importa somente anos novos ou alterados, em transacoes.
 Reiniciar o sistema nao baixa arquivos nem recalcula os diarios.
 
@@ -43,3 +44,20 @@ assinaturas de sensores nem afirma que o INMET assinou digitalmente os arquivos.
 
 Migracoes antigas sao preservadas para atualizar bancos existentes. Dados locais,
 originais baixados e segredos ficam fora do Git. Todos os testes estao em `testes/`.
+
+
+## Docker e transicao
+
+`npm start` inicia o banco e aguarda seu healthcheck. A API aplica migracoes,
+transfere o PGlite anterior se o destino local estiver vazio, importa os sete anos
+meteorologicos e inicia os servicos. A origem nunca e apagada. A transferencia
+recusa mesclar cadastros e registra conclusao para nao repetir.
+
+Geometrias sao transferidas em EWKB; numericos nao passam por Number, e sequencias
+sao reposicionadas apos a copia. Tudo ocorre em transacao no destino. Nenhum dump
+com identidades e criado ou incluido no Git. A carga distribuida contem somente
+meteorologia publica e seus hashes.
+
+`DATABASE_URL` explicita usa servidor externo; essa opcao nao inicia Docker nem
+transfere identidades locais automaticamente. Credenciais de demonstracao do Compose
+servem apenas para desenvolvimento local, com porta vinculada a 127.0.0.1.
