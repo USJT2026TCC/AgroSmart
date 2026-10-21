@@ -1,50 +1,36 @@
-# Arquitetura atual
+# Arquitetura
 
-Seguro academico de estiagem com dados historicos reais e indenizacao integral,
-uma unica vez. Fonte: Sao Simao/SP, A770, 2020 a setembro/2026. Talhao ficticio.
-As regras e limitacoes estao em [escopo atual](ESCOPO-ATUAL.md).
+O AgroSmart executa uma demonstração de seguro por estiagem com dados históricos.
+A aplicação usa a Sepolia, rede pública de testes, e quatro serviços Docker:
 
-## Preparacao opcional
-
-INMET â†’ ETL Python â†’ pacote publico com originais, diarios e manifesto â†’ backend
-importa no PostgreSQL/PostGIS. O ETL nao envia leituras de sensores, nao desloca
-datas e nao publica transacoes. `npm run dados:preparar` prepara e empacota;
-`npm start` faz a carga inicial, sem repetir anos com hashes identicos.
-
-## Contratacao e avaliacao
-
-1. A interface consulta a API, escolhe cobertura historica e gatilho experimental.
-2. O backend valida a janela, calcula os termos e congela o hash da serie na proposta.
-3. A emissao e o deposito da garantia acontecem na blockchain, com assinatura de carteira.
-4. O oraculo consulta a API autenticada `/oraculo/serie-historica`, que le `inmet_dias`.
-5. A API confere o hash da serie. O oraculo confere datas e gatilho contra a cadeia,
-   recalcula dias secos desde o inicio e primeiro acionamento;
-   grava a publicacao em fila persistente, assina e envia ao contrato.
-6. O contrato verifica autorizacao, periodo e condicao contratada e pode pagar
-   100% do limite na mesma transacao. Nao acessa INMET, API ou banco diretamente.
-7. O indexador acompanha eventos e recibos; a interface mostra o resultado pela API
-   e pelas consultas a cadeia. Relato do oraculo nao substitui confirmacao on-chain.
-
-O contrato historico diferencia a cobertura hipotetica das datas atuais dos blocos.
-É uma demonstração histórica, sem contratação retroativa comercial. A fábrica
-histórica está implantada e verificada na Sepolia; veja o manifesto compartilhado.
-
-## Responsabilidades
-
-| Componente | Responsabilidade |
+| Serviço | Responsabilidade |
 |---|---|
-| Python em `etl/` | Extrair, validar e consolidar os arquivos historicos |
-| Backend | Autenticacao, cadastros, carga, consultas, propostas e indexacao |
-| PostgreSQL/PostGIS | Persistencia, procedencia, dias climaticos e dados espaciais |
-| Oraculo | Conferir serie, calcular indice, gerir fila e publicar transacoes |
-| Contratos | Autorizacao, garantia, condicao, pagamento unico e eventos |
-| Interface e MetaMask | Interacao do usuario e assinaturas necessarias |
+| `interface` | Telas do produtor e da seguradora; interação com a MetaMask |
+| `api` | Autenticação, cadastros, propostas, consultas e indexação da blockchain |
+| `banco` | PostgreSQL/PostGIS com dados climáticos, termos e registros da aplicação |
+| `oraculo` | Conferência da série, cálculo da estiagem e publicação do índice |
 
-Docker Compose executa banco, API/indexador, oráculo e interface. `npm start`
-configura e inicia esses serviços. Sepolia é externa; MetaMask fica no navegador. O volume persiste localmente; a reproducibilidade entre usuarios
-vem do pacote público versionado e da carga automática.
+## Fluxo
 
-No fluxo historico, uma estacao e suficiente por decisao explicita do recorte.
-A ingestao de sensores, reputacao e consolidacao multifonte foram removidas.
-Os arquivos do INMET nao sao apresentados como assinados por sensores. Sem visao computacional,
-MQTT no ETL, pagamento escalonado ou cobertura de excesso de chuva.
+![Fluxo do AgroSmart](imagens/fluxo-dados.svg)
+
+1. A API importa o pacote INMET no banco durante a inicialização.
+2. O produtor escolhe cobertura e gatilho; a API valida os dados e registra a proposta.
+3. A seguradora assina a emissão e o depósito da garantia pela MetaMask.
+4. O oráculo consulta a API autenticada, confere os termos com a apólice e os dados
+   com o pacote público, calcula o índice e envia a publicação à Sepolia.
+5. O contrato verifica as condições e executa a indenização quando o gatilho é atingido.
+6. O indexador registra os eventos; a interface apresenta o estado e as transações.
+
+O ETL é uma ferramenta de preparação, executada quando o pacote climático precisa
+ser reconstruído. A execução usa o pacote que acompanha o repositório.
+
+## Persistência e acesso
+
+O volume `dados_pg` preserva o banco da instalação. A fila do oráculo e os segredos
+ficam em `.execucao/`, fora do Git. A MetaMask guarda as contas dos usuários no
+navegador; a chave de publicação é fornecida somente ao serviço do oráculo.
+Os componentes compartilham o manifesto `blockchain/implantacoes/sepolia.json`.
+
+Execução: [README principal](../README.md). Regras: [seguro](REGRAS.md).
+Procedência e qualidade: [dados](DADOS.md).

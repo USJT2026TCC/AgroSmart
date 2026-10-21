@@ -40,7 +40,7 @@ Na próxima inicialização da API, a importação atualiza os anos alterados.
 - Snapshots sobrepostos não são somados; usa-se o de maior data final, sem ambiguidade.
 
 O ETL conserva lacunas. A regra de estiagem e a aceitação da cobertura ficam na
-API/oráculo, descritas no [escopo](../docs/ESCOPO-ATUAL.md). Hash não é assinatura
+API/oráculo, descritas no [escopo](../docs/REGRAS.md). Hash não é assinatura
 digital do INMET. O módulo não exige carteira, MQTT ou chave de estação.
 
 ## Arquivos

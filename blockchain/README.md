@@ -19,4 +19,4 @@ O uso é Sepolia. Rede local é reservada aos testes. A fábrica histórica atua
 implantada e verificada; consulte o manifesto público. Contratos implantados
 não são alterados ao editar o código. Segredos ficam no .env ignorado.
 
-Referencia: docs/CONTRATOS.md. Enderecos atuais: implantacoes/sepolia.json.
+Referencia: ../docs/REGRAS.md. Enderecos atuais: implantacoes/sepolia.json.

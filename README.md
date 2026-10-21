@@ -3,7 +3,7 @@
 Demonstração acadêmica de seguro por estiagem: dados reais do INMET A770
 (São Simão/SP), de 01/01/2020 a 30/09/2026, e indenização integral em parcela única.
 O talhão é fictício, considerado coincidente com a estação. O gatilho é
-experimental: não estima prejuízo agrícola. Sem visão computacional ou excesso de chuva.
+experimental e definido na contratação.
 
 ## Executar
 
@@ -40,27 +40,17 @@ reconstruir os dados e para os testes do ETL.
 
 ![Fluxo histórico](docs/imagens/fluxo-dados.svg)
 
-O produtor vincula a carteira, escolhe cobertura histórica e gatilho (1 a 366 dias)
-e envia a proposta. A contagem começa no início da cobertura. Dia seco: chuva
-diária abaixo de 1 mm, com pelo menos 20 horas válidas; lacunas não viram zero.
-A proposta recusa coberturas com dias incompletos.
+O produtor envia a proposta; a seguradora assina a emissão e deposita a garantia.
+O oráculo avalia a série histórica e publica o índice. O contrato executa o pagamento
+conforme os termos, e a interface apresenta a situação e as transações.
 
-A seguradora assina a emissão e deposita a garantia pela MetaMask. O oráculo
-consulta a API, confere a série e os termos, calcula o índice e assina a publicação.
-O contrato paga uma vez, ao atingir o gatilho. O produtor não precisa assinar para
-receber. O prêmio exibido é informativo e não é cobrado pelo contrato.
-Cancelamento histórico: permitido antes da primeira publicação, com devolução da
-garantia à seguradora. Sem acionamento, a publicação final permite resgatar a garantia.
-
-A interface mostra a situação da apólice e os links das transações. O saldo recebido
-pode ser conferido na conta beneficiária da MetaMask e no explorador.
-As datas climáticas permanecem históricas; blocos e transferências têm a data atual.
+Detalhes: [arquitetura](docs/ARQUITETURA.md), [regras do seguro](docs/REGRAS.md)
+e [dados do INMET](docs/DADOS.md).
 
 ## Blockchain e organização
 
 Usamos **Sepolia, uma rede pública de testes**, com acesso às funções controlado
-pelos contratos. Isso não é blockchain privada. Uma rede privada exigiria operar
-os próprios nós e validadores; não é necessária para este recorte acadêmico.
+pelos contratos.
 Referência: [redes Ethereum](https://ethereum.org/developers/docs/networks/).
 Sepolia e MetaMask ficam fora do Docker; não há nó blockchain local no Compose de uso.
 
@@ -78,7 +68,7 @@ API, oráculo e interface usam o mesmo manifesto em `blockchain/implantacoes/sep
 | `scripts/` | Inicialização Docker e preparo do pacote |
 | `docs/` | Explicações técnicas |
 
-Há um único PostgreSQL de uso, sem PGlite. Testes e evidências de execução
+O PostgreSQL/PostGIS é o banco de uso. Testes e evidências de execução
 são mantidos apenas localmente e não acompanham este repositório. Os comandos
 de teste nos pacotes exigem essa cópia local; não são necessários para executar
 o sistema. O status dos serviços não comprova assinatura MetaMask nem pagamento.

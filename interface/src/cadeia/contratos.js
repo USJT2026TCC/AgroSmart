@@ -56,7 +56,7 @@ const CONSULTAS_SIMULTANEAS = 4;
 // O no publico da Sepolia distribui os pedidos entre servidores que guardam
 // historicos de tamanhos diferentes; o mesmo trecho e recusado por um ("pruned
 // history unavailable") e respondido pelo seguinte. Para producao, o certo e um
-// no com historico completo, em VITE_RPC_SEPOLIA (COMO-RODAR.md).
+// no com historico completo, em VITE_RPC_SEPOLIA (README.md da raiz).
 export const TENTATIVAS_POR_TRECHO = 4;
 
 async function consultarTrecho(contrato, filtro, de, ate, espera) {

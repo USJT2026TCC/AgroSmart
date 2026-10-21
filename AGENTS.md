@@ -11,3 +11,5 @@
 - A execução de uso é apenas Sepolia; redes locais pertencem somente às suítes de teste.
 
 - Não versionar testes, fixtures, medições nem evidências. A pasta testes/ é exclusivamente local.
+
+- Documentar somente o estado atual. Centralizar execução no README, regras em docs/REGRAS.md, integração em docs/ARQUITETURA.md e origem/qualidade em docs/DADOS.md; evitar repetição e relatos de processos retirados.

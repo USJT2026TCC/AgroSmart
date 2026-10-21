@@ -1,49 +1,37 @@
 # Dados do INMET
 
-A demonstracao usa somente Sao Simao/SP, estacao automatica A770, de 01/01/2020
-a 30/09/2026. O talhao e ficticio e considerado coincidente com a estacao por
-hipotese. Os registros meteorologicos sao reais e mantem suas datas originais.
-Nao ha sensores em tempo real nem estimativa de perda agricola.
+Fonte: [INMET — dados históricos](https://portal.inmet.gov.br/dadoshistoricos).
+Recorte: estação automática A770, São Simão/SP, de 01/01/2020 a 30/09/2026.
+Os registros mantêm suas datas originais em UTC.
 
-Fonte oficial: [INMET — dados historicos](https://portal.inmet.gov.br/dadoshistoricos).
-Os ZIPs anuais nacionais sao baixados somente para reconstruir o pacote.
-O ETL seleciona A770, interpreta o CSV, valida valores, trata duplicatas e agrega
-precipitacao diaria. Os CSVs originais, diarios, procedencia e hashes ficam em
-`api/recursos/inmet/A770`. Nao e necessario baixar novamente para usar o sistema.
+## Preparação
 
-## Qualidade
+O ETL baixa os ZIPs anuais, seleciona A770, valida as medições e consolida a
+precipitação diária. O pacote em `api/recursos/inmet/A770/` contém:
 
-Ausentes e sentinelas nao viram zero. Valores nao finitos, negativos ou acima de
-500 mm/h sao invalidos no preparo. Duplicatas identicas nao sao somadas;
-duplicatas conflitantes invalidam a hora. Sao mantidas as contagens de horas
-validas, invalidas e ausentes. Dia utilizavel exige pelo menos 20 horas validas:
-isso nao comprova ausencia de chuva nas horas sem medicao.
+| Arquivo | Conteúdo |
+|---|---|
+| `AAAA-original.csv` | Registros selecionados da estação |
+| `AAAA-diario.csv` | Total diário e contagem de horas válidas, inválidas e ausentes |
+| `manifesto.json` | Origem, período e hashes SHA-256 dos arquivos |
 
-Soma diaria abaixo de 1 mm conta como dia seco. Uma lacuna interrompe a sequencia;
-a proposta rejeita coberturas com dias incompletos. A contagem comeca em zero no
-inicio da cobertura hipotetica. O gatilho configuravel e experimental, nao um
-limite agronomico validado para culturas, solos, fases ou regioes.
+O preparo rejeita valores não finitos, negativos ou superiores a 500 mm/h.
+Ausentes e sentinelas permanecem identificados como ausência. Duplicatas idênticas
+contam uma vez; medições conflitantes invalidam a hora.
 
-## Preparacao e uso
+Um dia utilizável pode conter horas ausentes: o critério mínimo é de 20 horas
+válidas. A soma representa as horas disponíveis, com essa limitação registrada.
+As regras de avaliação estão em [regras do seguro](REGRAS.md).
 
-Para reconstruir, veja [ETL](../etl/README.md): `npm run dados:preparar`
-prepara e atualiza o pacote publico. Requer o ambiente Python instalado.
-Para usar o projeto com o pacote existente, basta configurar a Sepolia, abrir
-Docker Desktop e executar `npm start`. Python nao participa desse uso normal.
+## Armazenamento e integridade
 
-O backend importa `inmet_arquivos` e `inmet_dias` automaticamente e ignora anos
-com hashes identicos. O volume Docker preserva os dados localmente; nao sincroniza
-bancos entre computadores. O pacote publico no Git permite reproduzir a carga
-em outra instalacao, sem distribuir usuarios, senhas ou carteiras.
+A API verifica os hashes ao importar anos novos ou alterados, em transações.
+`inmet_arquivos` registra a procedência; `inmet_dias` armazena os dados diários.
+Anos com os mesmos hashes são reutilizados.
 
-O oraculo consulta `/oraculo/serie-historica` com autenticacao de servico. A API
-confere o hash da serie congelada na proposta e busca `inmet_dias`; o oraculo
-confere termos com a cadeia, confronta os dias recebidos com o pacote publico
-e recalcula o primeiro acionamento. A serie meteorologica e consultada somente
-em `inmet_dias`, com procedencia registrada em `inmet_arquivos`.
+Os termos da proposta incluem o hash da série contratada. O oráculo confere os
+termos em cadeia e compara os dados recebidos da API ao pacote público. Os hashes
+permitem detectar alterações; a origem declarada continua sendo o INMET.
 
-Hashes permitem conferir integridade; nao sao assinaturas digitais do INMET.
-O contrato confia no oraculo autorizado para o indice e nao acessa os arquivos
-nem consulta o PostgreSQL. Uma consulta de estiagem nao significa pagamento;
-a emissao, a garantia, a publicacao e o recibo on-chain sao etapas distintas.
-O estado da fabrica publica e registrado em [escopo atual](ESCOPO-ATUAL.md).
+Cada instalação importa o pacote no seu próprio volume Docker. Para reconstruí-lo,
+consulte o [ETL](../etl/README.md).
