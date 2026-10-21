@@ -50,22 +50,19 @@ function semearPor(texto) {
  */
 const CENARIOS = {
   safra_normal: {
-    descricao:
-      "Chuvas regulares, a cada tres dias. Nenhuma condicao e acionada.",
+    descricao: "Chuvas regulares, a cada tres dias. Nenhuma condicao e acionada.",
     intervaloEntreChuvas: 3,
     chuvaMm: [5, 25],
     janelaSeca: 0,
   },
   estiagem_moderada: {
-    descricao:
-      "Estiagem de 18 dias ao final da serie. Fica abaixo do limiar de 30.",
+    descricao: "Estiagem de 18 dias ao final da serie. Fica abaixo do limiar de 30.",
     intervaloEntreChuvas: 4,
     chuvaMm: [3, 18],
     janelaSeca: 18,
   },
   estiagem_severa: {
-    descricao:
-      "Estiagem de 35 dias ao final da serie. Cruza o limiar de 30 e aciona.",
+    descricao: "Estiagem de 35 dias ao final da serie. Cruza o limiar de 30 e aciona.",
     intervaloEntreChuvas: 4,
     chuvaMm: [3, 20],
     janelaSeca: 35,
@@ -113,18 +110,14 @@ function gerarLeituras({
     // ancora, a estiagem gerada se emenda por acaso com os dias secos do padrao
     // regular e fica mais longa do que o cenario declara, o que tornaria os
     // numeros do experimento diferentes do que o cenario diz medir.
-    const ancoraDaJanela =
-      recuo === definicao.janelaSeca && definicao.janelaSeca > 0;
+    const ancoraDaJanela = recuo === definicao.janelaSeca && definicao.janelaSeca > 0;
 
     const choveu =
       !dentroDaJanelaSeca &&
-      (ancoraDaJanela ||
-        (dias - 1 - recuo) % definicao.intervaloEntreChuvas === 0);
+      (ancoraDaJanela || (dias - 1 - recuo) % definicao.intervaloEntreChuvas === 0);
 
     const [min, max] = definicao.chuvaMm;
-    const volume = choveu
-      ? Number((min + aleatorio() * (max - min)).toFixed(1))
-      : 0;
+    const volume = choveu ? Number((min + aleatorio() * (max - min)).toFixed(1)) : 0;
 
     for (const fonte of fontes) {
       // Pequena divergencia entre estacoes, como acontece em campo.
@@ -133,14 +126,7 @@ function gerarLeituras({
       leituras.push({
         fonte,
         timestamp: new Date(
-          Date.UTC(
-            data.getUTCFullYear(),
-            data.getUTCMonth(),
-            data.getUTCDate(),
-            12,
-            0,
-            0,
-          ),
+          Date.UTC(data.getUTCFullYear(), data.getUTCMonth(), data.getUTCDate(), 12, 0, 0),
         ).toISOString(),
         chuvaMm: Math.max(0, Number((volume + ruido).toFixed(1))),
         temperaturaC: Number((22 + aleatorio() * 12).toFixed(1)),

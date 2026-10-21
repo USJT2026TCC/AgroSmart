@@ -1,9 +1,9 @@
 "use strict";
+const { criarTemporario } = require("../fixtures/temporario.cjs");
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
-const os = require("node:os");
 const path = require("node:path");
 
 const { RegistroReputacao } = require("../../../oraculo/src/reputacao.js");
@@ -11,7 +11,7 @@ const { RegistroReputacao } = require("../../../oraculo/src/reputacao.js");
 /** Testes do escore de reputacao por fonte (RF13). */
 
 function arquivoTemporario() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "agrosmart-reputacao-"));
+  const dir = criarTemporario("agrosmart-reputacao-");
 
   return path.join(dir, "reputacao.json");
 }

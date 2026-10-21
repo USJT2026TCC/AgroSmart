@@ -5,15 +5,15 @@
  *
  * O oraculo usa o backend para tres coisas:
  *   1. saber quais apolices estao ativas e a que talhao pertencem;
- *   2. buscar as leituras autenticadas na origem;
+ *   2. buscar a serie historica e o compromisso dos termos;
  *   3. relatar o que publicou, e o que nao conseguiu publicar.
  *
  * Autentica com a chave de servico no cabecalho `X-Chave-De-Servico`. Nao e a
  * chave privada do oraculo na cadeia — essa nunca sai desta maquina.
  *
  * O backend NAO e confiavel para o numero que vai para a cadeia: o oraculo
- * revalida as leituras com a mesma funcao de plausibilidade e consolida o indice
- * por conta propria. Quem assina e quem responde pelo numero.
+ * confere os termos e o pacote publico e recalcula a estiagem. A consulta de
+ * leituras abaixo pertence somente a compatibilidade com sensores.
  */
 class ClienteBackend {
   /**
@@ -24,10 +24,7 @@ class ClienteBackend {
    */
   constructor({ url, chave, timeoutMs = 10_000 }) {
     if (!url) throw new Error("ClienteBackend exige a URL da API (API_URL).");
-    if (!chave)
-      throw new Error(
-        "ClienteBackend exige a chave de servico (CHAVE_DE_SERVICO).",
-      );
+    if (!chave) throw new Error("ClienteBackend exige a chave de servico (CHAVE_DE_SERVICO).");
 
     this.url = url.replace(/\/$/, "");
     this.chave = chave;
@@ -42,9 +39,7 @@ class ClienteBackend {
         ...(corpo ? { "Content-Type": "application/json" } : {}),
       },
       body: corpo
-        ? JSON.stringify(corpo, (_k, v) =>
-            typeof v === "bigint" ? v.toString() : v,
-          )
+        ? JSON.stringify(corpo, (_k, v) => (typeof v === "bigint" ? v.toString() : v))
         : undefined,
       // Mesmo principio do publicador: falhar rapido, em vez de pendurar o
       // servico esperando uma API fora do ar.
@@ -54,9 +49,7 @@ class ClienteBackend {
     const dados = await resposta.json().catch(() => ({}));
 
     if (!resposta.ok) {
-      const erro = new Error(
-        dados?.erro?.mensagem || `API respondeu ${resposta.status}`,
-      );
+      const erro = new Error(dados?.erro?.mensagem || `API respondeu ${resposta.status}`);
       erro.status = resposta.status;
       erro.codigo = dados?.erro?.codigo;
       throw erro;
@@ -69,7 +62,7 @@ class ClienteBackend {
     return (await this.requisitar("GET", "/oraculo/apolices-ativas")).apolices;
   }
 
-  /** Leituras do talhao, ja no formato que `consolidarIndiceClimatico` espera. */
+  /** Compatibilidade com a API de sensores; fora do servico historico. */
   async leituras(talhao, ate, dias = 90) {
     const q = new URLSearchParams({
       talhao,

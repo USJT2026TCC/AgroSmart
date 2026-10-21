@@ -1,4 +1,5 @@
 "use strict";
+const { criarTemporario } = require("../fixtures/temporario.cjs");
 
 /**
  * Integracao do oraculo contra uma blockchain de verdade.
@@ -20,7 +21,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
-const os = require("node:os");
 const path = require("node:path");
 const { spawn, spawnSync } = require("node:child_process");
 const { ethers } = require("ethers");
@@ -31,8 +31,7 @@ const PORTA = 8598;
 const RPC = `http://127.0.0.1:${PORTA}`;
 const FRASE = "test test test test test test test test test test test junk";
 const chaveDaConta = (i) =>
-  ethers.HDNodeWallet.fromPhrase(FRASE, undefined, `m/44'/60'/0'/0/${i}`)
-    .privateKey;
+  ethers.HDNodeWallet.fromPhrase(FRASE, undefined, `m/44'/60'/0'/0/${i}`).privateKey;
 
 const DIA = 86_400;
 
@@ -41,7 +40,8 @@ function artefato(nome) {
     fs.readFileSync(
       path.join(
         CONTRATOS,
-        "artifacts",
+        "../testes/gerados/contratos/artifacts",
+        "contratos",
         "contracts",
         `${nome}.sol`,
         `${nome}.json`,
@@ -91,9 +91,7 @@ test.describe("oraculo contra um no real", { timeout: 240_000 }, () => {
   }
 
   async function emitir(sobrescritos = {}) {
-    const [seguradora, produtor] = await Promise.all(
-      [0, 1].map((i) => provedor.getSigner(i)),
-    );
+    const [seguradora, produtor] = await Promise.all([0, 1].map((i) => provedor.getSigner(i)));
     const agora = (await provedor.getBlock("latest")).timestamp;
     const termos = {
       produtor: await produtor.getAddress(),
@@ -106,37 +104,30 @@ test.describe("oraculo contra um no real", { timeout: 240_000 }, () => {
       vigenciaInicio: agora,
       vigenciaFim: agora + 180 * DIA,
       valorIndenizacao: ethers.parseEther("1"),
-      hashTermos: ethers.keccak256(
-        ethers.toUtf8Bytes(`termos-${Math.random()}`),
-      ),
+      hashTermos: ethers.keccak256(ethers.toUtf8Bytes(`termos-${Math.random()}`)),
       ...sobrescritos,
     };
 
     await (await fabrica.connect(seguradora).emitirApolice(termos)).wait();
-    const endereco = await fabrica.apolices(
-      (await fabrica.totalApolices()) - 1n,
-    );
-    const apolice = new ethers.Contract(
-      endereco,
-      artefato("ApolicePolicy").abi,
-      seguradora,
-    );
-    await (
-      await apolice.depositarGarantia({ value: termos.valorIndenizacao })
-    ).wait();
+    const endereco = await fabrica.apolices((await fabrica.totalApolices()) - 1n);
+    const apolice = new ethers.Contract(endereco, artefato("ApolicePolicy").abi, seguradora);
+    await (await apolice.depositarGarantia({ value: termos.valorIndenizacao })).wait();
 
     return endereco;
   }
 
   test.before(async () => {
-    if (!fs.existsSync(path.join(CONTRATOS, "artifacts", "contracts"))) {
-      const r = spawnSync("npx", ["hardhat", "compile"], {
-        cwd: CONTRATOS,
-        shell: true,
-        stdio: "inherit",
-      });
-      assert.equal(r.status, 0, "falha ao compilar os contratos");
-    }
+    const compilacao = spawnSync(
+      process.execPath,
+      [
+        require.resolve("hardhat/internal/cli/bootstrap"),
+        "--config",
+        "../testes/contratos/hardhat.config.cjs",
+        "compile",
+      ],
+      { cwd: CONTRATOS, encoding: "utf8", windowsHide: true },
+    );
+    assert.equal(compilacao.status, 0, compilacao.stdout + compilacao.stderr);
 
     no = spawn("npx", ["hardhat", "node", "--port", String(PORTA)], {
       cwd: CONTRATOS,
@@ -156,9 +147,7 @@ test.describe("oraculo contra um no real", { timeout: 240_000 }, () => {
       return new ethers.ContractFactory(a.abi, a.bytecode, seguradora);
     };
 
-    registry = await fabricaDe("OracleRegistry").deploy(
-      await seguradora.getAddress(),
-    );
+    registry = await fabricaDe("OracleRegistry").deploy(await seguradora.getAddress());
     await registry.waitForDeployment();
     await (await registry.autorizar(enderecoOraculo)).wait();
 
@@ -168,9 +157,7 @@ test.describe("oraculo contra um no real", { timeout: 240_000 }, () => {
     );
     await fabrica.waitForDeployment();
 
-    const temporario = fs.mkdtempSync(
-      path.join(os.tmpdir(), "agrosmart-oraculo-"),
-    );
+    const temporario = criarTemporario("agrosmart-oraculo-");
     fs.writeFileSync(
       path.join(temporario, "integracao.json"),
       JSON.stringify({
@@ -281,6 +268,55 @@ test.describe("oraculo contra um no real", { timeout: 240_000 }, () => {
     assert.match(estatisticas.saida, /"acionamentos": 1/);
   });
 
+  test("publicador historico transmite, confirma e recupera o mesmo recibo sem novo pagamento", async () => {
+    const { Publicador } = require("../../../oraculo/src/publicador");
+    const seguradora = await provedor.getSigner(0),
+      produtor = await provedor.getSigner(1);
+    const termos = {
+      produtor: await produtor.getAddress(),
+      registry: await registry.getAddress(),
+      cultura: ethers.encodeBytes32String("soja"),
+      talhao: ethers.encodeBytes32String("talhao-01"),
+      modoPagamento: 0,
+      limiarClimatico: 2,
+      limiarClimaticoIntegral: 0,
+      vigenciaInicio: 1707264000,
+      vigenciaFim: 1707523199,
+      valorIndenizacao: ethers.parseEther("0.01"),
+      hashTermos: ethers.id("fixture historica sintetica"),
+    };
+    await (await fabrica.connect(seguradora).emitirApoliceHistorica(termos)).wait();
+    const endereco = await fabrica.apolices((await fabrica.totalApolices()) - 1n);
+    const apolice = new ethers.Contract(endereco, artefato("ApoliceHistorica").abi, seguradora);
+    await (await apolice.depositarGarantia({ value: termos.valorIndenizacao })).wait();
+    const p = new Publicador({ rpcUrl: RPC, chavePrivada: chaveDaConta(2), chainId: 31337 });
+    try {
+      assert.equal(Number((await p.termosHistoricos(endereco)).limiarClimatico), 2);
+      let transmitida;
+      const antes = await provedor.getBalance(termos.produtor);
+      const recibo = await p.publicar({
+        apolice: endereco,
+        periodo: 20240208,
+        indiceClimatico: 2,
+        aoTransmitir: async (tx) => {
+          transmitida = tx;
+        },
+      });
+      assert.equal(recibo.txHash, transmitida.txHash);
+      assert.equal(recibo.acionouPagamento, true);
+      const recuperado = await p.recuperar(transmitida, endereco);
+      assert.equal(recuperado.txHash, recibo.txHash);
+      assert.equal(recuperado.acionouPagamento, true);
+      assert.equal(
+        await provedor.getBalance(termos.produtor, recibo.bloco),
+        antes + termos.valorIndenizacao,
+      );
+      assert.equal(await apolice.totalPeriodos(), 1n);
+    } finally {
+      p.encerrar();
+    }
+  });
+
   test("comando desconhecido mostra a ajuda e sai com erro", () => {
     const { codigo, saida } = oraculo("comando-que-nao-existe");
     assert.equal(codigo, 1);
@@ -296,10 +332,7 @@ test.describe("oraculo contra um no real", { timeout: 240_000 }, () => {
     });
 
     try {
-      assert.equal(
-        await publicador.estaAutorizado(await registry.getAddress()),
-        true,
-      );
+      assert.equal(await publicador.estaAutorizado(await registry.getAddress()), true);
       assert.ok((await publicador.saldo()) > 0n);
 
       const agora = (await provedor.getBlock("latest")).timestamp;
@@ -312,9 +345,7 @@ test.describe("oraculo contra um no real", { timeout: 240_000 }, () => {
 
       const apolice = await emitir();
       const recebidos = [];
-      const pararDeOuvir = await publicador.ouvir(apolice, (e) =>
-        recebidos.push(e),
-      );
+      const pararDeOuvir = await publicador.ouvir(apolice, (e) => recebidos.push(e));
 
       const recibo = await publicador.publicar({
         apolice,
@@ -322,10 +353,7 @@ test.describe("oraculo contra um no real", { timeout: 240_000 }, () => {
         indiceClimatico: 35, // acima do limiarClimatico padrao (30), aciona o pagamento
       });
       assert.equal(recibo.acionouPagamento, true);
-      assert.equal(
-        await publicador.periodoJaPublicado(apolice, 20261101),
-        true,
-      );
+      assert.equal(await publicador.periodoJaPublicado(apolice, 20261101), true);
       assert.equal(await publicador.situacaoDaApolice(apolice), "LIQUIDADA");
 
       // A escuta e por sondagem; da tempo de os eventos chegarem.
@@ -333,10 +361,7 @@ test.describe("oraculo contra um no real", { timeout: 240_000 }, () => {
         await new Promise((r) => setTimeout(r, 250));
       }
       pararDeOuvir();
-      assert.ok(
-        recebidos.length > 0,
-        "a escuta deveria ter recebido os eventos da apolice",
-      );
+      assert.ok(recebidos.length > 0, "a escuta deveria ter recebido os eventos da apolice");
     } finally {
       publicador.encerrar();
     }

@@ -100,13 +100,11 @@ test("validarLeitura recusa leitura sem o campo de chuva", () => {
 
 test("validarLeitura recusa data invalida e fonte ausente", () => {
   assert.equal(
-    validarLeitura({ ...leitura("estacao-A", 20261015, 0), timestamp: "ontem" })
-      .motivo,
+    validarLeitura({ ...leitura("estacao-A", 20261015, 0), timestamp: "ontem" }).motivo,
     MOTIVOS.DATA_INVALIDA,
   );
   assert.equal(
-    validarLeitura({ ...leitura("estacao-A", 20261015, 0), fonte: undefined })
-      .motivo,
+    validarLeitura({ ...leitura("estacao-A", 20261015, 0), fonte: undefined }).motivo,
     MOTIVOS.CAMPO_AUSENTE,
   );
   assert.equal(validarLeitura(null).valida, false);
@@ -184,9 +182,7 @@ test("contarDiasSecosConsecutivos para quando falta dado, sem presumir dia seco"
 });
 
 test("chuva abaixo do limiar ainda conta como dia seco", () => {
-  const porDia = agruparPorDia(
-    serie(["estacao-A"], 20261015, [5, 0.4, 0.2, 0]),
-  );
+  const porDia = agruparPorDia(serie(["estacao-A"], 20261015, [5, 0.4, 0.2, 0]));
 
   assert.equal(contarDiasSecosConsecutivos(porDia, 20261015, 1).dias, 3);
   assert.equal(contarDiasSecosConsecutivos(porDia, 20261015, 0.1).dias, 1);
@@ -195,20 +191,16 @@ test("chuva abaixo do limiar ainda conta como dia seco", () => {
 // ---------------------------------------------------------------- RF19
 
 test("consolidarIndiceClimatico conta a estiagem e lista as fontes usadas", () => {
-  const leituras = serie(
-    ["estacao-inmet-A770", "sensor-solo-talhao-01"],
-    20261015,
-    [8, ...Array(31).fill(0)],
-  );
+  const leituras = serie(["estacao-inmet-A770", "sensor-solo-talhao-01"], 20261015, [
+    8,
+    ...Array(31).fill(0),
+  ]);
 
   const resultado = consolidarIndiceClimatico(leituras, { periodo: 20261015 });
 
   assert.equal(resultado.indiceClimatico, 31);
   assert.equal(resultado.interrompidoPor, "chuva");
-  assert.deepEqual(resultado.fontesUsadas, [
-    "estacao-inmet-A770",
-    "sensor-solo-talhao-01",
-  ]);
+  assert.deepEqual(resultado.fontesUsadas, ["estacao-inmet-A770", "sensor-solo-talhao-01"]);
   assert.equal(resultado.leiturasDescartadas, 0);
   assert.deepEqual(resultado.alertas, []);
 });
@@ -226,12 +218,9 @@ test("consolidarIndiceClimatico descarta leituras implausiveis sem derrubar o in
 });
 
 test("consolidarIndiceClimatico alerta quando ha menos de duas fontes (RNF16)", () => {
-  const resultado = consolidarIndiceClimatico(
-    serie(["unica"], 20261015, [0, 0]),
-    {
-      periodo: 20261015,
-    },
-  );
+  const resultado = consolidarIndiceClimatico(serie(["unica"], 20261015, [0, 0]), {
+    periodo: 20261015,
+  });
 
   assert.equal(resultado.fontesUsadas.length, 1);
   assert.ok(resultado.alertas.some((a) => a.includes("RNF16")));
@@ -252,16 +241,11 @@ test("consolidarIndiceClimatico devolve zero quando nao ha dado do proprio perio
   const resultado = consolidarIndiceClimatico(leituras, { periodo: 20261015 });
 
   assert.equal(resultado.indiceClimatico, 0);
-  assert.ok(
-    resultado.alertas.some((a) => a.includes("Nenhuma leitura valida")),
-  );
+  assert.ok(resultado.alertas.some((a) => a.includes("Nenhuma leitura valida")));
 });
 
 test("consolidarIndiceClimatico exige o periodo de referencia", () => {
-  assert.throws(
-    () => consolidarIndiceClimatico([], {}),
-    /periodo de referencia/,
-  );
+  assert.throws(() => consolidarIndiceClimatico([], {}), /periodo de referencia/);
 });
 
 // ---------------------------------------------------------------- RF13

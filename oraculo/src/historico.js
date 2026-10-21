@@ -22,10 +22,12 @@ function avaliarHistorico({ linhas, inicio, fim, gatilho }) {
     gatilho > 366
   )
     throw new Error("Intervalo ou gatilho invalido.");
+  if (!Array.isArray(linhas)) throw new Error("Serie historica invalida.");
   const porDia = new Map();
   for (const l of linhas) {
-    if (porDia.has(l.data))
-      throw new Error("Mais de uma linha para o mesmo dia/estacao.");
+    if (!l || typeof l !== "object") throw new Error("Linha historica invalida.");
+    data(l.data);
+    if (porDia.has(l.data)) throw new Error("Mais de uma linha para o mesmo dia/estacao.");
     porDia.set(l.data, l);
   }
   let sequencia = 0,
@@ -39,12 +41,16 @@ function avaliarHistorico({ linhas, inicio, fim, gatilho }) {
       l = porDia.get(dia);
     const valido =
       !!l &&
+      Number.isInteger(Number(l.horas_validas)) &&
       Number(l.horas_validas) >= 20 &&
       Number(l.horas_validas) <= 24 &&
       l.chuva_mm !== null &&
       l.chuva_mm !== undefined &&
+      ["number", "string"].includes(typeof l.chuva_mm) &&
+      String(l.chuva_mm).trim() !== "" &&
       Number.isFinite(Number(l.chuva_mm)) &&
-      Number(l.chuva_mm) >= 0;
+      Number(l.chuva_mm) >= 0 &&
+      Number(l.chuva_mm) <= Number(l.horas_validas) * 500;
     if (valido) diasValidos++;
     else diasIncompletos++;
     sequencia = valido && Number(l.chuva_mm) < 1 ? sequencia + 1 : 0;

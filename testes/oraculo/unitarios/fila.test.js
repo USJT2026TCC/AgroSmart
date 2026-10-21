@@ -1,9 +1,9 @@
 "use strict";
+const { criarTemporario } = require("../fixtures/temporario.cjs");
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
-const os = require("node:os");
 const path = require("node:path");
 
 const { FilaDePublicacoes, ESTADOS } = require("../../../oraculo/src/fila.js");
@@ -16,7 +16,7 @@ const { FilaDePublicacoes, ESTADOS } = require("../../../oraculo/src/fila.js");
  */
 
 function arquivoTemporario() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "agrosmart-fila-"));
+  const dir = criarTemporario("agrosmart-fila-");
 
   return path.join(dir, "fila.json");
 }
@@ -191,10 +191,7 @@ test("fila corrompida falha de forma explicita, sem descartar o arquivo", () => 
   fs.writeFileSync(arquivo, "{ isso nao e json");
 
   assert.throws(() => new FilaDePublicacoes(arquivo), /Fila corrompida/);
-  assert.ok(
-    fs.existsSync(arquivo),
-    "o arquivo suspeito precisa continuar em disco",
-  );
+  assert.ok(fs.existsSync(arquivo), "o arquivo suspeito precisa continuar em disco");
 });
 
 test("pendentes lista apenas o que ainda precisa de atencao", () => {
@@ -231,13 +228,10 @@ test("recusa explicita do contrato e falha definitiva, sem novas tentativas", ()
   });
 
   // Como o ethers entrega um erro customizado decodificado.
-  const recusa = Object.assign(
-    new Error("execution reverted (unknown custom error)"),
-    {
-      shortMessage: "execution reverted (unknown custom error)",
-      revert: { name: "ForaDaVigencia", args: [1n, 2n, 3n] },
-    },
-  );
+  const recusa = Object.assign(new Error("execution reverted (unknown custom error)"), {
+    shortMessage: "execution reverted (unknown custom error)",
+    revert: { name: "ForaDaVigencia", args: [1n, 2n, 3n] },
+  });
 
   fila.marcarPublicando(entrada);
   fila.marcarErro(entrada, recusa);
@@ -263,4 +257,38 @@ test("erro de rede continua pendente para a retomada do RF21", () => {
 
   assert.equal(entrada.estado, ESTADOS.PENDENTE);
   assert.equal(entrada.ultimoErro.recusaDoContrato, false);
+});
+
+test("estrutura JSON incompleta nao descarta fila silenciosamente", () => {
+  const arquivo = arquivoTemporario();
+  fs.mkdirSync(path.dirname(arquivo), { recursive: true });
+  fs.writeFileSync(arquivo, JSON.stringify({ outraCoisa: [] }));
+  assert.throws(() => new FilaDePublicacoes(arquivo), /Fila corrompida/);
+});
+test("retoma confirmacao conhecida mesmo se a ultima tentativa foi interrompida", () => {
+  const arquivo = arquivoTemporario();
+  const fila = new FilaDePublicacoes(arquivo, { maxTentativas: 1 });
+  const { entrada } = fila.enfileirar({
+    apolice: APOLICE,
+    periodo: 20240207,
+    payload: { indiceClimatico: 1 },
+  });
+  fila.marcarPublicando(entrada);
+  fila.marcarTransmitida(entrada, { txHash: "0x" + "a".repeat(64) });
+  const retomada = new FilaDePublicacoes(arquivo, { maxTentativas: 1 });
+  assert.ok(retomada.proxima());
+  assert.equal(retomada.proxima().transacao.txHash, entrada.transacao.txHash);
+});
+test("tentativa interrompida sem hash no limite exige revisao explicita", () => {
+  const arquivo = arquivoTemporario();
+  const fila = new FilaDePublicacoes(arquivo, { maxTentativas: 1 });
+  const { entrada } = fila.enfileirar({
+    apolice: APOLICE,
+    periodo: 20240207,
+    payload: { indiceClimatico: 1 },
+  });
+  fila.marcarPublicando(entrada);
+  const retomada = new FilaDePublicacoes(arquivo, { maxTentativas: 1 });
+  assert.equal(retomada.proxima(), undefined);
+  assert.equal(retomada.entradas[0].estado, ESTADOS.FALHA);
 });

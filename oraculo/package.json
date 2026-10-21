@@ -2,7 +2,7 @@
   "name": "agrosmart-oraculo",
   "version": "0.1.0",
   "private": true,
-  "description": "Servico de oraculo do AgroSmart: consolida, assina e publica os indices de campo nos contratos da apolice.",
+  "description": "Oraculo historico do AgroSmart: confere serie INMET, calcula estiagem e publica no contrato.",
   "main": "src/index.js",
   "scripts": {
     "testar": "node --test \"../testes/oraculo/unitarios/*.test.js\"",

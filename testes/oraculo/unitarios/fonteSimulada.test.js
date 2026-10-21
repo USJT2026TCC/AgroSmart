@@ -45,11 +45,7 @@ test("todas as leituras geradas sao plausiveis", () => {
     const leituras = gerarLeituras({ cenario, periodoFinal: PERIODO });
 
     for (const leitura of leituras) {
-      assert.equal(
-        validarLeitura(leitura).valida,
-        true,
-        `${cenario}: ${JSON.stringify(leitura)}`,
-      );
+      assert.equal(validarLeitura(leitura).valida, true, `${cenario}: ${JSON.stringify(leitura)}`);
     }
   }
 });
@@ -136,10 +132,7 @@ test("com-falhas injeta leituras que a validacao precisa descartar", () => {
   const resultado = consolidarIndiceClimatico(leituras, { periodo: PERIODO });
 
   assert.equal(resultado.leiturasDescartadas, 3);
-  assert.deepEqual(resultado.fontesDescartadas, [
-    "sensor-defeituoso-X1",
-    "sensor-mudo-X2",
-  ]);
+  assert.deepEqual(resultado.fontesDescartadas, ["sensor-defeituoso-X1", "sensor-mudo-X2"]);
 });
 
 test("cenario desconhecido falha de forma explicita", () => {

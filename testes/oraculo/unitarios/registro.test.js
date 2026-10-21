@@ -1,9 +1,9 @@
 "use strict";
+const { criarTemporario } = require("../fixtures/temporario.cjs");
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
-const os = require("node:os");
 const path = require("node:path");
 
 const { RegistroDePublicacoes } = require("../../../oraculo/src/registro.js");
@@ -16,7 +16,7 @@ const { RegistroDePublicacoes } = require("../../../oraculo/src/registro.js");
  */
 
 function novoRegistro() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "agrosmart-registro-"));
+  const dir = criarTemporario("agrosmart-registro-");
 
   return new RegistroDePublicacoes(path.join(dir, "publicacoes.jsonl"));
 }
@@ -111,9 +111,6 @@ test("a procedencia do indice fica gravada junto com a transacao (RNF18)", () =>
 
   const [linha] = registro.listar();
 
-  assert.deepEqual(linha.procedencia.fontesUsadas, [
-    "estacao-inmet-A770",
-    "sensor-solo-talhao-01",
-  ]);
+  assert.deepEqual(linha.procedencia.fontesUsadas, ["estacao-inmet-A770", "sensor-solo-talhao-01"]);
   assert.deepEqual(linha.procedencia.fontesDescartadas, ["sensor-quebrado"]);
 });

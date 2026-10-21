@@ -44,8 +44,8 @@ No primeiro início, Docker baixa a imagem do PostgreSQL/PostGIS.
 
 ![Fluxo dos dados históricos e da avaliação](docs/imagens/fluxo-dados.svg)
 
-Na interface, o produtor vincula a carteira, escolhe cobertura e gatilho e envia
-a proposta. Emissão e depósito de garantia são assinados pela seguradora antes
+Na interface, o produtor vincula a carteira e marca **Usar dados historicos de
+Sao Simao (A770)**. Depois escolhe cobertura e gatilho e envia a proposta. Emissão e depósito de garantia são assinados pela seguradora antes
 da avaliação. O recebimento da indenização não exige assinatura do produtor.
 O prêmio exibido é informativo e não é cobrado pelo contrato.
 
@@ -60,7 +60,7 @@ Isso não impede usar ou verificar o ETL. Veja [escopo atual](docs/ESCOPO-ATUAL.
 |---|---|
 | `simulador/` | Somente ETL: extração, validação e consolidação do INMET |
 | `backend/` | API, carga e consultas no PostgreSQL/PostGIS, cadastros e indexação |
-| `oraculo/` | Cálculo do índice e publicação em cadeia |
+| [`oraculo/`](oraculo/README.md) | Conferência da série, cálculo e publicação em cadeia |
 | `contratos/` | Autorização, garantia e pagamento |
 | `app/` | Interface web |
 | `testes/` | Suítes, configurações e evidências |

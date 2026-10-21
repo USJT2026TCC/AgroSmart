@@ -42,6 +42,7 @@ const ABI_APOLICE = [
   "error ParametroInvalido(string campo)",
   "error FalhaNaTransferencia(address destino, uint256 valor)",
   "error ReentranciaDetectada()",
+  "error PeriodoHistoricoInvalido()",
   "error VigenciaIniciada(uint64 agora, uint64 inicio)",
 ];
 

@@ -1,33 +1,35 @@
-# Oraculo
+# Oráculo
 
-## Demonstracao historica atual
+Referência operacional e arquivos: [README do módulo](../oraculo/README.md).
 
-1. Consulta apolices ativas no backend, apos deposito de garantia.
-2. Para proposta historica, busca os dias originais de Sao Simao/A770 no banco.
-3. Confere os termos de datas e gatilho com os gravados na apolice historica.
-4. Avalia cronologicamente a cobertura com `src/historico.js`: comeca em zero,
-   soma dias com chuva inferior a 1 mm e interrompe por chuva ou dado insuficiente.
-5. Enfileira o primeiro periodo acionador. Se nao houver, enfileira o ultimo dia.
-6. Assina a transacao com a chave do oraculo autorizado e relata o recibo ao backend.
+Fluxo atual: PostgreSQL → API autenticada → conferência dos termos e do pacote
+INMET → cálculo da estiagem → fila persistente → contrato → recibo e relato.
+A770 é a única estação; cobertura e datas são históricas. O índice começa em zero
+no início da cobertura. A primeira data acionadora é preservada, mesmo se chover
+depois. Sem acionamento, publica-se o último dia. Cobertura incompleta é recusada.
 
-Nao publica todos os dias em cadeia. O indice e calculado pelo oraculo, a partir
-dos dias preparados; a consulta previa da aplicacao usa a mesma funcao pura.
-A API recusa a serie se o conjunto de hashes diferir do fixado na proposta.
-O banco e a importacao continuam fronteiras de confianca: hash nao prova a verdade
-meteorologica. A fonte e unica, nao descentralizada; o servico tambem e de no unico.
+A API entrega também a descrição e o hash dos termos. O oráculo confere esses
+compromissos com a apólice e compara os dias recebidos aos arquivos públicos
+cujo conjunto de hashes integra a contratação. Isso detecta divergência entre
+banco, pacote e termos; não atesta a verdade das medições nem cria uma fonte
+descentralizada. O pacote deve acompanhar a mesma revisão do sistema.
 
-`npm start` inicia o servico. O usuario nao precisa iniciar um comando por periodo.
-A seguradora assina emissao e garantia; o produtor nao assina para receber.
+A fila guarda o hash transmitido para retomar a confirmação. Após confirmação,
+falhas de registro ou relato ficam pendentes sem provocar outra transferência.
+A auditoria local é idempotente por apólice, período e hash da transação. Uma
+interrupção anterior ao retorno do hash pelo RPC exige conferir a cadeia antes
+de reabrir uma falha. Execute somente um serviço por diretório de estado.
 
-## Falhas e compatibilidade
+`consolidador.js`, `reputacao.js` e os métodos correspondentes permanecem porque
+a API legada e testes existentes ainda dependem deles. O comando `servico` não
+usa esse percurso nem publica suas entradas. Sua remoção total depende da
+revisão do backend, não de apagar arquivos isoladamente.
 
-Fila em disco, reenvio com espera, controle de publicacao repetida e registro de
-recibos permanecem ativos. Uma falha no relato nao desfaz pagamento confirmado.
-Os registros ficam no diretorio privado da instancia, fora do Git.
+O bloco e os recibos continuam com suas datas atuais. O contrato histórico
+interpreta a cobertura hipotética e continua responsável por autorização,
+garantia e pagamento. A implantação pública dessa fábrica está pendente;
+esta revisão não modifica contratos implantados nem comprova pagamento na Sepolia.
 
-O caminho anterior de leituras assinadas permanece para compatibilidade e testes;
-usa `consolidador.js` e duas fontes. Ele nao e a regra da demonstracao historica,
-que utiliza uma estacao e nunca desloca as datas.
-
-Todos os testes estao em `testes/oraculo` e a integracao historica em
-`testes/contratos/unitarios/FluxoHistorico.test.js`. Execute `npm test` na raiz.
+Na interface atual, o modo historico ainda precisa ser selecionado explicitamente.
+A revisao da interface/backend deve avaliar a retirada desse caminho convencional;
+o servico historico ignora apolices convencionais e bloqueia entradas de sensores.

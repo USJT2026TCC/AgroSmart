@@ -3,8 +3,8 @@
 const fs = require("node:fs");
 const path = require("node:path");
 
-// ARQUIVO_ENV escolhe outro arquivo — `ARQUIVO_ENV=.env.sepolia` roda contra a
-// rede publica sem mexer no .env da rede local. O caminho e relativo a oraculo/.
+// ARQUIVO_ENV seleciona um arquivo opcional, relativo a oraculo/.
+// O iniciador da raiz fornece as variaveis diretamente aos processos.
 require("dotenv").config({
   path: path.resolve(path.join(__dirname, ".."), process.env.ARQUIVO_ENV || ".env"),
 });
@@ -23,8 +23,8 @@ require("dotenv").config({
 const RAIZ = path.join(__dirname, "..");
 
 const config = {
-  rede: process.env.REDE || "localhost",
-  rpcUrl: process.env.RPC_URL || "http://127.0.0.1:8545",
+  rede: process.env.REDE || "sepolia",
+  rpcUrl: process.env.RPC_URL || "",
   chavePrivada: process.env.CHAVE_PRIVADA_ORACULO || "",
 
   /** Diretorio dos arquivos de estado do servico (fila e registro de publicacoes). */
@@ -34,10 +34,10 @@ const config = {
   dirImplantacoes:
     process.env.DIR_IMPLANTACOES || path.join(RAIZ, "..", "contratos", "implantacoes"),
 
-  /** Limite de chuva diaria, em milimetros, abaixo do qual o dia conta como seco. */
+  /** Somente compatibilidade com sensores; o modo historico fixa chuva <1 mm. */
   limiarChuvaMm: Number(process.env.LIMIAR_CHUVA_MM || 1),
 
-  /** Escore minimo de reputacao para que as leituras de uma fonte sejam usadas (RF13). */
+  /** Somente compatibilidade com sensores, fora do servico historico. */
   limiarReputacao: Number(process.env.LIMIAR_REPUTACAO || 0.5),
 
   /** Tentativas de publicacao antes de a entrada da fila ser marcada como falha (RF21). */
@@ -58,11 +58,7 @@ const config = {
    */
   timeoutMs: Number(process.env.TIMEOUT_MS || 10000),
 
-  /**
-   * API do backend. Com as duas variaveis definidas, o oraculo busca as leituras
-   * no backend (`--fonte backend`) e relata cada publicacao. Sem elas, funciona
-   * sozinho, com a fonte simulada.
-   */
+  /** API autenticada obrigatoria ao modo servico. Nao ha fonte simulada de uso. */
   apiUrl: process.env.API_URL || "",
   chaveDeServico: process.env.CHAVE_DE_SERVICO || "",
 
@@ -85,7 +81,8 @@ function lerImplantacao(rede = config.rede) {
   }
 
   const implantacao = JSON.parse(fs.readFileSync(arquivo, "utf8"));
-  if (implantacao.legado === true) throw new Error("Implantacao legada: reimplante clima-integral-v1 antes de publicar.");
+  if (implantacao.legado === true)
+    throw new Error("Implantacao legada: confira o manifesto e a atualizacao dos contratos.");
   return implantacao;
 }
 

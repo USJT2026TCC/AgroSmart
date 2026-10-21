@@ -36,11 +36,7 @@ test("chuva e lacuna interrompem; primeiro acionamento fica preservado", () => {
 });
 test("dia incompleto, null e NaN nao sao seca", () => {
   const r = avaliarHistorico({
-    linhas: [
-      linha("2024-02-28", 0, 19),
-      linha("2024-02-29", null),
-      linha("2024-03-01", NaN),
-    ],
+    linhas: [linha("2024-02-28", 0, 19), linha("2024-02-29", null), linha("2024-03-01", NaN)],
     inicio: "2024-02-28",
     fim: "2024-03-01",
     gatilho: 1,

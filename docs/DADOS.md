@@ -38,7 +38,8 @@ em outra instalacao, sem distribuir usuarios, senhas ou carteiras.
 
 O oraculo consulta `/oraculo/serie-historica` com autenticacao de servico. A API
 confere o hash da serie congelada na proposta e busca `inmet_dias`; o oraculo
-confere datas e gatilho contra a cadeia e recalcula o primeiro acionamento. `historico_chuva` e `leituras` pertencem a
+confere termos com a cadeia, confronta os dias recebidos com o pacote publico
+e recalcula o primeiro acionamento. `historico_chuva` e `leituras` pertencem a
 caminhos anteriores de cotacao/ingestao e nao alimentam esse percurso historico.
 
 Hashes permitem conferir integridade; nao sao assinaturas digitais do INMET.

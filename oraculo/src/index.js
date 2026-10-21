@@ -7,8 +7,8 @@ const { ethers } = require("ethers");
 
 const { config, lerImplantacao } = require("./config");
 const { ServicoOraculo } = require("./oraculo");
-const { diaDe } = require("./consolidador");
-const { ESTADOS, FilaDePublicacoes, descreverErro } = require("./fila");
+const { executarCiclo } = require("./ciclo");
+const { FilaDePublicacoes } = require("./fila");
 const { RegistroDePublicacoes } = require("./registro");
 
 /**
@@ -59,13 +59,6 @@ function exigirApolice(opcoes) {
   return ethers.getAddress(endereco);
 }
 
-/** Periodo de referencia informado, ou o dia de hoje. */
-function periodoDe(opcoes) {
-  if (opcoes.periodo && opcoes.periodo !== true) return Number(opcoes.periodo);
-
-  return diaDe(new Date().toISOString());
-}
-
 /**
  * Cria o servico e guarda a referencia para que `main` possa encerrar a conexao
  * com o no ao final. Sem isso o processo termina de imprimir o resultado e nao
@@ -87,10 +80,11 @@ async function comandoStatus() {
 
   titulo("Servico de oraculo");
   console.log(`Rede...............: ${config.rede}`);
+  console.log(`Protocolo no manifesto: ${implantacao.versaoProtocolo ?? "nao informado"}`);
+  if (implantacao.versaoProtocolo !== "clima-integral-historico-v2")
+    console.log("Atencao: o manifesto ainda nao indica a fabrica historica atualizada.");
   console.log(`Endereco do oraculo: ${servico.publicador.endereco}`);
-  console.log(
-    `Saldo..............: ${ethers.formatEther(await servico.publicador.saldo())} ETH`,
-  );
+  console.log(`Saldo..............: ${ethers.formatEther(await servico.publicador.saldo())} ETH`);
 
   const registry = implantacao.contratos.OracleRegistry;
   const autorizado = await servico.publicador.estaAutorizado(registry);
@@ -104,193 +98,36 @@ async function comandoStatus() {
     console.log(`  OracleRegistry.autorizar(${servico.publicador.endereco})`);
   }
 
-  titulo("Fila e reputacao");
+  titulo("Fila de publicacoes");
   console.log(JSON.stringify(servico.fila.resumo(), null, 2));
-  console.log(JSON.stringify(servico.reputacao.instantaneo(), null, 2));
 }
 
-/** Fonte do percurso legado de leituras; o modo historico usa prepararHistorico via API. */
-function fonteDeDados(servico, opcoes) {
-  const tipo = "backend";
-
-  if (tipo === "backend") {
-    if (!servico.backend) {
-      throw new Error(
-        "A fonte backend exige API_URL e CHAVE_DE_SERVICO no .env do oraculo.",
-      );
-    }
-
-    const talhoes = new Map();
-
-    async function talhaoDa(apolice) {
-      if (!talhoes.has(apolice)) {
-        const ativas = await servico.backend.apolicesAtivas();
-        for (const a of ativas) talhoes.set(a.endereco.toLowerCase(), a.talhao);
-      }
-
-      const talhao = talhoes.get(apolice.toLowerCase());
-      if (!talhao) {
-        throw new Error(
-          `O backend nao conhece a apolice ${apolice} como ativa, ou ela nao tem talhao.`,
-        );
-      }
-      return talhao;
-    }
-
-    return {
-      tipo,
-      descricao: `backend em ${config.apiUrl}`,
-      async leiturasPara(apolice, periodo) {
-        return servico.backend.leituras(await talhaoDa(apolice), periodo, 90);
-      },
-    };
-  }
-
-  throw new Error(`Fonte desconhecida: ${tipo}. Use "backend".`);
-}
-
-/** Publica um periodo de uma apolice e imprime a linha da tabela. */
-async function publicarPeriodo(servico, fonte, apolice, periodo) {
-  const leituras = await fonte.leiturasPara(apolice, periodo);
-
-  const preparo = servico.prepararPublicacao({ apolice, periodo, leituras });
-  for (const alerta of preparo.alertas) console.log(`  [alerta] ${alerta}`);
-
-  const resultado = await servico.drenarFila((evento) => {
-    if (evento.tipo === "espera")
-      console.log(`  aguardando ${evento.ms}ms antes de nova tentativa`);
-    if (evento.tipo === "erro") {
-      console.log(
-        `  [erro] tentativa ${evento.tentativa}: ${descreverErro(evento.erro)}`,
-      );
-    }
-  });
-
-  const detalhe = resultado.detalhes.find((d) => d.sucesso);
-
-  if (!detalhe) {
-    const { entrada } = preparo;
-
-    // Tres situacoes diferentes, e o operador precisa saber qual e.
-    if (entrada.estado === ESTADOS.CONCLUIDA) {
-      console.log(
-        `  ${periodo}   ja publicado antes (${entrada.recibo?.txHash ?? "sem recibo"}); nada a fazer (RF20)`,
-      );
-    } else if (entrada.estado === ESTADOS.FALHA) {
-      console.log(
-        `  ${periodo}   falha definitiva: ${entrada.ultimoErro?.mensagem ?? "motivo desconhecido"}`,
-      );
-    } else {
-      console.log(
-        `  ${periodo}   publicacao nao concluida; entrada mantida na fila para retomada (RF21)`,
-      );
-    }
-    return null;
-  }
-
-  const { recibo } = detalhe;
-
-  console.log(
-    `  ${periodo}   ${String(preparo.consolidacao.indiceClimatico).padStart(6)}   ` +
-      `${String(recibo.gasUsado).padStart(7)}   ${recibo.acionouPagamento ? "  SIM  " : "  nao  "}   ` +
-      `${recibo.txHash.slice(0, 20)}...`,
-  );
-
-  return recibo;
-}
-
-/**
- * Modo servico: o oraculo como processo continuo (UC10).
- *
- * A cada intervalo, pergunta ao backend quais apolices estao ativas e publica o
- * periodo corrente de cada uma que ainda nao o recebeu. E assim que o sistema
- * funciona fora da demonstracao — ninguem roda um comando por periodo.
- *
- * `--periodo` fixa o dia de referencia, util para demonstrar com series
- * simuladas; sem ele, vale o dia de hoje. `--uma-vez` roda um unico ciclo.
- */
+/** Servico historico continuo. As datas vem da cobertura, nunca do dia atual. */
 async function comandoServico(opcoes) {
-  const servico = criarServico();
-  if (!servico.backend)
-    throw new Error("O modo servico exige API_URL e CHAVE_DE_SERVICO no .env.");
-
-  const fonte = fonteDeDados(servico, { ...opcoes, fonte: "backend" });
-  const intervalo = Number(
-    opcoes.intervalo && opcoes.intervalo !== true
-      ? opcoes.intervalo
-      : config.intervaloDoServicoMs,
-  );
-
-  titulo("Oraculo em modo servico");
-  console.log(`Oraculo..: ${servico.publicador.endereco}`);
-  console.log(`Fonte....: ${fonte.descricao}`);
-  console.log(
-    `Intervalo: ${intervalo / 1000}s${opcoes["uma-vez"] ? " (um unico ciclo)" : ""}`,
-  );
-
+  const intervalo = Number(opcoes.intervalo ?? config.intervaloDoServicoMs);
+  if (!Number.isInteger(intervalo) || intervalo < 100 || intervalo > 3600000)
+    throw new Error("Intervalo deve ser inteiro entre 100 e 3600000 ms.");
+  if (opcoes.periodo)
+    throw new Error("O periodo vem da cobertura historica; --periodo foi retirado.");
+  const servico = criarServico({ somenteHistorico: true });
+  if (!servico.backend) throw new Error("O modo servico exige API_URL e CHAVE_DE_SERVICO.");
+  console.log("Oraculo historico: A770; indice desde o inicio da cobertura.");
   let parar = false;
-  process.on("SIGINT", () => {
+  const interromper = () => {
     parar = true;
-  });
-
-  do {
-    const periodo = periodoDe(opcoes);
-    let ativas = [];
-
-    try {
-      ativas = await servico.backend.apolicesAtivas();
-    } catch (erro) {
-      console.log(
-        `[${new Date().toISOString()}] backend indisponivel: ${erro.message}`,
-      );
-    }
-
-    console.log(
-      `\n[${new Date().toISOString()}] periodo ${periodo}: ${ativas.length} apolice(s) ativa(s)`,
-    );
-
-    for (const a of ativas) {
-      if (!a.talhao) {
-        console.log(`  ${a.endereco}: sem talhao cadastrado, ignorada`);
-        continue;
-      }
-
-      try {
-        if (a.termos?.modoHistorico) {
-          const entrada = await servico.prepararHistorico(a.endereco);
-          if (
-            await servico.publicador.periodoJaPublicado(
-              a.endereco,
-              entrada.periodo,
-            )
-          )
-            continue;
-          const resultado = await servico.drenarFila();
-          console.log(
-            `  ${a.endereco}: reproducao historica ${entrada.periodo}: ${resultado.detalhes.some((d) => d.sucesso) ? "confirmada" : entrada.estado}`,
-          );
-          continue;
-        }
-        if (await servico.publicador.periodoJaPublicado(a.endereco, periodo))
-          continue;
-
-        if (!(await servico.publicador.dentroDaVigencia(a.endereco))) {
-          console.log(`  ${a.endereco}: fora da vigencia, nada a publicar`);
-          continue;
-        }
-
-        console.log(`  apolice ${a.endereco} (talhao ${a.talhao})`);
-        await publicarPeriodo(servico, fonte, a.endereco, periodo);
-      } catch (erro) {
-        // Uma apolice com problema nao impede as outras.
-        console.log(`  ${a.endereco}: ${descreverErro(erro)}`);
-      }
-    }
-
-    if (opcoes["uma-vez"] || parar) break;
-
-    await new Promise((r) => setTimeout(r, intervalo));
-  } while (!parar);
+  };
+  process.once("SIGINT", interromper);
+  process.once("SIGTERM", interromper);
+  try {
+    do {
+      await executarCiclo(servico);
+      if (opcoes["uma-vez"] || parar) break;
+      await new Promise((r) => setTimeout(r, intervalo));
+    } while (!parar);
+  } finally {
+    process.removeListener("SIGINT", interromper);
+    process.removeListener("SIGTERM", interromper);
+  }
 }
 
 async function comandoOuvir(opcoes) {
@@ -358,9 +195,7 @@ function comandoFila(opcoes) {
 }
 
 function comandoEstatisticas() {
-  const registro = new RegistroDePublicacoes(
-    path.join(config.dirDados, "publicacoes.jsonl"),
-  );
+  const registro = new RegistroDePublicacoes(path.join(config.dirDados, "publicacoes.jsonl"));
   const estatisticas = registro.estatisticas();
 
   titulo("Publicacoes registradas");
@@ -391,30 +226,33 @@ async function main() {
     console.log("");
     console.log("Uso: node src/index.js <comando> [opcoes]");
     console.log("");
-    console.log(
-      "  status                            endereco, saldo e autorizacao do oraculo",
-    );
+    console.log("  status                            endereco, saldo e autorizacao do oraculo");
     console.log(
       "  servico  [--uma-vez]              publica continuamente as apolices ativas do backend",
     );
-    console.log(
-      "  ouvir    --apolice 0x...          acompanha os eventos da apolice",
-    );
-    console.log(
-      "  fila     [--reabrir <chave>]      mostra ou reabre a fila de publicacoes",
-    );
-    console.log(
-      "  estatisticas                      gas e latencia das publicacoes",
-    );
+    console.log("  ouvir    --apolice 0x...          acompanha os eventos da apolice");
+    console.log("  fila     [--reabrir <chave>]      mostra ou reabre a fila de publicacoes");
+    console.log("  estatisticas                      gas e latencia das publicacoes");
     console.log("");
-    console.log("  --periodo    dia de referencia em AAAAMMDD (padrao: hoje)");
+    console.log("  --intervalo  espera entre ciclos em ms (datas vem da cobertura)");
 
     process.exitCode = comando ? 1 : 0;
     return;
   }
 
   try {
-    await COMANDOS[comando](lerArgumentos(resto));
+    const opcoes = lerArgumentos(resto);
+    const permitidas = {
+      status: [],
+      servico: ["intervalo", "uma-vez"],
+      ouvir: ["apolice"],
+      fila: ["reabrir"],
+      estatisticas: [],
+    };
+    for (const nome of Object.keys(opcoes))
+      if (!permitidas[comando].includes(nome))
+        throw new Error(`Opcao --${nome} nao pertence ao comando ${comando}.`);
+    await COMANDOS[comando](opcoes);
   } finally {
     // `ouvir` fica de proposito com a conexao aberta: ele so termina no Ctrl+C.
     if (comando !== "ouvir") servicoAtivo?.encerrar();

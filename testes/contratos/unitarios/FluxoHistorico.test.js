@@ -24,9 +24,16 @@ describe("Fluxo historico: API, banco, oraculo e EVM", function () {
     let servidor;
     try {
       await migrar(banco);
-      await banco.query(
-        `INSERT INTO inmet_arquivos(estacao,ano,sha256_original,sha256_diario,procedencia) VALUES ('A770',2024,'fixture-original','fixture-diario','{}')`,
-      );
+      const { pacote, compromisso } = require("../../oraculo/fixtures/historico.cjs");
+      const dirPacote = path.join(tmp, "pacote");
+      const meta = pacote(dirPacote, [
+        {data:"2024-02-07",chuva_mm:0,horas_validas:24},
+        {data:"2024-02-08",chuva_mm:0,horas_validas:24},
+        {data:"2024-02-09",chuva_mm:10,horas_validas:24},
+      ]);
+      const t = {modoHistorico:true,estacao:"A770",inicioHistorico:"2024-02-07",fimHistorico:"2024-02-09",limiarClimatico:2,hashSerie:meta.hashSerie};
+      const compromissoFixture = compromisso(t);
+      await banco.query("INSERT INTO inmet_arquivos(estacao,ano,sha256_original,sha256_diario,procedencia) VALUES ('A770',2024,$1,$2,'{}')",[meta.sha256Original,meta.sha256Diario]);
       await banco.query(`INSERT INTO inmet_dias(estacao,data,chuva_mm,horas_validas,horas_ausentes,horas_invalidas)
         VALUES ('A770','2024-02-07',0,24,0,0),('A770','2024-02-08',0,24,0,0),('A770','2024-02-09',10,24,0,0)`);
       const registry = await ethers.deployContract("OracleRegistry", [
@@ -43,19 +50,12 @@ describe("Fluxo historico: API, banco, oraculo e EVM", function () {
         vigenciaInicio: 1707264000,
         vigenciaFim: 1707523199,
         limiarClimatico: 2,
+        hashTermos: compromissoFixture.hashTermos,
       });
       await fabrica.emitirApoliceHistorica(termos);
       const endereco = await fabrica.apolices(0);
       const apolice = await ethers.getContractAt("ApoliceHistorica", endereco);
       await apolice.depositarGarantia({ value: termos.valorIndenizacao });
-      const t = {
-        modoHistorico: true,
-        estacao: "A770",
-        inicioHistorico: "2024-02-07",
-        fimHistorico: "2024-02-09",
-        limiarClimatico: 2,
-        hashSerie: await hashDaSerie(banco, "2024-02-07", "2024-02-09"),
-      };
       const { semearParaTeste } =
         await import("../../backend/fixtures/semente.js");
       const { registrarApoliceEmitida } =
@@ -71,8 +71,8 @@ describe("Fluxo historico: API, banco, oraculo e EVM", function () {
         "SELECT id FROM produtos WHERE cultura='soja' LIMIT 1",
       );
       await banco.query(
-        `INSERT INTO propostas (produtor_id,talhao_id,produto_id,area_segurada_ha,carteira_produtor,valor_indenizacao_wei,premio_wei,termos,hash_termos)
-        VALUES ($1,$2,$3,1,$4,$5,1,$6,$7)`,
+        `INSERT INTO propostas (produtor_id,talhao_id,produto_id,area_segurada_ha,carteira_produtor,valor_indenizacao_wei,premio_wei,termos,hash_termos,descricao_dos_termos)
+        VALUES ($1,$2,$3,1,$4,$5,1,$6,$7,$8)`,
         [
           produtores[0].id,
           talhoes[0].id,
@@ -81,6 +81,7 @@ describe("Fluxo historico: API, banco, oraculo e EVM", function () {
           String(termos.valorIndenizacao),
           JSON.stringify(t),
           termos.hashTermos,
+          compromissoFixture.descricaoDosTermos,
         ],
       );
       await registrarApoliceEmitida(banco, {
@@ -132,7 +133,7 @@ describe("Fluxo historico: API, banco, oraculo e EVM", function () {
           path.join(tmp, "publicacoes.jsonl"),
         ),
         reputacao: new RegistroReputacao(),
-        opcoes: { esperaBaseMs: 1 },
+        opcoes: { esperaBaseMs: 1, dirPacote },
       });
       const entrada = await servico.prepararHistorico(endereco);
       expect(entrada.periodo).to.equal(20240208);

@@ -39,6 +39,13 @@ class RegistroDePublicacoes {
    * @param {boolean} [dados.acionouPagamento] Se a publicacao disparou a liquidacao.
    */
   registrar(dados) {
+    const existente =
+      dados.txHash &&
+      this.listar().find(
+        (l) =>
+          l.txHash === dados.txHash && l.apolice === dados.apolice && l.periodo === dados.periodo,
+      );
+    if (existente) return existente;
     const enviado = new Date(dados.enviadoEm);
     const confirmado = new Date(dados.confirmadoEm);
 
@@ -76,7 +83,10 @@ class RegistroDePublicacoes {
     if (linhas.length === 0) return null;
 
     const gases = linhas.map((l) => BigInt(l.gasUsado));
-    const latencias = linhas.map((l) => l.latenciaMs).filter((n) => Number.isFinite(n));
+    const latencias = linhas
+      .filter((l) => !l.recuperada)
+      .map((l) => l.latenciaMs)
+      .filter((n) => Number.isFinite(n));
 
     const soma = gases.reduce((acc, g) => acc + g, 0n);
 

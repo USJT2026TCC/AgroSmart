@@ -97,11 +97,7 @@ function dataDe(periodo) {
   const texto = String(periodo);
 
   return new Date(
-    Date.UTC(
-      Number(texto.slice(0, 4)),
-      Number(texto.slice(4, 6)) - 1,
-      Number(texto.slice(6, 8)),
-    ),
+    Date.UTC(Number(texto.slice(0, 4)), Number(texto.slice(4, 6)) - 1, Number(texto.slice(6, 8))),
   );
 }
 
@@ -142,10 +138,7 @@ function agruparPorDia(leiturasValidas) {
     if (!porDia.has(dia)) porDia.set(dia, new Map());
 
     const porFonte = porDia.get(dia);
-    porFonte.set(
-      leitura.fonte,
-      (porFonte.get(leitura.fonte) ?? 0) + leitura.chuvaMm,
-    );
+    porFonte.set(leitura.fonte, (porFonte.get(leitura.fonte) ?? 0) + leitura.chuvaMm);
   }
 
   const resultado = new Map();
@@ -229,8 +222,7 @@ function consolidarIndiceClimatico(leituras, opcoes) {
     minimoDeFontes = 2,
   } = opcoes;
 
-  if (!periodo)
-    throw new Error("consolidarIndiceClimatico exige o periodo de referencia");
+  if (!periodo) throw new Error("consolidarIndiceClimatico exige o periodo de referencia");
 
   const validas = [];
   const descartes = [];
@@ -248,8 +240,7 @@ function consolidarIndiceClimatico(leituras, opcoes) {
       });
 
       if (leitura?.fonte) fontesDescartadas.add(leitura.fonte);
-      if (reputacao && leitura?.fonte)
-        reputacao.registrar(leitura.fonte, false);
+      if (reputacao && leitura?.fonte) reputacao.registrar(leitura.fonte, false);
 
       continue;
     }
@@ -273,11 +264,7 @@ function consolidarIndiceClimatico(leituras, opcoes) {
   }
 
   const porDia = agruparPorDia(validas);
-  const { dias, interrompidoPor } = contarDiasSecosConsecutivos(
-    porDia,
-    periodo,
-    limiarChuvaMm,
-  );
+  const { dias, interrompidoPor } = contarDiasSecosConsecutivos(porDia, periodo, limiarChuvaMm);
 
   const fontesUsadas = [...new Set(validas.map((l) => l.fonte))].sort();
   const alertas = [];

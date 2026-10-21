@@ -53,6 +53,8 @@ class FilaDePublicacoes {
   constructor(arquivo, opcoes = {}) {
     this.arquivo = arquivo;
     this.maxTentativas = opcoes.maxTentativas ?? 5;
+    if (!Number.isInteger(this.maxTentativas) || this.maxTentativas < 1 || this.maxTentativas > 10)
+      throw new Error("MAX_TENTATIVAS deve ser inteiro entre 1 e 10.");
     this.entradas = [];
 
     this.carregar();
@@ -126,6 +128,12 @@ class FilaDePublicacoes {
     return entrada;
   }
 
+  marcarTransmitida(entrada, transacao) {
+    entrada.transacao = transacao;
+    entrada.atualizadoEm = new Date().toISOString();
+    this.salvar();
+  }
+
   marcarConcluida(entrada, recibo) {
     entrada.estado = ESTADOS.CONCLUIDA;
     entrada.recibo = recibo;
@@ -153,7 +161,7 @@ class FilaDePublicacoes {
     // Recusa explicita do contrato e definitiva: repetir a mesma chamada da a
     // mesma resposta. As novas tentativas do RF21 sao para a rede indisponivel.
     entrada.estado =
-      ehRecusaDoContrato(erro) || entrada.tentativas >= this.maxTentativas
+      ehRecusaDoContrato(erro) || erro?.definitivo || entrada.tentativas >= this.maxTentativas
         ? ESTADOS.FALHA
         : ESTADOS.PENDENTE;
     entrada.atualizadoEm = new Date().toISOString();
@@ -187,7 +195,23 @@ class FilaDePublicacoes {
 
     try {
       const bruto = JSON.parse(fs.readFileSync(this.arquivo, "utf8"));
-      this.entradas = Array.isArray(bruto.entradas) ? bruto.entradas : [];
+      if (
+        !Array.isArray(bruto.entradas) ||
+        bruto.entradas.some((e) => !e || !Object.values(ESTADOS).includes(e.estado) || !e.payload)
+      )
+        throw new Error("Estrutura da fila invalida.");
+      this.entradas = bruto.entradas;
+      for (const entrada of this.entradas) {
+        if (entrada.estado === ESTADOS.PUBLICANDO && entrada.tentativas >= this.maxTentativas) {
+          if (entrada.transacao) entrada.tentativas = this.maxTentativas - 1;
+          else {
+            entrada.estado = ESTADOS.FALHA;
+            entrada.ultimoErro = {
+              mensagem: "Interrupcao no limite de tentativas; confira a cadeia antes de reabrir.",
+            };
+          }
+        }
+      }
     } catch (erro) {
       // Um arquivo de fila corrompido nao pode derrubar o servico, mas tambem
       // nao pode ser descartado em silencio: o operador precisa saber.
@@ -200,10 +224,13 @@ class FilaDePublicacoes {
 
   salvar() {
     fs.mkdirSync(path.dirname(this.arquivo), { recursive: true });
+    const temporario = `${this.arquivo}.tmp-${process.pid}`;
     fs.writeFileSync(
-      this.arquivo,
-      `${JSON.stringify({ atualizadoEm: new Date().toISOString(), entradas: this.entradas }, null, 2)}\n`,
+      temporario,
+      `${JSON.stringify({ atualizadoEm: new Date().toISOString(), entradas: this.entradas }, (_k, v) => (typeof v === "bigint" ? v.toString() : v), 2)}\n`,
+      { encoding: "utf8", flush: true },
     );
+    fs.renameSync(temporario, this.arquivo);
   }
 }
 

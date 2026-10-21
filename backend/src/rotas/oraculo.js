@@ -49,7 +49,7 @@ export function rotasDoOraculo() {
     const apolice = endereco(req.query.apolice, "apolice");
     const banco = req.app.locals.banco;
     const { rows } = await banco.query(
-      "SELECT p.termos FROM propostas p JOIN apolices a ON a.proposta_id=p.id WHERE a.endereco=$1",
+      "SELECT p.termos,p.descricao_dos_termos,p.hash_termos FROM propostas p JOIN apolices a ON a.proposta_id=p.id WHERE a.endereco=$1",
       [apolice],
     );
     const t = rows[0]?.termos;
@@ -65,7 +65,12 @@ export function rotasDoOraculo() {
       "SELECT data::text,chuva_mm,horas_validas FROM inmet_dias WHERE estacao='A770' AND data BETWEEN $1 AND $2 ORDER BY data",
       [t.inicioHistorico, t.fimHistorico],
     );
-    res.json({ termos: t, linhas });
+    res.json({
+      termos: t,
+      linhas,
+      descricaoDosTermos: rows[0].descricao_dos_termos,
+      hashTermos: rows[0].hash_termos,
+    });
   });
 
   r.get("/oraculo/apolices-ativas", async (req, res) => {

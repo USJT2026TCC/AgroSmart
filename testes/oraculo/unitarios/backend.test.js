@@ -1,10 +1,10 @@
 "use strict";
+const { criarTemporario } = require("../fixtures/temporario.cjs");
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const http = require("node:http");
-const os = require("node:os");
 const path = require("node:path");
 
 const { ClienteBackend } = require("../../../oraculo/src/clienteBackend.js");
@@ -142,7 +142,7 @@ test("BigInt no relato e serializado como texto", async () => {
 // ------------------------------------------------------------------ servico
 
 function servicoComFalsos({ publicar, backend, maxTentativas = 2 }) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "agrosmart-oraculo-"));
+  const dir = criarTemporario("agrosmart-oraculo-");
 
   return new ServicoOraculo({
     publicador: { publicar },
