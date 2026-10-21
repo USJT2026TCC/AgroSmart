@@ -13,7 +13,6 @@ O detalhe da apólice lê estado e eventos da blockchain. A API acrescenta cadas
 
 A consulta climatica analisa o periodo historico escolhido. Não cria dívida nem indenizações antigas a receber. As telas ainda serão simplificadas conforme PONTOS A CORRIGIR.docx, na etapa de frontend; isso não foi confundido com a movimentação de testes.
 
-Os testes de tela ficam em testes/app. As carteiras e APIs falsas existem apenas no ambiente desses testes.
 
 
 ## Reproducao historica

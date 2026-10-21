@@ -48,8 +48,7 @@ coincidem com o evento indexado. Latencia de recibo recuperado nao e inferida.
 O intervalo entre data meteorologica passada e transacao atual nao e apresentado
 como tempo de liquidacao: apolices historicas vinculadas sao excluidas dessa media.
 
-Caches de download, dados locais e segredos ficam fora do Git. O pacote publico
-INMET versionado inclui os CSVs originais selecionados e os diarios. Todos os testes estao em `testes/`.
+Caches de download, dados locais e segredos ficam fora do Git. O pacote público INMET acompanha o repositório.
 
 
 ## Banco unico e testes

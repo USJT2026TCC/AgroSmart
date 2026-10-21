@@ -35,7 +35,6 @@ reconstruir os dados e para os testes do ETL.
 | `npm stop` | Para os quatro serviços, preservando dados |
 | `docker compose logs --tail 50 oraculo` | Mostra os ciclos e eventuais falhas do oráculo |
 | `npm run dados:preparar` | Reconstrói o pacote INMET; veja [ETL](etl/README.md) |
-| `npm test` | Executa as suítes em `testes/`; veja [requisitos](testes/README.md) |
 
 ## Fluxo
 
@@ -77,10 +76,9 @@ API, oráculo e interface usam o mesmo manifesto em `blockchain/implantacoes/sep
 | `interface/` | Aplicação web |
 | `configuracao/` | Recorte climático compartilhado |
 | `scripts/` | Inicialização Docker e preparo do pacote |
-| `testes/` | Todas as suítes, configurações e evidências |
 | `docs/` | Explicações técnicas |
 
-Há um único PostgreSQL de uso. Os testes criam bancos descartáveis e uma EVM
-local isolada; não são alternativas para executar a demonstração. Não existe PGlite.
-Cobertura e Slither não comprovam ausência de defeitos; status dos serviços não
-comprova assinatura MetaMask nem pagamento. Veja [verificações](testes/evidencias/verificacao-atual.md).
+Há um único PostgreSQL de uso, sem PGlite. Testes e evidências de execução
+são mantidos apenas localmente e não acompanham este repositório. Os comandos
+de teste nos pacotes exigem essa cópia local; não são necessários para executar
+o sistema. O status dos serviços não comprova assinatura MetaMask nem pagamento.

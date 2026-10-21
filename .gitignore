@@ -55,8 +55,8 @@ api/dados/
 # Estado do iniciador integrado
 .execucao/
 
-# Saidas de todas as verificacoes
-testes/gerados/
+# Testes, fixtures, ferramentas de ensaio e evidências: somente locais
+testes/
 
 # Caches Python, inclusive das suites centralizadas
 __pycache__/

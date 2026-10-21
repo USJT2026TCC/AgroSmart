@@ -20,7 +20,6 @@
     "blockchain",
     "api",
     "oraculo",
-    "interface",
-    "testes"
+    "interface"
   ]
 }

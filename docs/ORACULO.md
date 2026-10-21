@@ -18,4 +18,3 @@ histórica está implantada e verificada na Sepolia. As datas climáticas são p
 as datas dos blocos e transferências são atuais. O serviço executa no Docker.
 
 Arquivos e comandos: [oráculo](../oraculo/README.md).
-Testes e limites da verificação: [evidências](../testes/evidencias/verificacao-atual.md).

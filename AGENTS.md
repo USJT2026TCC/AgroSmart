@@ -9,3 +9,5 @@
 
 - Manter testes, fixtures, medições, configurações de teste e evidências exclusivamente em testes/.
 - A execução de uso é apenas Sepolia; redes locais pertencem somente às suítes de teste.
+
+- Não versionar testes, fixtures, medições nem evidências. A pasta testes/ é exclusivamente local.

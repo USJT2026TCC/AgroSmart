@@ -5,7 +5,6 @@ COPY api/package.json api/package.json
 COPY oraculo/package.json oraculo/package.json
 COPY interface/package.json interface/package.json
 COPY blockchain/package.json blockchain/package.json
-COPY testes/package.json testes/package.json
 RUN npm ci --ignore-scripts --workspace agrosmart-backend --workspace agrosmart-oraculo --workspace agrosmart-app
 COPY api api
 COPY oraculo oraculo

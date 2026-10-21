@@ -42,8 +42,7 @@ histórica está implantada e verificada na Sepolia; veja o manifesto compartilh
 
 Docker Compose executa banco, API/indexador, oráculo e interface. `npm start`
 configura e inicia esses serviços. Sepolia é externa; MetaMask fica no navegador. O volume persiste localmente; a reproducibilidade entre usuarios
-vem do pacote publico versionado e da carga automatica. Testes e bancos
-temporarios ficam separados do banco de uso, com arquivos em `testes/`.
+vem do pacote público versionado e da carga automática.
 
 No fluxo historico, uma estacao e suficiente por decisao explicita do recorte.
 A ingestao de sensores, reputacao e consolidacao multifonte foram removidas.

@@ -69,6 +69,4 @@ Uso e testes utilizam somente PostgreSQL/PostGIS. A configuracao compartilhada
 `configuracao/historico.json` fixa a estacao e os limites de data; o banco e o contrato
 tambem recusam datas fora desse recorte.
 
-Testes ficam em `testes/`. Dentro de `api/`: `npm run cobertura` e
-`npm run testar:integracao`. Na raiz: `npm run testar:docker`.
 Detalhes da interface: [backend e banco](../docs/BACKEND.md).

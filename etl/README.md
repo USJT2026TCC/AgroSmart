@@ -57,22 +57,5 @@ consulta a série por API; não usa credenciais diretas do PostgreSQL.
 
 ![Fluxo de dados e avaliação](../docs/imagens/fluxo-dados.svg)
 
-## Verificar este módulo
-
-Instale as dependências de desenvolvimento na raiz:
-
-```powershell
-.\etl\.venv\Scripts\python.exe -m pip install -e "./etl[dev]"
-```
-
-Dentro de `etl/`:
-
-```powershell
-.\.venv\Scripts\python.exe -m pytest ../testes/etl -c ../testes/configuracao/pytest.ini --basetemp ../testes/gerados/etl/temporarios -q
-```
-
-Os testes ficam em `testes/etl/`. A atualização da fábrica Sepolia pertence
-à revisão dos contratos e não é requisito para concluir este ETL.
-
-O ETL le os limites de `configuracao/historico.json`. Recusa outra estacao e
-intervalos fora de 01/01/2020 a 30/09/2026, antes de iniciar downloads.
+O ETL lê os limites de `configuracao/historico.json` e recusa outra estação
+ou intervalos fora do recorte antes de iniciar downloads.

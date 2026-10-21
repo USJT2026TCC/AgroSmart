@@ -37,8 +37,7 @@ validado nem prova de adequacao agronomica ou atuarial do gatilho.
 
 Consulte o manifesto publico em `blockchain/implantacoes/sepolia.json` para a versao
 efetivamente implantada. Compilacao, teste local, codigo verificado e aceite com
-MetaMask sao verificacoes distintas. As evidencias da versao vigente ficam em
-`testes/evidencias`.
+MetaMask são verificações distintas.
 
 
 ## Implantação histórica
@@ -48,5 +47,4 @@ na Sepolia em 21/10/2026. O manifesto compartilhado fica em
 `blockchain/implantacoes/sepolia.json`. O registro de oráculos foi preservado.
 O Compose de uso executa PostgreSQL, API/indexador, oráculo e interface; a blockchain
 é externa e pública. Rede local e bancos descartáveis existem somente nas suítes.
-Implantação verificada, teste de pagamento e aceite manual com MetaMask são
-verificações distintas; consulte as evidências atuais em `testes/evidencias`.
+Implantação verificada, teste de pagamento e aceite manual com MetaMask são verificações distintas.

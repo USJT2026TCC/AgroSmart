@@ -66,7 +66,7 @@ O período vem da cobertura histórica, nunca do dia atual.
 | `registro.js` | ProcedÃªncia, gas e latÃªncia observada |
 | `config.js` | ConfiguraÃ§Ã£o por ambiente |
 
-## Falhas e testes
+## Tratamento de falhas
 
 O hash da transaÃ§Ã£o transmitida Ã© salvo antes de esperar a confirmaÃ§Ã£o. Ao retomar,
 o serviÃ§o consulta esse hash, sem transmitir outra transaÃ§Ã£o. Uma falha posterior
@@ -77,9 +77,6 @@ ser usado somente apÃ³s conferir o motivo e a cadeia, com o serviÃ§o parado.
 HÃ¡ uma janela de falha antes de o RPC devolver o hash; nessa situaÃ§Ã£o, confira a
 cadeia antes de reabrir. O contrato impede repetir o mesmo perÃ­odo.
 
-Dentro de `oraculo/`, `npm run cobertura` executa testes unitÃ¡rios e integraÃ§Ã£o em
-nÃ³ local. Arquivos, configuraÃ§Ãµes e evidÃªncias ficam em `testes/`. O fluxo completo
-API/banco/orÃ¡culo/EVM estÃ¡ em `testes/blockchain/unitarios/FluxoHistorico.test.js`.
 Recibos recuperados apÃ³s interrupÃ§Ã£o nÃ£o entram na mÃ©dia de latÃªncia, pois o horÃ¡rio
 observado nÃ£o revela quando ocorreu a confirmaÃ§Ã£o original.
 

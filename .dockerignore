@@ -19,6 +19,5 @@
 **/dados
 etl
 docs
-testes/**
-!testes/package.json
+testes
 interface/src/cadeia/implantacoes.json

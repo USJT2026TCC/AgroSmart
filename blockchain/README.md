@@ -14,9 +14,6 @@ Os limites Solidity correspondem a configuracao/historico.json e sao conferidos
 pelos testes. O timestamp do bloco registra a transacao atual; nao e uma medicao
 meteorologica. O contrato nao consulta INMET nem PostgreSQL diretamente.
 
-Na raiz, `npm test` executa cobertura, Slither e as demais suites. Dentro de blockchain/,
-`npm run testar` executa os testes com a configuracao centralizada em testes/.
-Mocks e ferramentas de ensaio tambem ficam exclusivamente em testes/.
 
 O uso é Sepolia. Rede local é reservada aos testes. A fábrica histórica atual está
 implantada e verificada; consulte o manifesto público. Contratos implantados

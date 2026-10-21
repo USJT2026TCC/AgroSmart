@@ -22,6 +22,3 @@ provisorio por localStorage. Consultar um periodo nao envia transacao.
 | cadeia/ | MetaMask, contratos, eventos e enderecos |
 | paginas/ | Telas do produtor e da seguradora |
 | componentes/ | Elementos compartilhados da interface |
-
-Dentro de interface/: `npm run testar` verifica telas e `npm run build` gera o pacote.
-Testes e carteira falsa existem somente em testes/. Detalhes: docs/APLICATIVO.md.
