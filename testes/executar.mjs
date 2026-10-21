@@ -18,20 +18,20 @@ try {
     { cwd: raiz },
   );
   console.log("1/8 Contratos e cobertura");
-  await npm("contratos", [
+  await npm("blockchain", [
     "exec",
     "--",
     "hardhat",
     "--config",
-    "../testes/contratos/hardhat.config.cjs",
+    "../testes/blockchain/hardhat.config.cjs",
     "clean",
   ]);
-  await npm("contratos", [
+  await npm("blockchain", [
     "exec",
     "--",
     "hardhat",
     "--config",
-    "../testes/contratos/hardhat.config.cjs",
+    "../testes/blockchain/hardhat.config.cjs",
     "coverage",
     "--solcoverjs",
     "testes/configuracao/solcover.cjs",
@@ -40,47 +40,52 @@ try {
   await executar(
     process.platform === "win32" ? "slither.exe" : "slither",
     [".", "--config-file", "../testes/configuracao/slither.json"],
-    { cwd: path.join(raiz, "contratos") },
+    { cwd: path.join(raiz, "blockchain") },
   );
   console.log("3/8 API e cobertura");
-  await npm("backend", ["run", "cobertura"]);
+  await npm("api", ["run", "cobertura"]);
   console.log("4/8 Integracao API e blockchain local");
-  await npm("backend", ["run", "testar:integracao"]);
+  await npm("api", ["run", "testar:integracao"]);
   console.log("5/8 Oraculo, integracao e cobertura");
   await npm("oraculo", ["run", "cobertura"]);
   console.log("6/8 Telas e cobertura");
-  await npm("app", ["run", "cobertura"]);
+  await npm("interface", ["run", "cobertura"]);
   console.log("7/8 Geracao do aplicativo");
-  await npm("app", ["run", "build"]);
-  console.log("8/8 Simulador");
+  await npm("interface", ["run", "build"]);
+  await executar(
+    process.execPath,
+    ["--test", "testes/infraestrutura/interface.test.mjs"],
+    { cwd: raiz },
+  );
+  console.log("8/8 ETL");
   const python = path.join(
     raiz,
-    "simulador",
+    "etl",
     ".venv",
     process.platform === "win32" ? "Scripts/python.exe" : "bin/python",
   );
   if (!existsSync(python))
     throw new Error(
-      "Prepare o ambiente simulador/.venv com as dependencias dev antes da verificacao.",
+      "Prepare o ambiente etl/.venv com as dependencias dev antes da verificacao.",
     );
   await executar(
     python,
     [
       "-m",
       "pytest",
-      "../testes/simulador",
+      "../testes/etl",
       "-c",
       "../testes/configuracao/pytest.ini",
       "--basetemp",
-      "../testes/gerados/simulador/temporarios",
-      "--cov=simulador",
+      "../testes/gerados/etl/temporarios",
+      "--cov=etl",
       "--cov-report=term",
       "--cov-config=../testes/configuracao/coverage.ini",
       "--cov-fail-under=70",
       "-q",
     ],
     {
-      cwd: path.join(raiz, "simulador"),
+      cwd: path.join(raiz, "etl"),
     },
   );
   console.log(

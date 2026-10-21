@@ -11,4 +11,6 @@
 - API fornece dados autenticados; oraculo confere serie/termos e publica; contrato liquida.
 - Timestamps atuais servem a operacao e transacoes, nunca como medicao climatica.
 - Uso na Sepolia com MetaMask. Infraestrutura local de blockchain somente em testes.
-- Fabrica historica publica ainda depende de implantacao e verificacao.
+- Fábrica histórica implantada e verificada na Sepolia em 21/10/2026.
+- Sepolia pública, funções permissionadas; não operar uma rede privada neste escopo.
+- Banco, API, oráculo e interface no Docker; nenhum nó blockchain local no uso.

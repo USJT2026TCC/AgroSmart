@@ -47,7 +47,7 @@ test("backend sem URL recusa banco persistente alternativo", async () => {
       "-e",
       `
     import assert from "node:assert/strict";
-    import { abrirBanco } from "./backend/src/banco/conexao.js";
+    import { abrirBanco } from "./api/src/banco/conexao.js";
     await assert.rejects(() => abrirBanco(), /DATABASE_URL obrigatoria/);
   `,
     ],

@@ -9,4 +9,4 @@
 *.jpeg binary
 
 # CSVs publicos do INMET: preservar exatamente os bytes cobertos pelo SHA-256.
-backend/recursos/inmet/A770/*.csv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+api/recursos/inmet/A770/*.csv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

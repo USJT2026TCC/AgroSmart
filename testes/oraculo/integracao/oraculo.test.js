@@ -5,8 +5,8 @@ const { criarTemporario } = require("../fixtures/temporario.cjs");
  * Integracao do oraculo contra uma blockchain de verdade.
  *
  * Os testes unitarios usam publicador e backend falsos. O publicador, porem,
- * conversa com o no — ensaia a chamada, estima o gas, envia, espera a
- * confirmacao, decodifica eventos —, e um falso so testaria o falso. Aqui o teste:
+ * conversa com o no â€” ensaia a chamada, estima o gas, envia, espera a
+ * confirmacao, decodifica eventos â€”, e um falso so testaria o falso. Aqui o teste:
  *
  *   1. sobe um `hardhat node` proprio, em porta separada;
  *   2. implanta os contratos a partir dos artefatos de compilacao;
@@ -15,7 +15,7 @@ const { criarTemporario } = require("../fixtures/temporario.cjs");
  *   4. exercita o publicador direto: vigencia e escuta de eventos.
  *
  * Roda com `npm run testar:integracao`. Fica fora da suite principal porque
- * depende dos artefatos compilados em `contratos/` e leva alguns segundos.
+ * depende dos artefatos compilados em `blockchain/` e leva alguns segundos.
  */
 
 const test = require("node:test");
@@ -25,7 +25,7 @@ const path = require("node:path");
 const { spawn, spawnSync } = require("node:child_process");
 const { ethers } = require("ethers");
 
-const CONTRATOS = path.join(__dirname, "..", "..", "..", "contratos");
+const CONTRATOS = path.join(__dirname, "..", "..", "..", "blockchain");
 const ORACULO = path.join(__dirname, "..", "..", "..", "oraculo");
 const PORTA = 8598;
 const RPC = `http://127.0.0.1:${PORTA}`;
@@ -40,8 +40,8 @@ function artefato(nome) {
     fs.readFileSync(
       path.join(
         CONTRATOS,
-        "../testes/gerados/contratos/artifacts",
-        "contratos",
+        "../testes/gerados/blockchain/artifacts",
+        "blockchain",
         "contracts",
         `${nome}.sol`,
         `${nome}.json`,
@@ -120,7 +120,7 @@ test.describe("oraculo contra um no real", { timeout: 240_000 }, () => {
       [
         require.resolve("hardhat/internal/cli/bootstrap"),
         "--config",
-        "../testes/contratos/hardhat.config.cjs",
+        "../testes/blockchain/hardhat.config.cjs",
         "compile",
       ],
       { cwd: CONTRATOS, encoding: "utf8", windowsHide: true },
@@ -262,7 +262,7 @@ test.describe("oraculo contra um no real", { timeout: 240_000 }, () => {
     assert.match(saida, /Uso: node src\/index\.js/);
   });
 
-  test("publicador: vigencia e escuta de eventos", async () => {
+  test("publicador: autorizacao e escuta de eventos", async () => {
     const { Publicador } = require("../../../oraculo/src/publicador.js");
     const publicador = new Publicador({
       rpcUrl: RPC,
@@ -273,14 +273,6 @@ test.describe("oraculo contra um no real", { timeout: 240_000 }, () => {
     try {
       assert.equal(await publicador.estaAutorizado(await registry.getAddress()), true);
       assert.ok((await publicador.saldo()) > 0n);
-
-      const agora = (await provedor.getBlock("latest")).timestamp;
-      const futura = await emitir({
-        vigenciaInicio: agora + 10 * DIA,
-        vigenciaFim: agora + 190 * DIA,
-      });
-      assert.equal(await publicador.dentroDaVigencia(futura), false);
-      assert.equal(await publicador.dentroDaVigencia(apoliceClimatica), true);
 
       const apolice = await emitir();
       const recebidos = [];

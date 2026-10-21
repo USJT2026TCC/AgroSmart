@@ -1,6 +1,6 @@
 const path = require("node:path");
 const fs = require("node:fs");
-const destino = path.resolve(__dirname, "../gerados/contratos/cobertura");
+const destino = path.resolve(__dirname, "../gerados/blockchain/cobertura");
 module.exports = {
   configureYulOptimizer: true,
   istanbulFolder: destino,

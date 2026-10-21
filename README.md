@@ -1,20 +1,17 @@
 # AgroSmart
 
-Demonstração acadêmica de seguro por estiagem com dados históricos reais do INMET
-e indenização integral em parcela única. Usa São Simão/SP (A770), de 2020 a
-30/09/2026. O talhão é fictício, considerado coincidente com a estação.
-O gatilho é experimental; não estima perda agrícola. Sem visão computacional
-ou cobertura de excesso de chuva.
+Demonstração acadêmica de seguro por estiagem: dados reais do INMET A770
+(São Simão/SP), de 01/01/2020 a 30/09/2026, e indenização integral em parcela única.
+O talhão é fictício, considerado coincidente com a estação. O gatilho é
+experimental: não estima prejuízo agrícola. Sem visão computacional ou excesso de chuva.
 
 ## Executar
 
-Requisitos: Node.js 20.19+ ou 22.12+, Docker Desktop aberto com Compose e
-contêineres Linux, e MetaMask na Sepolia para assinar as operações.
-Configure `RPC_SEPOLIA` e `CHAVE_PRIVADA_ORACULO` em `contratos/.env`.
-A chave deve corresponder ao oráculo autorizado em `contratos/implantacoes/sepolia.json`.
-Não compartilhe nem versione chaves privadas ou arquivos `.env`.
-
-Na raiz:
+Requisitos: Node.js 22.12+ ou 24, Docker Desktop com Compose 2.24+ e contêineres
+Linux, internet e MetaMask no navegador com Sepolia selecionada.
+Configure `RPC_SEPOLIA` e `CHAVE_PRIVADA_ORACULO` em `blockchain/.env`.
+A chave deve corresponder ao oráculo autorizado no manifesto público.
+Não envie chaves privadas nem arquivos `.env` ao Git.
 
 ```powershell
 npm ci
@@ -22,56 +19,68 @@ npm start
 ```
 
 Abra **http://localhost:5173**. API: **http://localhost:3001/api**.
-Usuários de demonstração: `produtor` e `seguradora`; senha `agrosmart`.
-Cada papel deve usar sua própria conta autorizada na MetaMask.
-Outra instalação precisa configurar suas contas e uma implantação compatível;
-as chaves desta instalação não acompanham o projeto.
+Login de demonstração: `produtor` ou `seguradora`; senha inicial `agrosmart`.
+Login na API e conta da MetaMask são independentes. Cada papel deve usar sua conta.
 
-`npm start` inicia o banco no Docker e API, interface, indexador e oráculo no host.
-A série pública já acompanha o Git; a carga no PostgreSQL é automática e não duplica
-anos com hashes iguais. O volume Docker preserva o banco **localmente**.
-Python e novo download do INMET não são necessários para esse uso.
-No primeiro início, Docker baixa a imagem do PostgreSQL/PostGIS.
+O Compose executa **banco, API/indexador, oráculo e interface**. O primeiro início
+baixa imagens e dependências; os seguintes reutilizam o cache. O pacote climático
+já acompanha o Git: a API importa os sete anos automaticamente, sem duplicação.
+O volume `dados_pg` preserva o banco desta instalação. Outra pessoa recebe o mesmo
+pacote público, não seus cadastros ou chaves. Python é necessário somente para
+reconstruir os dados e para os testes do ETL.
 
 | Comando | Ação |
 |---|---|
-| `npm run status` | Verifica os serviços; não comprova assinatura ou pagamento |
-| `npm stop` | Encerra a aplicação, mantendo o banco |
-| `npm run banco:parar` | Para o banco sem apagar o volume |
-| `npm run dados:preparar` | Reconstrói o pacote INMET; requer Python, veja [ETL](simulador/README.md) |
+| `npm run status` | Mostra serviços e confere API, interface e fábrica |
+| `npm stop` | Para os quatro serviços, preservando dados |
+| `docker compose logs --tail 50 oraculo` | Mostra os ciclos e eventuais falhas do oráculo |
+| `npm run dados:preparar` | Reconstrói o pacote INMET; veja [ETL](etl/README.md) |
+| `npm test` | Executa as suítes em `testes/`; veja [requisitos](testes/README.md) |
 
 ## Fluxo
 
-![Fluxo dos dados históricos e da avaliação](docs/imagens/fluxo-dados.svg)
+![Fluxo histórico](docs/imagens/fluxo-dados.svg)
 
-Na interface, o produtor vincula a carteira, escolhe o periodo historico e o
-gatilho experimental e envia a proposta. A fonte e fixa: INMET A770. Emissão e depósito de garantia são assinados pela seguradora antes
-da avaliação. O recebimento da indenização não exige assinatura do produtor.
-O prêmio exibido é informativo e não é cobrado pelo contrato.
+O produtor vincula a carteira, escolhe cobertura histórica e gatilho (1 a 366 dias)
+e envia a proposta. A contagem começa no início da cobertura. Dia seco: chuva
+diária abaixo de 1 mm, com pelo menos 20 horas válidas; lacunas não viram zero.
+A proposta recusa coberturas com dias incompletos.
 
-**Pendente na etapa de contratos:** a fábrica pública atual (`clima-integral-v1`)
-ainda não emite `ApoliceHistorica`. A consulta dos dados funciona; a emissão
-histórica fica bloqueada até atualizar e verificar a fábrica na Sepolia.
-Isso não impede usar ou verificar o ETL. Veja [escopo atual](docs/ESCOPO-ATUAL.md).
+A seguradora assina a emissão e deposita a garantia pela MetaMask. O oráculo
+consulta a API, confere a série e os termos, calcula o índice e assina a publicação.
+O contrato paga uma vez, ao atingir o gatilho. O produtor não precisa assinar para
+receber. O prêmio exibido é informativo e não é cobrado pelo contrato.
+Cancelamento histórico: permitido antes da primeira publicação, com devolução da
+garantia à seguradora. Sem acionamento, a publicação final permite resgatar a garantia.
 
-O recorte está em `configuracao/historico.json` e é aplicado ao ETL, à API, ao
-oráculo e à interface, com as mesmas restrições no banco e no contrato histórico.
-Uso e testes utilizam PostgreSQL/PostGIS; não há banco embutido alternativo.
+A interface mostra a situação da apólice e os links das transações. O saldo recebido
+pode ser conferido na conta beneficiária da MetaMask e no explorador.
+As datas climáticas permanecem históricas; blocos e transferências têm a data atual.
 
-## Organização e testes
+## Blockchain e organização
+
+Usamos **Sepolia, uma rede pública de testes**, com acesso às funções controlado
+pelos contratos. Isso não é blockchain privada. Uma rede privada exigiria operar
+os próprios nós e validadores; não é necessária para este recorte acadêmico.
+Referência: [redes Ethereum](https://ethereum.org/developers/docs/networks/).
+Sepolia e MetaMask ficam fora do Docker; não há nó blockchain local no Compose de uso.
+
+Fábrica histórica atual: [código verificado no Etherscan](https://sepolia.etherscan.io/address/0x5925b55553C3c3c5A4A94CC48563B4403Ab649D1#code).
+API, oráculo e interface usam o mesmo manifesto em `blockchain/implantacoes/sepolia.json`.
 
 | Pasta | Responsabilidade |
 |---|---|
-| `simulador/` | Somente ETL: extração, validação e consolidação do INMET |
-| `backend/` | API, carga e consultas no PostgreSQL/PostGIS, cadastros e indexação |
-| [`oraculo/`](oraculo/README.md) | Conferência da série, cálculo e publicação em cadeia |
-| `contratos/` | Autorização, garantia e pagamento |
-| `app/` | Interface web |
-| `testes/` | Suítes, configurações e evidências |
-| `docs/` | Escopo e explicações técnicas |
+| `etl/` | Extração, validação e consolidação do INMET |
+| `api/` | Autenticação, cadastros, PostgreSQL e indexação da blockchain |
+| `oraculo/` | Conferência, cálculo e publicação do índice |
+| `blockchain/` | Contratos e implantação na Sepolia |
+| `interface/` | Aplicação web |
+| `configuracao/` | Recorte climático compartilhado |
+| `scripts/` | Inicialização Docker e preparo do pacote |
+| `testes/` | Todas as suítes, configurações e evidências |
+| `docs/` | Explicações técnicas |
 
-`npm test` executa as suítes; exige Slither no PATH e o ambiente Python com
-as dependências de desenvolvimento descritas no [ETL](simulador/README.md).
-`npm run testar:docker` verifica PostgreSQL real em um volume temporário separado.
-Resultados gerados ficam em `testes/gerados`, fora do Git. Testes locais não
-comprovam funcionamento da MetaMask ou pagamento na Sepolia.
+Há um único PostgreSQL de uso. Os testes criam bancos descartáveis e uma EVM
+local isolada; não são alternativas para executar a demonstração. Não existe PGlite.
+Cobertura e Slither não comprovam ausência de defeitos; status dos serviços não
+comprova assinatura MetaMask nem pagamento. Veja [verificações](testes/evidencias/verificacao-atual.md).

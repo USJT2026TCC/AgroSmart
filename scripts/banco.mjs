@@ -3,10 +3,10 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { executar, raiz } from "./processos.mjs";
-const requireBackend = createRequire(path.join(raiz, "backend/package.json"));
+const requireBackend = createRequire(path.join(raiz, "api/package.json"));
 
 export function ambienteDoBanco() {
-  const arquivo = path.join(raiz, "backend/.env");
+  const arquivo = path.join(raiz, "api/.env");
   const local = existsSync(arquivo)
     ? requireBackend("dotenv").parse(readFileSync(arquivo))
     : {};

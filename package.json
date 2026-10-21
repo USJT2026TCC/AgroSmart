@@ -17,10 +17,10 @@
     "testar:docker": "node --test testes/infraestrutura/docker.integracao.test.mjs"
   },
   "workspaces": [
-    "contratos",
-    "backend",
+    "blockchain",
+    "api",
     "oraculo",
-    "app",
+    "interface",
     "testes"
   ]
 }

@@ -3,8 +3,8 @@ import { createHash } from "node:crypto";
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { raiz } from "./processos.mjs";
-const origem = path.join(raiz, "simulador/dados/preparado/A770");
-const destino = path.join(raiz, "backend/recursos/inmet/A770");
+const origem = path.join(raiz, "etl/dados/preparado/A770");
+const destino = path.join(raiz, "api/recursos/inmet/A770");
 const manifesto = JSON.parse(
   readFileSync(path.join(origem, "manifesto.json"), "utf8"),
 );

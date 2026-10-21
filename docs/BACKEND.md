@@ -1,8 +1,8 @@
 # Backend e banco
 
 A API atende em `http://localhost:3001/api`, iniciada por `npm start` na raiz.
-O banco persistente usa PostgreSQL com PostGIS; sem servidor externo configurado,
-o iniciador sobe PostgreSQL/PostGIS pelo Docker Compose. As suites tambem utilizam
+O banco persistente usa PostgreSQL com PostGIS no Docker Compose. A API também
+executa no Docker e recebe a conexão interna do iniciador. As suites tambem utilizam
 PostgreSQL/PostGIS real, em bancos descartaveis separados dos cadastros de uso.
 
 ## Serie historica
@@ -55,9 +55,9 @@ INMET versionado inclui os CSVs originais selecionados e os diarios. Todos os te
 ## Banco unico e testes
 
 `npm start` inicia PostgreSQL, aguarda a conexao e inicializa o esquema atual
-se o banco estiver vazio. `backend/src/banco/esquema.sql` contem apenas o modelo vigente.
+se o banco estiver vazio. `api/src/banco/esquema.sql` contem apenas o modelo vigente.
 Nao existe banco embutido nem transferencia automatica de outro motor.
-`DATABASE_URL` explicita utiliza servidor externo. O banco de uso e preservado.
+No uso, o iniciador recusa uma URL que aponte para outro banco. O volume de uso é preservado.
 
 Os testes criam bancos com prefixo aleatorio `agrosmart_teste_` no servidor PostgreSQL
 e removem somente os bancos criados pelo proprio helper. Exigem permissao de criar

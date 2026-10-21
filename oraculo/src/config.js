@@ -15,7 +15,7 @@ require("dotenv").config({
  * Todo segredo vem de variavel de ambiente, nunca do codigo (RNF14). O arquivo
  * .env fica no .gitignore e cada integrante mantem o seu.
  *
- * Os enderecos dos contratos vem de `contratos/implantacoes/<rede>.json`, gerado
+ * Os enderecos dos contratos vem de `blockchain/implantacoes/<rede>.json`, gerado
  * pelo script de implantacao. Copiar endereco a mao entre terminal e arquivo de
  * configuracao e uma das formas mais comuns de quebrar esse tipo de projeto.
  */
@@ -32,7 +32,7 @@ const config = {
 
   /** Onde o script de implantacao dos contratos grava os enderecos. */
   dirImplantacoes:
-    process.env.DIR_IMPLANTACOES || path.join(RAIZ, "..", "contratos", "implantacoes"),
+    process.env.DIR_IMPLANTACOES || path.join(RAIZ, "..", "blockchain", "implantacoes"),
 
   /** Tentativas de publicacao antes de a entrada da fila ser marcada como falha (RF21). */
   maxTentativas: Number(process.env.MAX_TENTATIVAS || 5),
@@ -70,7 +70,7 @@ function lerImplantacao(rede = config.rede) {
   if (!fs.existsSync(arquivo)) {
     throw new Error(
       `Implantacao nao encontrada em ${arquivo}. ` +
-        `Rode antes: cd contratos && npx hardhat run scripts/implantar.js --network ${rede}`,
+        `Rode antes: cd blockchain && npx hardhat run scripts/implantar.js --network ${rede}`,
     );
   }
 

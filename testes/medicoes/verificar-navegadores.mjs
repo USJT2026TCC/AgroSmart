@@ -53,12 +53,12 @@ const NAVEGADORES = [
 process.env.VITE_REDE = opcoes.rede;
 const saida = join(tmpdir(), `agrosmart-rnf05-${opcoes.rede}`);
 await build({
-  root: path.join(raiz, "app"),
+  root: path.join(raiz, "interface"),
   logLevel: "warn",
   build: { outDir: saida, emptyOutDir: true },
 });
 const servidor = await preview({
-  root: path.join(raiz, "app"),
+  root: path.join(raiz, "interface"),
   build: { outDir: saida },
   preview: { port: Number(opcoes.porta), strictPort: true },
   logLevel: "warn",

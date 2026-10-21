@@ -17,7 +17,7 @@ A fabrica tambem preserva emissao convencional para compatibilidade; a aplicacao
 identifica explicitamente o modo historico. Os contratos anteriores sao imutaveis
 e nao ganham esse comportamento: e necessaria nova fabrica implantada.
 
-Consulte `contratos/implantacoes/sepolia.json` para enderecos e versao atuais.
+Consulte `blockchain/implantacoes/sepolia.json` para enderecos e versao atuais.
 Todos os testes, configuracao de cobertura e Slither ficam em `testes/`.
 Execute `npm test` na raiz. Testes locais nao substituem o aceite com MetaMask.
 

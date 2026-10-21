@@ -1,33 +1,21 @@
 # Oráculo
 
-Referência operacional e arquivos: [README do módulo](../oraculo/README.md).
+Fluxo: PostgreSQL → API autenticada → conferência dos termos e do pacote INMET →
+cálculo da estiagem → fila persistente → contrato → confirmação e relato para API.
+O oráculo usa A770, começa a contagem no início da cobertura e preserva o primeiro
+acionamento. Sem acionamento, publica o último dia. Recusa cobertura incompleta.
 
-Fluxo atual: PostgreSQL → API autenticada → conferência dos termos e do pacote
-INMET → cálculo da estiagem → fila persistente → contrato → recibo e relato.
-A770 é a única estação; cobertura e datas são históricas. O índice começa em zero
-no início da cobertura. A primeira data acionadora é preservada, mesmo se chover
-depois. Sem acionamento, publica-se o último dia. Cobertura incompleta é recusada.
+Os hashes vinculam os termos e os CSVs públicos contratados. Permitem detectar
+divergências entre banco, pacote e apólice; não provam a verdade meteorológica.
+O serviço tem um operador e uma fonte de dados, sem alegação de descentralização.
 
-A API entrega também a descrição e o hash dos termos. O oráculo confere esses
-compromissos com a apólice e compara os dias recebidos aos arquivos públicos
-cujo conjunto de hashes integra a contratação. Isso detecta divergência entre
-banco, pacote e termos; não atesta a verdade das medições nem cria uma fonte
-descentralizada. O pacote deve acompanhar a mesma revisão do sistema.
+A fila salva o hash transmitido para recuperar o recibo sem reenviar. Falhas de
+auditoria ou relato não geram outra transferência. Se o RPC falhar antes de devolver
+o hash, é necessário conferir a cadeia antes de reabrir uma tentativa esgotada.
 
-A fila guarda o hash transmitido para retomar a confirmação. Após confirmação,
-falhas de registro ou relato ficam pendentes sem provocar outra transferência.
-A auditoria local é idempotente por apólice, período e hash da transação. Uma
-interrupção anterior ao retorno do hash pelo RPC exige conferir a cadeia antes
-de reabrir uma falha. Execute somente um serviço por diretório de estado.
+O contrato é responsável pela autorização, garantia e pagamento único. A fábrica
+histórica está implantada e verificada na Sepolia. As datas climáticas são passadas;
+as datas dos blocos e transferências são atuais. O serviço executa no Docker.
 
-`consolidador.js`, `reputacao.js`, os métodos de sensores e suas rotas na API foram
-removidos. A fila continua recusando entradas antigas de sensores para impedir
-que estado persistido do protocolo anterior seja publicado pelo serviço histórico.
-
-O bloco e os recibos continuam com suas datas atuais. O contrato histórico
-interpreta a cobertura hipotética e continua responsável por autorização,
-garantia e pagamento. A implantação pública dessa fábrica está pendente;
-esta revisão não modifica contratos implantados nem comprova pagamento na Sepolia.
-
-A interface usa contratacao historica. O backend recusa novas propostas convencionais;
-o servico ignora apolices convencionais antigas e bloqueia entradas de sensores.
+Arquivos e comandos: [oráculo](../oraculo/README.md).
+Testes e limites da verificação: [evidências](../testes/evidencias/verificacao-atual.md).

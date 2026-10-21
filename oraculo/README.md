@@ -1,25 +1,25 @@
-# Oráculo histórico
+# OrÃ¡culo histÃ³rico
 
-Consulta a série de São Simão/SP (A770) pela API do backend, calcula os dias secos
-**desde o início da cobertura** e publica o resultado no contrato histórico.
-Não simula sensores, não desloca datas e não acessa o PostgreSQL diretamente.
-A interface utiliza o modo histórico. Novas propostas convencionais são recusadas
-pelo backend; apólices convencionais antigas são ignoradas pelo serviço.
+Consulta a sÃ©rie de SÃ£o SimÃ£o/SP (A770) pela API do backend, calcula os dias secos
+**desde o inÃ­cio da cobertura** e publica o resultado no contrato histÃ³rico.
+NÃ£o simula sensores, nÃ£o desloca datas e nÃ£o acessa o PostgreSQL diretamente.
+A interface utiliza o modo histÃ³rico. Novas propostas convencionais sÃ£o recusadas
+pelo backend; apÃ³lices convencionais antigas sÃ£o ignoradas pelo serviÃ§o.
 
 ## Funcionamento
 
-1. Consulta apólices históricas ativas, após o depósito da garantia.
+1. Consulta apÃ³lices histÃ³ricas ativas, apÃ³s o depÃ³sito da garantia.
 2. Busca os dias e os termos na API autenticada.
-3. Confere o texto e o hash dos termos com a apólice; confronta os dias recebidos
-   com os CSVs e hashes do pacote público `backend/recursos/inmet/A770`.
-4. Conta dias com chuva inferior a 1 mm; dia utilizável exige ao menos 20 horas
-   válidas. Uma cobertura incompleta bloqueia a publicação.
-5. Enfileira o primeiro acionamento; sem acionamento, enfileira o último dia.
-6. Assina, transmite, aguarda confirmação e relata o recibo ao backend. O contrato
-   decide e executa o pagamento integral; o oráculo não transfere a indenização.
+3. Confere o texto e o hash dos termos com a apÃ³lice; confronta os dias recebidos
+   com os CSVs e hashes do pacote pÃºblico `api/recursos/inmet/A770`.
+4. Conta dias com chuva inferior a 1 mm; dia utilizÃ¡vel exige ao menos 20 horas
+   vÃ¡lidas. Uma cobertura incompleta bloqueia a publicaÃ§Ã£o.
+5. Enfileira o primeiro acionamento; sem acionamento, enfileira o Ãºltimo dia.
+6. Assina, transmite, aguarda confirmaÃ§Ã£o e relata o recibo ao backend. O contrato
+   decide e executa o pagamento integral; o orÃ¡culo nÃ£o transfere a indenizaÃ§Ã£o.
 
-O serviço usa uma única fonte e um único operador. Hash comprova integridade em
-relação ao pacote contratado, não a verdade meteorológica nem assinatura do INMET.
+O serviÃ§o usa uma Ãºnica fonte e um Ãºnico operador. Hash comprova integridade em
+relaÃ§Ã£o ao pacote contratado, nÃ£o a verdade meteorolÃ³gica nem assinatura do INMET.
 
 ```mermaid
 flowchart TD
@@ -35,58 +35,53 @@ flowchart TD
 
 ## Executar
 
-Use `npm start` na raiz. O iniciador fornece RPC, chave do oráculo, autenticação da
-API e diretório de estado. Os segredos ficam fora do Git; a chave do produtor não
-é usada pelo oráculo. A chave de serviço da API é diferente da chave da blockchain.
+Use `npm start` na raiz. O iniciador fornece RPC, chave do orÃ¡culo, autenticaÃ§Ã£o da
+API e diretÃ³rio de estado. Os segredos ficam fora do Git; a chave do produtor nÃ£o
+Ã© usada pelo orÃ¡culo. A chave de serviÃ§o da API Ã© diferente da chave da blockchain.
 
-Para execução manual, configure `oraculo/.env` usando `.env.example` e execute,
-dentro de `oraculo/`:
+Use os comandos abaixo na raiz, com o serviço Docker iniciado:
 
 | Comando | Função |
 |---|---|
-| `node src/index.js status` | Endereço, saldo, autorização e protocolo do manifesto |
-| `node src/index.js servico --uma-vez` | Um ciclo histórico; pode enviar transação |
-| `node src/index.js servico` | Execução contínua |
-| `node src/index.js fila` | Pendências e tentativas no diretório configurado |
-| `node src/index.js estatisticas` | Registros de gas e latência observada |
-| `node src/index.js ouvir --apolice 0x...` | Eventos de uma apólice |
+| `docker compose exec oraculo node src/index.js status` | Conta, saldo e autorização |
+| `docker compose exec oraculo node src/index.js fila` | Fila da instância em uso |
+| `docker compose exec oraculo node src/index.js estatisticas` | Registros de publicação |
+| `docker compose logs --tail 50 oraculo` | Ciclos e falhas do serviço |
 
-Não execute dois serviços sobre a mesma pasta de estado. Preserve essa pasta para
-retomar após reinício. Não use uma pasta diferente para consultar a fila da instância.
-O período vem da cobertura, não de `--periodo` ou do dia atual.
+Não inicie outro serviço sobre a mesma fila. O estado fica em `.execucao/oraculo`.
+O período vem da cobertura histórica, nunca do dia atual.
 
 ## Arquivos
 
 | Arquivo em `src/` | Responsabilidade |
 |---|---|
-| `index.js`, `ciclo.js` | Comandos e execução dos ciclos históricos |
+| `index.js`, `ciclo.js` | Comandos e execuÃ§Ã£o dos ciclos histÃ³ricos |
 | `clienteBackend.js` | Consulta e relatos pela API autenticada |
-| `vinculoHistorico.js` | Conferência dos parâmetros com o compromisso em cadeia |
-| `serieHistorica.js` | Conferência do pacote e da série recebida |
-| `historico.js` | Regra de estiagem, sem rede ou gravação |
-| `oraculo.js` | Preparo, fila, publicação e auditoria |
+| `vinculoHistorico.js` | ConferÃªncia dos parÃ¢metros com o compromisso em cadeia |
+| `serieHistorica.js` | ConferÃªncia do pacote e da sÃ©rie recebida |
+| `historico.js` | Regra de estiagem, sem rede ou gravaÃ§Ã£o |
+| `oraculo.js` | Preparo, fila, publicaÃ§Ã£o e auditoria |
 | `fila.js` | Estado persistente e retomada |
-| `publicador.js`, `abi.js` | Comunicação com o contrato e recibos |
-| `registro.js` | Procedência, gas e latência observada |
-| `config.js` | Configuração por ambiente |
+| `publicador.js`, `abi.js` | ComunicaÃ§Ã£o com o contrato e recibos |
+| `registro.js` | ProcedÃªncia, gas e latÃªncia observada |
+| `config.js` | ConfiguraÃ§Ã£o por ambiente |
 
 ## Falhas e testes
 
-O hash da transação transmitida é salvo antes de esperar a confirmação. Ao retomar,
-o serviço consulta esse hash, sem transmitir outra transação. Uma falha posterior
-na auditoria ou no relato não transforma pagamento confirmado em novo envio.
-Gravações da fila usam arquivo temporário e troca de nome. Filas inválidas causam
-erro explícito. Tentativas esgotadas exigem revisão; `fila --reabrir <chave>` deve
-ser usado somente após conferir o motivo e a cadeia, com o serviço parado.
-Há uma janela de falha antes de o RPC devolver o hash; nessa situação, confira a
-cadeia antes de reabrir. O contrato impede repetir o mesmo período.
+O hash da transaÃ§Ã£o transmitida Ã© salvo antes de esperar a confirmaÃ§Ã£o. Ao retomar,
+o serviÃ§o consulta esse hash, sem transmitir outra transaÃ§Ã£o. Uma falha posterior
+na auditoria ou no relato nÃ£o transforma pagamento confirmado em novo envio.
+GravaÃ§Ãµes da fila usam arquivo temporÃ¡rio e troca de nome. Filas invÃ¡lidas causam
+erro explÃ­cito. Tentativas esgotadas exigem revisÃ£o; `fila --reabrir <chave>` deve
+ser usado somente apÃ³s conferir o motivo e a cadeia, com o serviÃ§o parado.
+HÃ¡ uma janela de falha antes de o RPC devolver o hash; nessa situaÃ§Ã£o, confira a
+cadeia antes de reabrir. O contrato impede repetir o mesmo perÃ­odo.
 
-Dentro de `oraculo/`, `npm run cobertura` executa testes unitários e integração em
-nó local. Arquivos, configurações e evidências ficam em `testes/`. O fluxo completo
-API/banco/oráculo/EVM está em `testes/contratos/unitarios/FluxoHistorico.test.js`.
-Recibos recuperados após interrupção não entram na média de latência, pois o horário
-observado não revela quando ocorreu a confirmação original.
+Dentro de `oraculo/`, `npm run cobertura` executa testes unitÃ¡rios e integraÃ§Ã£o em
+nÃ³ local. Arquivos, configuraÃ§Ãµes e evidÃªncias ficam em `testes/`. O fluxo completo
+API/banco/orÃ¡culo/EVM estÃ¡ em `testes/blockchain/unitarios/FluxoHistorico.test.js`.
+Recibos recuperados apÃ³s interrupÃ§Ã£o nÃ£o entram na mÃ©dia de latÃªncia, pois o horÃ¡rio
+observado nÃ£o revela quando ocorreu a confirmaÃ§Ã£o original.
 
-**Pendente em contratos:** atualizar e verificar a fábrica histórica na Sepolia.
-A fábrica pública atual ainda não emite esse tipo de apólice. Teste local e serviço
-ativo não comprovam emissão ou pagamento público desta versão.
+A fábrica histórica está implantada e verificada na Sepolia. Testes locais e
+serviços ativos não comprovam contratação com MetaMask ou pagamento público.

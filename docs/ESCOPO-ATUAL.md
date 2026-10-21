@@ -28,27 +28,25 @@ validado nem prova de adequacao agronomica ou atuarial do gatilho.
 
 | Componente | Responsabilidade |
 |---|---|
-| Python/simulador | Reconstruir opcionalmente o pacote publico; registrar lacunas e origem |
+| Python/etl | Reconstruir opcionalmente o pacote publico; registrar lacunas e origem |
 | Backend e banco | Carga automatica do pacote no PostgreSQL Docker, consulta e propostas/eventos |
 | Oraculo | Recalcular indice, selecionar primeiro acionamento e assinar publicacao |
 | Contrato | Conferir autorizacao, datas e garantia; executar pagamento unico |
 | Aplicativo | Definir cobertura/gatilho, consultar resultado e acompanhar transacoes |
 | MetaMask | Assinar vinculo de carteira, emissao, garantia, cancelamento e resgate |
 
-Consulte o manifesto publico em `contratos/implantacoes/sepolia.json` para a versao
+Consulte o manifesto publico em `blockchain/implantacoes/sepolia.json` para a versao
 efetivamente implantada. Compilacao, teste local, codigo verificado e aceite com
 MetaMask sao verificacoes distintas. As evidencias da versao vigente ficam em
 `testes/evidencias`.
 
 
-## Estado da implantacao historica
+## Implantação histórica
 
-O processamento e a consulta historica estao implementados e os sete anos foram
-importados no banco local. A fabrica publica no manifesto ainda usa
-`clima-integral-v1`: ela nao emite `ApoliceHistorica`. A API bloqueia essa emissao
-com uma mensagem explicita, em vez de enviar uma transacao incompativel.
-A publicacao da nova fabrica requer aprovacao especifica e ainda nao ocorreu.
-`contratos/scripts/atualizar-fabrica.js` prepara essa atualizacao preservando o
-OracleRegistry e a instancia de banco atual; nao foi executado na Sepolia.
-Depois da implantacao, e necessario verificar seu codigo e reiniciar o sistema.
-Uma consulta historica bem-sucedida nao significa indenizacao paga na rede publica.
+A fábrica `clima-integral-historico-v2` foi implantada e teve seu código verificado
+na Sepolia em 21/10/2026. O manifesto compartilhado fica em
+`blockchain/implantacoes/sepolia.json`. O registro de oráculos foi preservado.
+O Compose de uso executa PostgreSQL, API/indexador, oráculo e interface; a blockchain
+é externa e pública. Rede local e bancos descartáveis existem somente nas suítes.
+Implantação verificada, teste de pagamento e aceite manual com MetaMask são
+verificações distintas; consulte as evidências atuais em `testes/evidencias`.

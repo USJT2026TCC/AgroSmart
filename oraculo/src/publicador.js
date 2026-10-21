@@ -117,8 +117,8 @@ class Publicador {
    * Publica o indice do periodo em uma unica transacao (RF19).
    *
    * A chamada e simulada com `staticCall` antes do envio. Isso antecipa as
-   * rejeicoes previsiveis — endereco revogado, periodo duplicado, apolice fora de
-   * vigencia — sem gastar gas, e devolve o erro customizado do contrato ja
+   * rejeicoes previsiveis â€” endereco revogado, periodo duplicado, apolice fora de
+   * vigencia â€” sem gastar gas, e devolve o erro customizado do contrato ja
    * decodificado, em vez de um seletor de quatro bytes.
    *
    * @returns {Promise<object>} Recibo com txHash, gas, custo, bloco e latencia.
@@ -129,26 +129,6 @@ class Publicador {
       "publicarIndices",
       [periodo, indiceClimatico],
       aoTransmitir,
-    );
-  }
-
-  /**
-   * Se a apolice esta dentro da vigencia, pelo relogio da propria rede.
-   *
-   * Antes do inicio, ou depois do fim, o contrato recusa a publicacao com
-   * ForaDaVigencia. Conferir antes evita gastar uma chamada e, principalmente,
-   * registrar como falha o que e so uma apolice que ainda nao comecou.
-   */
-  async dentroDaVigencia(enderecoApolice) {
-    const apolice = new ethers.Contract(enderecoApolice, ABI_APOLICE, this.provider);
-    const [termos, bloco] = await Promise.all([
-      apolice.verTermos(),
-      this.provider.getBlock("latest"),
-    ]);
-
-    return (
-      bloco.timestamp >= Number(termos.vigenciaInicio) &&
-      bloco.timestamp <= Number(termos.vigenciaFim)
     );
   }
 

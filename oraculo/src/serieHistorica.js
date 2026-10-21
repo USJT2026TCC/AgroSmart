@@ -8,7 +8,7 @@ const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 function conferirSerie(
   linhas,
   termos,
-  diretorio = path.resolve(__dirname, "../../backend/recursos/inmet/A770"),
+  diretorio = path.resolve(__dirname, "../../api/recursos/inmet/A770"),
 ) {
   const manifesto = JSON.parse(fs.readFileSync(path.join(diretorio, "manifesto.json"), "utf8"));
   if (manifesto.estacao !== "A770" || manifesto.versao !== 1)

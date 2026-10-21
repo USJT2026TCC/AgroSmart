@@ -38,7 +38,7 @@ const { values: opcoes } = parseArgs({
 process.env.VITE_REDE = opcoes.rede;
 
 const vite = await createServer({
-  root: path.join(raiz, "app"),
+  root: path.join(raiz, "interface"),
   server: { middlewareMode: true },
   appType: "custom",
   logLevel: "error",

@@ -3,10 +3,10 @@ import assert from "node:assert/strict";
 import net from "node:net";
 import path from "node:path";
 import { executar, raiz } from "../../scripts/processos.mjs";
-import { abrirPostgres } from "../../backend/src/banco/conexao.js";
-import { inicializarBanco } from "../../backend/src/banco/inicializar.js";
-import { importarInmet } from "../../backend/src/banco/importarInmet.js";
-import { semearParaTeste } from "../backend/fixtures/semente.js";
+import { abrirPostgres } from "../../api/src/banco/conexao.js";
+import { inicializarBanco } from "../../api/src/banco/inicializar.js";
+import { importarInmet } from "../../api/src/banco/importarInmet.js";
+import { semearParaTeste } from "../api/fixtures/semente.js";
 
 test(
   "PostgreSQL/PostGIS real: importa pacote, preserva cadastros e reutiliza banco",

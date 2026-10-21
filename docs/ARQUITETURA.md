@@ -6,7 +6,7 @@ As regras e limitacoes estao em [escopo atual](ESCOPO-ATUAL.md).
 
 ## Preparacao opcional
 
-INMET → ETL Python → pacote publico com originais, diarios e manifesto → backend
+INMET â†’ ETL Python â†’ pacote publico com originais, diarios e manifesto â†’ backend
 importa no PostgreSQL/PostGIS. O ETL nao envia leituras de sensores, nao desloca
 datas e nao publica transacoes. `npm run dados:preparar` prepara e empacota;
 `npm start` faz a carga inicial, sem repetir anos com hashes identicos.
@@ -26,22 +26,22 @@ datas e nao publica transacoes. `npm run dados:preparar` prepara e empacota;
    e pelas consultas a cadeia. Relato do oraculo nao substitui confirmacao on-chain.
 
 O contrato historico diferencia a cobertura hipotetica das datas atuais dos blocos.
-Nao e seguro retroativo comercial. A fabrica publica ainda precisa ser atualizada
-para emitir esse contrato; testes locais nao comprovam pagamento na Sepolia.
+É uma demonstração histórica, sem contratação retroativa comercial. A fábrica
+histórica está implantada e verificada na Sepolia; veja o manifesto compartilhado.
 
 ## Responsabilidades
 
 | Componente | Responsabilidade |
 |---|---|
-| Python em `simulador/` | Extrair, validar e consolidar os arquivos historicos |
+| Python em `etl/` | Extrair, validar e consolidar os arquivos historicos |
 | Backend | Autenticacao, cadastros, carga, consultas, propostas e indexacao |
 | PostgreSQL/PostGIS | Persistencia, procedencia, dias climaticos e dados espaciais |
 | Oraculo | Conferir serie, calcular indice, gerir fila e publicar transacoes |
 | Contratos | Autorizacao, garantia, condicao, pagamento unico e eventos |
 | Interface e MetaMask | Interacao do usuario e assinaturas necessarias |
 
-Docker Compose executa apenas o banco. `npm start` inicia no host a API, o oraculo
-e a interface. O volume persiste localmente; a reproducibilidade entre usuarios
+Docker Compose executa banco, API/indexador, oráculo e interface. `npm start`
+configura e inicia esses serviços. Sepolia é externa; MetaMask fica no navegador. O volume persiste localmente; a reproducibilidade entre usuarios
 vem do pacote publico versionado e da carga automatica. Testes e bancos
 temporarios ficam separados do banco de uso, com arquivos em `testes/`.
 

@@ -9,7 +9,7 @@ Fonte oficial: [INMET — dados historicos](https://portal.inmet.gov.br/dadoshis
 Os ZIPs anuais nacionais sao baixados somente para reconstruir o pacote.
 O ETL seleciona A770, interpreta o CSV, valida valores, trata duplicatas e agrega
 precipitacao diaria. Os CSVs originais, diarios, procedencia e hashes ficam em
-`backend/recursos/inmet/A770`. Nao e necessario baixar novamente para usar o sistema.
+`api/recursos/inmet/A770`. Nao e necessario baixar novamente para usar o sistema.
 
 ## Qualidade
 
@@ -26,7 +26,7 @@ limite agronomico validado para culturas, solos, fases ou regioes.
 
 ## Preparacao e uso
 
-Para reconstruir, veja [ETL](../simulador/README.md): `npm run dados:preparar`
+Para reconstruir, veja [ETL](../etl/README.md): `npm run dados:preparar`
 prepara e atualiza o pacote publico. Requer o ambiente Python instalado.
 Para usar o projeto com o pacote existente, basta configurar a Sepolia, abrir
 Docker Desktop e executar `npm start`. Python nao participa desse uso normal.
