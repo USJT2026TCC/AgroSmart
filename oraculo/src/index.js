@@ -81,7 +81,7 @@ async function comandoStatus() {
   titulo("Servico de oraculo");
   console.log(`Rede...............: ${config.rede}`);
   console.log(`Protocolo no manifesto: ${implantacao.versaoProtocolo ?? "nao informado"}`);
-  if (implantacao.versaoProtocolo !== "clima-integral-historico-v2")
+  if (implantacao.versaoProtocolo !== "clima-historico-v3")
     console.log("Atencao: o manifesto ainda nao indica a fabrica historica atualizada.");
   console.log(`Endereco do oraculo: ${servico.publicador.endereco}`);
   console.log(`Saldo..............: ${ethers.formatEther(await servico.publicador.saldo())} ETH`);

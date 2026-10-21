@@ -55,15 +55,28 @@ async function main() {
   // Inclui todos os eventos da implantação na varredura do indexador.
   const blocoInicial = await ethers.provider.getBlockNumber();
 
-  // ---------------------------------------------------------------- registro
-  const registry = await ethers.deployContract("OracleRegistry", [seguradora.address]);
-  await registry.waitForDeployment();
-  const enderecoRegistry = await registry.getAddress();
-  console.log(`OracleRegistry implantado em ${enderecoRegistry}`);
-
-  const txAutorizacao = await registry.autorizar(enderecoOraculo);
-  const reciboAutorizacao = await txAutorizacao.wait();
-  console.log(`  oraculo autorizado (gas: ${reciboAutorizacao.gasUsed})`);
+  const anterior = fs.existsSync(arquivo) ? JSON.parse(fs.readFileSync(arquivo, "utf8")) : null;
+  const reutilizar = anterior?.seguradora?.toLowerCase() === seguradora.address.toLowerCase();
+  let enderecoRegistry;
+  if (reutilizar) {
+    if (anterior.versaoProtocolo === "clima-historico-v3")
+      throw new Error("A fábrica unificada já está configurada; não repetir a implantação.");
+    const atual = await ethers.getContractAt("ApoliceFactory", anterior.contratos.ApoliceFactory);
+    if (await atual.totalApolices() !== 0n)
+      throw new Error("A fábrica possui apólices. Planeje a transição antes de trocar o manifesto.");
+    const registro = await ethers.getContractAt("OracleRegistry", anterior.contratos.OracleRegistry);
+    if ((await registro.seguradora()).toLowerCase() !== seguradora.address.toLowerCase() ||
+        !(await registro.ehAutorizado(enderecoOraculo)))
+      throw new Error("O registro existente não corresponde às contas configuradas.");
+    enderecoRegistry = anterior.contratos.OracleRegistry;
+    console.log(`Registro: ${enderecoRegistry}`);
+  } else {
+    const registro = await ethers.deployContract("OracleRegistry", [seguradora.address]);
+    await registro.waitForDeployment();
+    enderecoRegistry = await registro.getAddress();
+    await (await registro.autorizar(enderecoOraculo)).wait();
+    console.log(`Registro: ${enderecoRegistry}`);
+  }
 
   // ---------------------------------------------------------------- fabrica
   const factory = await ethers.deployContract("ApoliceFactory", [
@@ -72,15 +85,18 @@ async function main() {
   ]);
   await factory.waitForDeployment();
   const enderecoFactory = await factory.getAddress();
+  const recibo = await factory.deploymentTransaction().wait();
   console.log(`ApoliceFactory implantada em ${enderecoFactory}`);
 
   // ---------------------------------------------------------------- registro em disco
   const implantacao = {
-    versaoProtocolo: "clima-integral-historico-v2",
+    versaoProtocolo: "clima-historico-v3",
     rede: network.name,
     chainId: Number((await ethers.provider.getNetwork()).chainId),
     implantadoEm: new Date().toISOString(),
     blocoInicial,
+    txImplantacao: recibo.hash,
+    gasImplantacao: recibo.gasUsed.toString(),
     seguradora: seguradora.address,
     oraculoAutorizado: enderecoOraculo,
     contratos: {

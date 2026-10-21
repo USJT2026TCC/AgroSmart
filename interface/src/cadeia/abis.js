@@ -10,7 +10,6 @@
  */
 
 export const ABI_FACTORY = [
-  "function emitirApolice((address produtor,address registry,bytes32 cultura,bytes32 talhao,uint8 modoPagamento,uint32 limiarClimatico,uint32 limiarClimaticoIntegral,uint64 vigenciaInicio,uint64 vigenciaFim,uint256 valorIndenizacao,bytes32 hashTermos) termos) returns (address)",
   "function emitirApoliceHistorica((address produtor,address registry,bytes32 cultura,bytes32 talhao,uint8 modoPagamento,uint32 limiarClimatico,uint32 limiarClimaticoIntegral,uint64 vigenciaInicio,uint64 vigenciaFim,uint256 valorIndenizacao,bytes32 hashTermos) termos) returns (address)",
   "function apolices(uint256) view returns (address)",
   "function totalApolices() view returns (uint256)",

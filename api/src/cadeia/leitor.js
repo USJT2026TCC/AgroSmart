@@ -24,7 +24,7 @@ export function criarLeitorDaCadeia() {
 
     suportaHistorico() {
       return (
-        lerImplantacao()?.versaoProtocolo === "clima-integral-historico-v2"
+        lerImplantacao()?.versaoProtocolo === "clima-historico-v3"
       );
     },
 

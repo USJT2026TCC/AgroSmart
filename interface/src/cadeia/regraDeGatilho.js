@@ -2,7 +2,7 @@
  * A regra que decide se a condicao contratada foi atendida e quanto se paga.
  *
  * Este arquivo e uma reimplementacao, em JavaScript, da funcao `_percentualDevido`
- * de `blockchain/contracts/ApolicePolicy.sol`.
+ * de `blockchain/contracts/ApoliceHistorica.sol`.
  *
  * Reimplementar a regra no front-end e um risco conhecido: as duas copias podem
  * divergir, e a tela passaria a mostrar ao produtor um numero diferente do que o

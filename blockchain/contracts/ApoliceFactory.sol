@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {ApolicePolicy} from "./ApolicePolicy.sol";
 import {ApoliceHistorica} from "./ApoliceHistorica.sol";
 import {OracleRegistry} from "./OracleRegistry.sol";
 
@@ -55,26 +54,8 @@ contract ApoliceFactory {
         seguradora = seguradora_;
     }
 
-    /**
-     * @notice Implanta uma apolice parametrizada.
-     * @dev O campo `registry` dos termos e sobrescrito com o registro desta fabrica,
-     *      para que nenhuma apolice emitida aqui aponte para uma lista de oraculos
-     *      diferente da acordada.
-     * @return apolice Endereco do contrato recem-implantado.
-     */
-    function emitirApolice(
-        ApolicePolicy.Termos memory termos
-    ) external somenteSeguradora returns (address apolice) {
-        termos.registry = address(registry);
-
-        ApolicePolicy nova = new ApolicePolicy(seguradora, termos);
-        apolice = address(nova);
-
-        _registrar(apolice, termos);
-    }
-
     /// @notice Emissao explicitamente historica. Nunca representa contratacao passada real.
-    function emitirApoliceHistorica(ApolicePolicy.Termos memory termos)
+    function emitirApoliceHistorica(ApoliceHistorica.Termos memory termos)
         external somenteSeguradora returns (address apolice)
     {
         termos.registry = address(registry);
@@ -82,7 +63,7 @@ contract ApoliceFactory {
         _registrar(apolice, termos);
     }
 
-    function _registrar(address apolice, ApolicePolicy.Termos memory termos) private {
+    function _registrar(address apolice, ApoliceHistorica.Termos memory termos) private {
         apolices.push(apolice);
         _apolicesPorProdutor[termos.produtor].push(apolice);
         _apolicesPorTalhao[termos.talhao].push(apolice);

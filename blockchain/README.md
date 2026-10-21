@@ -9,12 +9,10 @@ Sepolia. As regras do seguro estão em [REGRAS.md](../docs/REGRAS.md).
 |---|---|
 | `OracleRegistry.sol` | Lista os oráculos autorizados. A seguradora pode autorizar, revogar e transferir a administração do registro. |
 | `ApoliceFactory.sol` | Cria contratos de apólice e organiza seus endereços por produtor e talhão. A aplicação chama `emitirApoliceHistorica`. |
-| `ApolicePolicy.sol` | Guarda os termos e implementa depósito da garantia, publicação do índice, pagamento, cancelamento e resgate. |
-| `ApoliceHistorica.sol` | Usa a lógica de `ApolicePolicy` com datas históricas; valida o recorte, o gatilho e a ordem das publicações. |
+| `ApoliceHistorica.sol` | Guarda os termos, valida datas históricas e implementa garantia, publicação, pagamento, cancelamento e resgate. |
 
-`ApolicePolicy` é a base herdada por `ApoliceHistorica`: retirar esse arquivo
-impede compilar a apólice histórica. A fábrica cria uma apólice para cada emissão.
-O dinheiro fica na apólice, que transfere ao produtor quando a condição é atendida.
+A fábrica cria uma apólice histórica para cada emissão. O dinheiro fica na apólice,
+que transfere ao produtor quando a condição é atendida.
 
 ## `implantacoes/`
 
@@ -28,7 +26,9 @@ privadas são configuradas em `.env`, que fica fora do Git.
 
 ## `scripts/`
 
-`implantar.js` publica o registro e a fábrica, autoriza o oráculo e grava o manifesto.
+`implantar.js` publica a fábrica e grava o manifesto. Usa o registro da seguradora
+quando ele já está configurado; em uma instalação independente, também cria o
+registro e autoriza o oráculo. A troca de fábrica exige que a atual esteja sem apólices.
 Essa operação usa a conta da seguradora e consome ETH de teste. Com um manifesto
 existente, o script bloqueia a publicação; substituí-lo exige definir explicitamente
 `NOVA_IMPLANTACAO=1`.
@@ -48,14 +48,8 @@ O início normal do sistema usa a implantação configurada.
 
 `artifacts/`, `cache/` e `node_modules/` são gerados localmente e ficam fora do Git.
 
-## Pontos da revisão
+## Termos
 
-A fábrica publicada também expõe `emitirApolice`, que cria a apólice base com
-vigência pelo relógio da rede. O caminho histórico da aplicação usa
-`emitirApoliceHistorica`.
-
-A estrutura dos termos contém `modoPagamento` e `limiarClimaticoIntegral`.
-O construtor exige, respectivamente, `0` e `0`; o pagamento implementado é integral.
-Retirar esses campos ou a emissão convencional exige revisar os consumidores da
-ABI e publicar outra fábrica. A fonte Solidity desta revisão permanece igual à
-da implantação registrada no manifesto.
+A aplicação e os serviços usam o mesmo formato de termos. `modoPagamento` e
+`limiarClimaticoIntegral` são obrigatoriamente zero; o pagamento é integral.
+O único caminho de emissão da fábrica é `emitirApoliceHistorica`.

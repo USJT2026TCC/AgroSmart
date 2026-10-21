@@ -54,7 +54,7 @@ pelos contratos.
 Referência: [redes Ethereum](https://ethereum.org/developers/docs/networks/).
 Sepolia e MetaMask ficam fora do Docker; não há nó blockchain local no Compose de uso.
 
-Fábrica histórica atual: [código verificado no Etherscan](https://sepolia.etherscan.io/address/0x5925b55553C3c3c5A4A94CC48563B4403Ab649D1#code).
+Fábrica histórica atual: [código verificado no Etherscan](https://sepolia.etherscan.io/address/0xae560FCc7f499b3844B7c419caD7A09e10e2872C#code).
 API, oráculo e interface usam o mesmo manifesto em `blockchain/implantacoes/sepolia.json`.
 
 | Pasta | Responsabilidade |

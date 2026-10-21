@@ -106,9 +106,7 @@ export default function Propostas() {
         `2/3 · Confirme a emissao na carteira. Resumo dos termos: ${hashCurto(preparo.hashTermos)}`,
       );
       const fabrica = contratoFactory(signatario);
-      const transacao = await fabrica[
-        preparo.modoHistorico ? "emitirApoliceHistorica" : "emitirApolice"
-      ](preparo.termos);
+      const transacao = await fabrica.emitirApoliceHistorica(preparo.termos);
 
       setAviso(
         `2/3 · Transacao enviada (${hashCurto(transacao.hash)}). Aguardando confirmacao…`,

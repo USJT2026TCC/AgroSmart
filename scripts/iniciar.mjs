@@ -64,7 +64,7 @@ async function verificarRede() {
 
 async function iniciar() {
   const { env, m } = await verificarRede();
-  if (m.versaoProtocolo !== "clima-integral-historico-v2")
+  if (m.versaoProtocolo !== "clima-historico-v3")
     throw new Error("Falta implantar e verificar a fábrica histórica atual na Sepolia.");
   if (
     !env.CHAVE_PRIVADA_ORACULO ||

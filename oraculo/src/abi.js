@@ -10,7 +10,7 @@
  * surgir como um erro obscuro de decodificacao em tempo de execucao.
  *
  * Qualquer alteracao nas funcoes abaixo precisa ser espelhada em
- * blockchain/contracts/ApolicePolicy.sol.
+ * blockchain/contracts/ApoliceHistorica.sol.
  */
 const ABI_APOLICE = [
   // --- escrita -------------------------------------------------------------
