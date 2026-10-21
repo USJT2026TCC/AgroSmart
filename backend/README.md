@@ -66,6 +66,10 @@ Cadastro, consulta e proposta funcionam; a emissao fica bloqueada ate essa atual
 Rotas de sensores, cadastro de fontes e reputacao foram retirados. Migracoes e tabelas
 antigas permanecem para preservar bancos existentes; nao alimentam o calculo atual.
 
+Uso e testes utilizam somente PostgreSQL/PostGIS. A configuracao compartilhada
+`configuracao/historico.json` fixa a estacao e os limites de data; o banco e o contrato
+tambem recusam datas fora desse recorte.
+
 Testes ficam em `testes/`. Dentro de `backend/`: `npm run cobertura` e
 `npm run testar:integracao`. Na raiz: `npm run testar:docker`.
 Detalhes da interface: [backend e banco](../docs/BACKEND.md).

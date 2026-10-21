@@ -8,31 +8,44 @@ const path = require("node:path");
 
 describe("Fluxo historico: API, banco, oraculo e EVM", function () {
   it("calcula a primeira data pelo banco e liquida integralmente na EVM", async function () {
-    const { abrirBanco } =
-      await import("../../../backend/src/banco/conexao.js");
+    const { abrirBancoDeTeste } =
+      await import("../../backend/fixtures/banco.js");
     const { migrar } = await import("../../../backend/src/banco/migrar.js");
     const { hashDaSerie } =
       await import("../../../backend/src/dominio/reproducao.js");
     const { criarApp } = await import("../../../backend/src/app.js");
     const { ClienteBackend } = require("../../../oraculo/src/clienteBackend");
     const { config } = await import("../../../backend/src/config.js");
-    const banco = await abrirBanco({ emMemoria: true });
+    const banco = await abrirBancoDeTeste();
     const tmp = path.resolve(__dirname, "../../gerados/historico-integracao");
     fs.mkdirSync(tmp, { recursive: true });
     const [seguradora, produtor, oraculo] = await ethers.getSigners();
     let servidor;
     try {
       await migrar(banco);
-      const { pacote, compromisso } = require("../../oraculo/fixtures/historico.cjs");
+      const {
+        pacote,
+        compromisso,
+      } = require("../../oraculo/fixtures/historico.cjs");
       const dirPacote = path.join(tmp, "pacote");
       const meta = pacote(dirPacote, [
-        {data:"2024-02-07",chuva_mm:0,horas_validas:24},
-        {data:"2024-02-08",chuva_mm:0,horas_validas:24},
-        {data:"2024-02-09",chuva_mm:10,horas_validas:24},
+        { data: "2024-02-07", chuva_mm: 0, horas_validas: 24 },
+        { data: "2024-02-08", chuva_mm: 0, horas_validas: 24 },
+        { data: "2024-02-09", chuva_mm: 10, horas_validas: 24 },
       ]);
-      const t = {modoHistorico:true,estacao:"A770",inicioHistorico:"2024-02-07",fimHistorico:"2024-02-09",limiarClimatico:2,hashSerie:meta.hashSerie};
+      const t = {
+        modoHistorico: true,
+        estacao: "A770",
+        inicioHistorico: "2024-02-07",
+        fimHistorico: "2024-02-09",
+        limiarClimatico: 2,
+        hashSerie: meta.hashSerie,
+      };
       const compromissoFixture = compromisso(t);
-      await banco.query("INSERT INTO inmet_arquivos(estacao,ano,sha256_original,sha256_diario,procedencia) VALUES ('A770',2024,$1,$2,'{}')",[meta.sha256Original,meta.sha256Diario]);
+      await banco.query(
+        "INSERT INTO inmet_arquivos(estacao,ano,sha256_original,sha256_diario,procedencia) VALUES ('A770',2024,$1,$2,'{}')",
+        [meta.sha256Original, meta.sha256Diario],
+      );
       await banco.query(`INSERT INTO inmet_dias(estacao,data,chuva_mm,horas_validas,horas_ausentes,horas_invalidas)
         VALUES ('A770','2024-02-07',0,24,0,0),('A770','2024-02-08',0,24,0,0),('A770','2024-02-09',10,24,0,0)`);
       const registry = await ethers.deployContract("OracleRegistry", [

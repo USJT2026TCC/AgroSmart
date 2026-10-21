@@ -123,14 +123,13 @@ describe("indexador contra um no real", { timeout: 180_000 }, () => {
       }),
     );
 
-    const { abrirBanco } =
-      await import("../../../backend/src/banco/conexao.js");
+    const { abrirBancoDeTeste } = await import("../fixtures/banco.js");
     const { migrar } = await import("../../../backend/src/banco/migrar.js");
     const { semearParaTeste: semear } = await import("../fixtures/semente.js");
     const { criarIndexador } =
       await import("../../../backend/src/cadeia/indexador.js");
 
-    banco = await abrirBanco({ emMemoria: true });
+    banco = await abrirBancoDeTeste();
     await migrar(banco);
     await semear(banco);
     indexador = criarIndexador(banco, { confirmacoes: 0 });

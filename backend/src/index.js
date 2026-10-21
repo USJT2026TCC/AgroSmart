@@ -1,7 +1,6 @@
 import { readFileSync } from "node:fs";
 import https from "node:https";
 import { importarInmet } from "./banco/importarInmet.js";
-import { transferirPGliteSeNecessario } from "./banco/transferirLegado.js";
 
 import { criarApp } from "./app.js";
 import { config } from "./config.js";
@@ -23,19 +22,8 @@ async function iniciar() {
   const banco = await abrirBanco();
   const aplicadas = await migrar(banco);
 
-  if (aplicadas.length > 0)
-    console.log(`Migracoes aplicadas: ${aplicadas.join(", ")}`);
+  if (aplicadas.length > 0) console.log(`Migracoes aplicadas: ${aplicadas.join(", ")}`);
 
-  if (config.urlDoBanco && config.dirBancoLegado) {
-    const transferencia = await transferirPGliteSeNecessario(
-      banco,
-      config.dirBancoLegado,
-    );
-    if (transferencia.transferida)
-      console.log(
-        "Dados do PGlite anterior transferidos para PostgreSQL. Origem preservada; usuarios e carteiras mantidos.",
-      );
-  }
   const importacao = await importarInmet(banco);
   if (importacao.anos)
     console.log(
@@ -59,9 +47,7 @@ async function iniciar() {
     console.log(
       `AgroSmart backend em ${comTls ? "https" : "http"}://localhost:${config.porta}/api`,
     );
-    console.log(
-      `Banco: ${banco.motor}${config.urlDoBanco ? "" : ` (${config.dirBanco})`}`,
-    );
+    console.log(`Banco: ${banco.motor}`);
     console.log(
       cadeia.disponivel()
         ? `Cadeia: ${config.rede}, fabrica ${cadeia.enderecoDaFabrica()}`

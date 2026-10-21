@@ -26,7 +26,7 @@ test("banco externo respeita DATABASE_URL e nao inicia Docker", async () => {
   });
   assert.equal(config.url, "postgresql://fixture");
 });
-test("sem Docker, falha claramente sem trocar para PGlite", async () => {
+test("sem Docker, falha claramente sem criar banco alternativo", async () => {
   await assert.rejects(
     () =>
       iniciarBanco(configuracaoDoBanco({}), async () => {

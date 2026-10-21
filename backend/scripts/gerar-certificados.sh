@@ -2,9 +2,9 @@
 # Certificados de DESENVOLVIMENTO para o canal cifrado (RNF17).
 #
 # Gera uma autoridade certificadora local e, assinado por ela, o certificado do
-# servidor para "localhost" e 127.0.0.1. Os clientes (simulador, oraculo) passam
-# a confiar SO nessa autoridade, com --tls-ca: o canal fica cifrado E o servidor
-# fica identificado, que e o que impede um intermediario de se passar por ele.
+# servidor para "localhost" e 127.0.0.1. Clientes Node podem confiar nesta CA
+# configurando NODE_EXTRA_CA_CERTS com o caminho de autoridade.crt.
+# O ETL historico nao envia leituras a esta API.
 #
 # Nada aqui vai para o repositorio (dados/ esta no .gitignore). Em producao, o
 # certificado vem de uma autoridade publica, e nao deste script.
@@ -36,4 +36,4 @@ rm -f servidor.csr servidor.ext autoridade.srl
 
 echo "Gerados em $DESTINO:"
 echo "  servidor.crt / servidor.key   -> TLS_CERTIFICADO / TLS_CHAVE no backend/.env"
-echo "  autoridade.crt                -> --tls-ca no simulador"
+echo "  autoridade.crt                -> CA local para clientes HTTPS"

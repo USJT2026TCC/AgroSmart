@@ -1,3 +1,4 @@
+import limites from "../../../../configuracao/historico.json";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -234,8 +235,8 @@ export default function Cotacao() {
             <input
               id="inicio"
               type="date"
-              min="2020-01-01"
-              max="2026-09-30"
+              min={limites.inicio}
+              max={limites.fim}
               value={inicioDaVigencia}
               onChange={(e) => {
                 setInicioDaVigencia(e.target.value);
@@ -257,7 +258,7 @@ export default function Cotacao() {
                 <input
                   id="fim-historico"
                   type="date"
-                  max="2026-09-30"
+                  max={limites.fim}
                   value={fimDaVigencia}
                   onChange={(e) => {
                     setFimDaVigencia(e.target.value);

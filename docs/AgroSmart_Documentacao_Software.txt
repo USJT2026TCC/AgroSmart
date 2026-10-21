@@ -1,3 +1,13 @@
+NOTA DE VERSAO — 21/10/2026
+Este texto conserva a redacao e resultados anteriores para revisao documental.
+Nao e a especificacao operacional atual. Trechos sobre simulacao de sensores,
+MQTT, duas estacoes, reputacao e banco embutido foram superados.
+O software atual usa somente PostgreSQL/PostGIS e serie INMET A770 de 01/01/2020
+a 30/09/2026, com contagem desde a cobertura e indenizacao integral unica.
+Consulte README.md, docs/ESCOPO-ATUAL.md e docs/BACKEND.md para a versao em uso.
+Resultados anteriores abaixo nao validam a versao atual; evidencias atuais ficam
+em testes/evidencias/. Nao houve alteracao das publicacoes academicas citadas.
+
 UNIVERSIDADE SÃO JUDAS TADEU
 Curso de Bacharelado em Engenharia de Computação
 

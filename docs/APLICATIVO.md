@@ -11,15 +11,15 @@ Login é autenticação da API; não troca a conta selecionada na MetaMask. A ex
 
 O detalhe da apólice lê estado e eventos da blockchain. A API acrescenta cadastro, proposta e procedência. Valor pago e recibo devem ser conferidos na mesma rede da carteira.
 
-O histórico climático exibido na cotação é uma comparação hipotética com anos passados. Não cria dívida nem indenizações antigas a receber. As telas ainda serão simplificadas conforme PONTOS A CORRIGIR.docx, na etapa de frontend; isso não foi confundido com a movimentação de testes.
+A consulta climatica analisa o periodo historico escolhido. Não cria dívida nem indenizações antigas a receber. As telas ainda serão simplificadas conforme PONTOS A CORRIGIR.docx, na etapa de frontend; isso não foi confundido com a movimentação de testes.
 
 Os testes de tela ficam em testes/app. As carteiras e APIs falsas existem apenas no ambiente desses testes.
 
 
 ## Reproducao historica
 
-Em **Simular e contratar**, marque **Usar dados historicos de Sao Simao (A770)**.
-Informe inicio e fim da cobertura e gatilho experimental em dias (por exemplo 10,
+Em **Simular e contratar**, o modo historico A770 ja e o unico caminho.
+Informe inicio e fim da cobertura dentro de 01/01/2020 a 30/09/2026 e gatilho experimental em dias (por exemplo 10,
 15 ou 30). **Analisar periodo no banco** mostra o primeiro acionamento e as lacunas,
 sem enviar transacao. A proposta bloqueia intervalos com dias insuficientes.
 

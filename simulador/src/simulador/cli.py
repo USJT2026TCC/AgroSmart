@@ -7,6 +7,7 @@ import sys
 from datetime import date
 from pathlib import Path
 
+from .limites import ESTACAO, FIM, INICIO
 from .preparacao import preparar
 
 DIR_DADOS = Path(__file__).resolve().parents[2] / "dados"
@@ -18,9 +19,9 @@ def construir_parser() -> argparse.ArgumentParser:
     )
     sub = parser.add_subparsers(dest="comando", required=True)
     comando = sub.add_parser("preparar", help="extrai, valida e consolida sem alterar datas")
-    comando.add_argument("--estacao", default="A770")
-    comando.add_argument("--de", default="2020-01-01")
-    comando.add_argument("--ate", default="2026-09-30")
+    comando.add_argument("--estacao", default=ESTACAO)
+    comando.add_argument("--de", default=INICIO.isoformat())
+    comando.add_argument("--ate", default=FIM.isoformat())
     return parser
 
 

@@ -56,8 +56,6 @@ export const config = {
    * configura o Docker; banco em memoria e reservado aos testes.
    */
   urlDoBanco: process.env.DATABASE_URL || "",
-  dirBanco: process.env.DIR_BANCO || join(RAIZ, "dados", "pg"),
-  dirBancoLegado: process.env.DIR_BANCO_LEGADO || "",
 
   /** Origem do aplicativo, para o CORS. */
   origemDoAplicativo: process.env.ORIGEM_APP || "http://localhost:5173",

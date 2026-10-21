@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import request from "supertest";
-import { abrirBanco } from "../../../backend/src/banco/conexao.js";
+import { abrirBancoDeTeste } from "../fixtures/banco.js";
 import { migrar } from "../../../backend/src/banco/migrar.js";
 import {
   gerarHashDeSenha,
@@ -11,7 +11,7 @@ import {
 import { criarApp } from "../../../backend/src/app.js";
 
 test("banco da versao inicial migra preservando e bloqueando conta de papel retirado", async () => {
-  const banco = await abrirBanco({ emMemoria: true });
+  const banco = await abrirBancoDeTeste();
   try {
     await banco.executar(
       readFileSync(

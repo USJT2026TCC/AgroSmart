@@ -1,4 +1,5 @@
 "use strict";
+const limites = require("../../configuracao/historico.json");
 
 /** Avaliacao deterministica de uma estacao. Datas UTC, cobertura inclusiva.
  * Contagem parte de zero no inicio; ausencia/incompletude interrompe a sequencia.
@@ -15,11 +16,13 @@ function avaliarHistorico({ linhas, inicio, fim, gatilho }) {
   const de = data(inicio),
     ate = data(fim);
   if (
+    inicio < limites.inicio ||
+    fim > limites.fim ||
     de > ate ||
     ate - de > 3660 * 86400000 ||
     !Number.isInteger(gatilho) ||
-    gatilho < 1 ||
-    gatilho > 366
+    gatilho < limites.gatilhoMinimo ||
+    gatilho > limites.gatilhoMaximo
   )
     throw new Error("Intervalo ou gatilho invalido.");
   if (!Array.isArray(linhas)) throw new Error("Serie historica invalida.");
@@ -42,7 +45,7 @@ function avaliarHistorico({ linhas, inicio, fim, gatilho }) {
     const valido =
       !!l &&
       Number.isInteger(Number(l.horas_validas)) &&
-      Number(l.horas_validas) >= 20 &&
+      Number(l.horas_validas) >= limites.horasMinimas &&
       Number(l.horas_validas) <= 24 &&
       l.chuva_mm !== null &&
       l.chuva_mm !== undefined &&
@@ -53,7 +56,7 @@ function avaliarHistorico({ linhas, inicio, fim, gatilho }) {
       Number(l.chuva_mm) <= Number(l.horas_validas) * 500;
     if (valido) diasValidos++;
     else diasIncompletos++;
-    sequencia = valido && Number(l.chuva_mm) < 1 ? sequencia + 1 : 0;
+    sequencia = valido && Number(l.chuva_mm) < limites.chuvaDiaSecoMm ? sequencia + 1 : 0;
     maiorSequencia = Math.max(maiorSequencia, sequencia);
     if (!primeiroAcionamento && sequencia >= gatilho) primeiroAcionamento = dia;
     dias.push({

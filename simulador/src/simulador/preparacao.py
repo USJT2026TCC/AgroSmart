@@ -60,8 +60,10 @@ def dias_normalizados(leituras, inicio: date, fim: date):
 
 
 def preparar(raiz: Path, inicio: date, fim: date, estacao="A770", aviso=print):
-    if inicio > fim or fim > date.today():
-        raise ValueError("Intervalo invertido ou futuro.")
+    from .limites import ESTACAO, FIM, INICIO
+
+    if inicio > fim or inicio < INICIO or fim > FIM or estacao.upper() != ESTACAO:
+        raise ValueError("Use A770 e intervalo entre 2020-01-01 e 2026-09-30.")
     estacao = estacao.upper()
     if not estacao.isalnum():
         raise ValueError("Codigo de estacao invalido.")

@@ -2,8 +2,8 @@
 
 A API atende em `http://localhost:3001/api`, iniciada por `npm start` na raiz.
 O banco persistente usa PostgreSQL com PostGIS; sem servidor externo configurado,
-o iniciador sobe PostgreSQL/PostGIS pelo Docker Compose. PGlite e mantido nas suites
-e como origem da transferencia local de instalacoes anteriores.
+o iniciador sobe PostgreSQL/PostGIS pelo Docker Compose. As suites tambem utilizam
+PostgreSQL/PostGIS real, em bancos descartaveis separados dos cadastros de uso.
 
 ## Serie historica
 
@@ -52,22 +52,21 @@ Migracoes antigas sao preservadas para atualizar bancos existentes. Caches de do
 INMET versionado inclui os CSVs originais selecionados e os diarios. Todos os testes estao em `testes/`.
 
 
-## Docker e transicao
+## Banco unico e testes
 
-`npm start` inicia o banco e aguarda seu healthcheck. A API aplica migracoes,
-transfere o PGlite anterior se o destino local estiver vazio, importa os sete anos
-meteorologicos e inicia os servicos. A rotina de transferencia nao apaga a origem;
-a remocao autorizada e feita depois da comparacao dos registros. A transferencia
-recusa mesclar cadastros e registra conclusao para nao repetir.
+`npm start` inicia PostgreSQL, aguarda a conexao e aplica as migracoes pendentes.
+Nao existe banco embutido nem transferencia automatica de outro motor.
+`DATABASE_URL` explicita utiliza servidor externo. O banco de uso e preservado.
 
-Geometrias sao transferidas em EWKB; numericos nao passam por Number, e sequencias
-sao reposicionadas apos a copia. Tudo ocorre em transacao no destino. Nenhum dump
-com identidades e criado ou incluido no Git. A carga distribuida contem somente
-meteorologia publica e seus hashes.
+Os testes criam bancos com prefixo aleatorio `agrosmart_teste_` no servidor PostgreSQL
+e removem somente os bancos criados pelo proprio helper. Exigem permissao de criar
+bancos. Nao usam tabelas ou dados do banco da aplicacao. O ensaio de persistencia
+Docker possui projeto e volume temporarios exclusivos, removidos ao terminar.
 
-`DATABASE_URL` explicita usa servidor externo; essa opcao nao inicia Docker nem
-transfere identidades locais automaticamente. Credenciais de demonstracao do Compose
-servem apenas para desenvolvimento local, com porta vinculada a 127.0.0.1.
+O recorte comum fica em `configuracao/historico.json`: A770, 01/01/2020 a 30/09/2026,
+datas inclusivas UTC. ETL, interface, API e oraculo leem essa configuracao. As constantes
+do contrato e as restricoes SQL aplicam o mesmo periodo, conferido pelos testes.
+O relogio atual e usado para sessoes, auditoria e transacoes; nunca como medicao climatica.
 
-O uso normal exige PostgreSQL; sem DATABASE_URL a API recusa iniciar. Isso impede
-recriar silenciosamente o banco antigo. PGlite em memoria continua restrito aos testes.
+Migracoes antigas permanecem como historico estrutural. A tabela antiga de controle
+de transferencia nao e consultada pelo sistema atual e foi preservada sem apagar registros.

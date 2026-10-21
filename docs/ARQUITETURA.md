@@ -46,7 +46,6 @@ vem do pacote publico versionado e da carga automatica. Testes e bancos
 temporarios ficam separados do banco de uso, com arquivos em `testes/`.
 
 No fluxo historico, uma estacao e suficiente por decisao explicita do recorte.
-O codigo de ingestao assinada e de consolidacao multifonte ainda existe para
-compatibilidade com apolices anteriores; nao e usado pelo ETL nem comprova que
-os arquivos do INMET foram assinados por sensores. Sem visao computacional,
+A ingestao de sensores, reputacao e consolidacao multifonte foram removidas.
+Os arquivos do INMET nao sao apresentados como assinados por sensores. Sem visao computacional,
 MQTT no ETL, pagamento escalonado ou cobertura de excesso de chuva.

@@ -1103,3 +1103,17 @@ pelo indexador. Datas meteorologicas historicas nao entram na media de demora at
 pagamento das apolices historicas vinculadas; recibos recuperados nao inventam
 latencia original. Essas mudancas substituem as descricoes operacionais antigas
 de sensores e reputacao deste arquivo, mantidas como registro das decisoes passadas.
+
+
+### PostgreSQL exclusivo e recorte global — 21/10/2026
+
+Por solicitacao explicita, o banco embutido e a transferencia automatica foram
+removidos do codigo, dependencias e testes. Uso e suites agora utilizam PostgreSQL
+com PostGIS; bancos temporarios de teste sao isolados e removidos ao terminar.
+As decisoes anteriores que descrevem outro motor sao registros historicos superados.
+
+O intervalo 01/01/2020 a 30/09/2026 e aplicado ao ETL, importacao, consultas, propostas,
+oraculo, campos da interface, restricoes SQL e contrato historico. O relogio atual
+permanece apenas para operacao, sessoes, auditoria e timestamps das transacoes.
+As migracoes e evidencias anteriores permanecem identificadas como historico;
+nao ha codigo de transferencia ou dependencia operacional do motor retirado.

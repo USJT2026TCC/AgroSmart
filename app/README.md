@@ -1,70 +1,27 @@
 # Aplicativo
 
-Aplicativo do produtor e painel da seguradora, em React + Vite, integrados diretamente aos
-contratos.
+Interface React/Vite do produtor e da seguradora, integrada a API e a Sepolia.
 
-```
-src/
-├── cadeia/          tudo o que fala com a blockchain
-│   ├── abis.js              interfaces dos contratos
-│   ├── rede.js              redes e enderecos implantados
-│   ├── contratos.js         leitura e escrita, eventos, linha do tempo
-│   ├── regraDeGatilho.js    a regra de acionamento, espelhada do contrato
-│   ├── formatos.js          wei, bps, datas e traducao de erros
-│   ├── CarteiraContexto.jsx conexao com a MetaMask
-│   └── carteiraSimulada.js  carteira falsa para desenvolvimento
-├── sessao/          login e perfis (peca provisoria)
-├── dados/           talhoes, produtos e propostas (peca provisoria)
-├── componentes/     cabecalho, rota protegida e componentes pequenos
-└── paginas/         uma por tela
-```
+Execute `npm start` na raiz, com Docker Desktop aberto e configuracao Sepolia pronta.
+Abra http://localhost:5173 com MetaMask. Login: produtor ou seguradora; senha inicial
+agrosmart. A conta da MetaMask e independente do login da API.
 
-## Rodar
+O produtor vincula sua carteira, escolhe periodo historico e gatilho experimental,
+envia proposta e acompanha a apolice. A seguradora prepara a emissao e assina
+emissao e garantia. A indenizacao e executada pelo contrato, sem nova assinatura
+do produtor para recebe-la. A fabrica historica publica ainda precisa ser atualizada.
 
-Antes: `npx hardhat node` e `npx hardhat run scripts/implantar.js --network localhost` no
-diretorio `contratos`.
+A fonte e unica, INMET A770, de 01/01/2020 a 30/09/2026. Os campos usam os limites de
+configuracao/historico.json. Nao ha medicao atual, carteira simulada por URL ou login
+provisorio por localStorage. Consultar um periodo nao envia transacao.
 
-```bash
-npm install
-```
-
-```bash
-npm run dev
-```
-
-O `npm run dev` roda `npm run enderecos` antes de subir, copiando os enderecos implantados de
-`contratos/implantacoes/` para dentro do aplicativo. Nenhum endereco de contrato e digitado a
-mao.
-
-Abra `http://localhost:5173`. Usuarios de demonstracao: `produtor` e `seguradora`,
-ambos com a senha `agrosmart`.
-
-## Sem MetaMask
-
-Para conferir a interface sem instalar a extensao:
-
-```
-http://localhost:5173/?carteira=simulada&conta=0
-```
-
-`conta` segue a convencao do projeto: 0 seguradora, 1 produtor, 2 oraculo. Funciona apenas em
-modo de desenvolvimento e em rede local; o `npm run build` remove esse caminho do pacote. Uma
-faixa de aviso fica visivel enquanto esta ativo — nao use em demonstracao.
-
-## O que e real e o que e provisorio
-
-| Peca | Situacao |
+| Pasta em src/ | Funcao |
 |---|---|
-| Apolices, indices, pagamentos, eventos | **Reais**, lidos e escritos na cadeia |
-| Emissao da apolice e deposito da garantia | **Reais**, assinados pela carteira da seguradora |
-| Vinculo da carteira por assinatura | **Real**, verificado no navegador |
-| Login e senhas | Provisorio — em `src/sessao/usuarios.js`, ate a API |
-| Talhoes, produtos e propostas | Provisorios — `localStorage`, ate o banco |
+| api/ | Requisicoes ao backend |
+| sessao/ | Sessao autenticada e perfis |
+| cadeia/ | MetaMask, contratos, eventos e enderecos |
+| paginas/ | Telas do produtor e da seguradora |
+| componentes/ | Elementos compartilhados da interface |
 
-As duas pecas provisorias aparecem marcadas na propria interface.
-
-## Documentacao
-
-- [docs/APLICATIVO.md](../docs/APLICATIVO.md) — tela por tela, com as decisoes
-- [docs/COMO-RODAR.md](../docs/COMO-RODAR.md) — passo a passo da demonstracao completa
-- [docs/ARQUITETURA.md](../docs/ARQUITETURA.md) — onde fica a fronteira
+Dentro de app/: `npm run testar` verifica telas e `npm run build` gera o pacote.
+Testes e carteira falsa existem somente em testes/. Detalhes: docs/APLICATIVO.md.

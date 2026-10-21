@@ -73,3 +73,6 @@ Dentro de `simulador/`:
 
 Os testes ficam em `testes/simulador/`. A atualização da fábrica Sepolia pertence
 à revisão dos contratos e não é requisito para concluir este ETL.
+
+O ETL le os limites de `configuracao/historico.json`. Recusa outra estacao e
+intervalos fora de 01/01/2020 a 30/09/2026, antes de iniciar downloads.

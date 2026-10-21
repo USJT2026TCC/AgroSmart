@@ -1,3 +1,4 @@
+import limites from "../configuracao/historico.json" with { type: "json" };
 import { createHash } from "node:crypto";
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -10,8 +11,8 @@ const manifesto = JSON.parse(
 if (
   manifesto.versao !== 1 ||
   manifesto.estacao !== "A770" ||
-  manifesto.inicio !== "2020-01-01" ||
-  manifesto.fim !== "2026-09-30"
+  manifesto.inicio !== limites.inicio ||
+  manifesto.fim !== limites.fim
 )
   throw new Error("Recorte preparado incompativel com a entrega.");
 const arquivos = [];

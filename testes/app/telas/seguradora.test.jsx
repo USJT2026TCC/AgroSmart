@@ -316,7 +316,7 @@ describe("carteira e relatorio (RF29)", () => {
           ],
         },
         "GET /saude": {
-          banco: { motor: "pglite" },
+          banco: { motor: "postgres" },
           indexador: { ativo: true, ultimoErro: { mensagem: "no fora do ar" } },
         },
       },

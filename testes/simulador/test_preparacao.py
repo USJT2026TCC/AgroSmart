@@ -97,3 +97,18 @@ def test_download_interrompido_nao_vira_cache_valido(tmp_path, monkeypatch):
         baixar_ano(2024, destino)
     assert not destino.exists()
     assert destino.with_suffix(".zip.part").exists()
+
+
+def test_preparo_recusa_fora_do_recorte_sem_baixar(tmp_path):
+    import pytest
+
+    from simulador.preparacao import preparar
+
+    for inicio, fim, estacao in [
+        (date(2019, 12, 31), date(2020, 1, 1), "A770"),
+        (date(2026, 9, 30), date(2026, 10, 1), "A770"),
+        (date(2024, 1, 1), date(2024, 1, 2), "A747"),
+    ]:
+        with pytest.raises(ValueError):
+            preparar(tmp_path, inicio, fim, estacao)
+    assert not (tmp_path / "preparado").exists()

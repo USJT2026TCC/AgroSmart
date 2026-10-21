@@ -20,3 +20,6 @@ e nao ganham esse comportamento: e necessaria nova fabrica implantada.
 Consulte `contratos/implantacoes/sepolia.json` para enderecos e versao atuais.
 Todos os testes, configuracao de cobertura e Slither ficam em `testes/`.
 Execute `npm test` na raiz. Testes locais nao substituem o aceite com MetaMask.
+
+O contrato historico agora exige cobertura entre 01/01/2020 e 30/09/2026 (UTC) e
+gatilho de 1 a 366 dias. Os limites correspondem a configuracao/historico.json.

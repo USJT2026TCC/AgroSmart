@@ -60,3 +60,10 @@ test("rejeita datas inexistentes, gatilho invalido e duplicatas", () => {
     }),
   );
 });
+
+test("recorte fixo rejeita antes de 2020 e depois de setembro de 2026", () => {
+  for (const [inicio, fim] of [["2019-12-31", "2020-01-01"], ["2026-09-30", "2026-10-01"]])
+    assert.throws(() => avaliarHistorico({ linhas: [], inicio, fim, gatilho: 1 }), /Intervalo/);
+  for (const data of ["2020-01-01", "2026-09-30"])
+    assert.equal(avaliarHistorico({ linhas: [linha(data)], inicio: data, fim: data, gatilho: 1 }).acionaria, true);
+});

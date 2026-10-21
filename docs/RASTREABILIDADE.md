@@ -169,10 +169,10 @@ Os fluxos UC05, UC10, UC11 e UC12 possuem evidencia historica na Sepolia de 07/1
 | Componente | Documento | Implementado |
 |---|---|---|
 | Contratos | Solidity + Hardhat | Solidity 0.8.24, Hardhat com rede local, testes e relatório de gas; sem dependências de contrato de terceiros (DECISOES 1.1) |
-| Rede | Sepolia | Versão histórica verificada em 08/10; clima-integral-v1 aguarda nova implantação e verificação |
+| Rede | Sepolia | Evidencias antigas nao validam a versao atual; fabrica historica com recorte fixo aguarda implantacao e verificacao |
 | Serviço de oráculo | Node.js + ethers.js | Node.js 24, ethers 6 |
 | API e ingestão | Node.js + Express | Express 5 |
-| Banco de dados | PostgreSQL + PostGIS | PostgreSQL com PostGIS: polígono do talhão, estações a até 100 km. Em desenvolvimento, o mesmo banco embutido (PGlite) |
+| Banco de dados | PostgreSQL + PostGIS | PostgreSQL/PostGIS em uso e testes; bancos de teste descartaveis e separados. Serie unica A770, 2020 a 30/09/2026 |
 | ETL historico | Python + requests; uma estacao INMET | A770; carga PostgreSQL automatica; sem MQTT |
 | Interfaces | React + ethers.js | React 18, react-router 7, Vite 8, ethers 6 |
 | Carteira do produtor | MetaMask | Provedor EIP-1193; o produtor da Sepolia foi criado na MetaMask |

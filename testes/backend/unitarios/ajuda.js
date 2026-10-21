@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import request from "supertest";
 
 import { criarApp } from "../../../backend/src/app.js";
-import { abrirBanco } from "../../../backend/src/banco/conexao.js";
+import { abrirBancoDeTeste } from "../fixtures/banco.js";
 import { migrar } from "../../../backend/src/banco/migrar.js";
 import { semearParaTeste as semear } from "../fixtures/semente.js";
 import { interfaceFactory } from "../../../backend/src/cadeia/rede.js";
@@ -10,8 +10,8 @@ import { interfaceFactory } from "../../../backend/src/cadeia/rede.js";
 /**
  * Infraestrutura comum dos testes.
  *
- * Cada teste recebe um banco PostgreSQL novo, em memoria, com PostGIS, migrado e
- * semeado. Nenhum estado passa de um teste para outro, e nada toca em disco.
+ * Cada teste recebe um banco PostgreSQL novo, descartavel, com PostGIS, migrado e
+ * semeado. Nenhum estado passa de um teste para outro, e cada banco e removido ao fechar a fixture.
  */
 
 export const FABRICA = "0x610178da211fef7d417bc0e6fed39f05609ad788";
@@ -80,7 +80,7 @@ export function reciboDeEmissao({
 
 /** Sobe a aplicacao com banco novo. */
 export async function montar() {
-  const banco = await abrirBanco({ emMemoria: true });
+  const banco = await abrirBancoDeTeste();
   await migrar(banco);
   await semear(banco);
 

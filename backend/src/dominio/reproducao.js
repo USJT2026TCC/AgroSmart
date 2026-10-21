@@ -1,3 +1,4 @@
+import limites from "../../../configuracao/historico.json" with { type: "json" };
 import { createHash } from "node:crypto";
 import { pedidoInvalido } from "../erros.js";
 
@@ -26,12 +27,16 @@ export async function termosHistoricos(banco, corpo, base) {
   const inicio = dataHistorica(corpo.inicioDaVigencia),
     fim = dataHistorica(corpo.fimDaVigencia);
   const dias = (Date.parse(fim) - Date.parse(inicio)) / 86400000 + 1;
-  if (inicio < "2020-01-01" || fim > "2026-09-30" || dias < 1 || dias > 3660)
+  if (inicio < limites.inicio || fim > limites.fim || dias < 1 || dias > 3660)
     throw pedidoInvalido(
       "Cobertura historica deve estar entre 2020 e setembro de 2026, com ate 3660 dias.",
     );
   const gatilho = corpo.gatilhoDias;
-  if (!Number.isInteger(gatilho) || gatilho < 1 || gatilho > 366)
+  if (
+    !Number.isInteger(gatilho) ||
+    gatilho < limites.gatilhoMinimo ||
+    gatilho > limites.gatilhoMaximo
+  )
     throw pedidoInvalido("Gatilho experimental deve ser inteiro entre 1 e 366 dias.");
   const { rows } = await banco.query(
     "SELECT count(*)::int AS total,count(*) FILTER (WHERE horas_validas BETWEEN 20 AND 24 AND chuva_mm IS NOT NULL AND chuva_mm>=0 AND chuva_mm<=horas_validas*500)::int AS validos FROM inmet_dias WHERE estacao='A770' AND data BETWEEN $1 AND $2",

@@ -1,4 +1,5 @@
 "use strict";
+const { avaliarHistorico } = require("./historico");
 const { ethers } = require("ethers");
 
 /** Confere os parametros usados no calculo contra o compromisso assinado na cadeia. */
@@ -16,6 +17,12 @@ function conferirVinculo({ termos: t, descricaoDosTermos, hashTermos }, cadeia) 
     hash.toLowerCase() !== String(cadeia.hashTermos).toLowerCase()
   )
     throw new Error("Hash dos termos diverge da apolice.");
+  avaliarHistorico({
+    linhas: [],
+    inicio: t.inicioHistorico,
+    fim: t.fimHistorico,
+    gatilho: Number(t.limiarClimatico),
+  });
   const inicio = Date.parse(`${t.inicioHistorico}T00:00:00Z`) / 1000;
   const fim = Date.parse(`${t.fimHistorico}T23:59:59Z`) / 1000;
   if (

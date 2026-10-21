@@ -39,6 +39,25 @@ test("importacao persistida e idempotente; API avalia periodo e proposta congela
       (await ctx.api().post("/api/historico/avaliar").send({})).status,
       401,
     );
+    for (const [inicio, fim] of [
+      ["2019-12-31", "2020-01-01"],
+      ["2026-09-30", "2026-10-01"],
+    ]) {
+      const token = await entrar(ctx.api, "produtor");
+      const fora = await ctx
+        .api()
+        .post("/api/historico/avaliar")
+        .set(com(token))
+        .send({ inicio, fim, gatilho: 1 });
+      assert.equal(fora.status, 400);
+    }
+    await assert.rejects(
+      () =>
+        ctx.banco.query(
+          "INSERT INTO inmet_dias(estacao,data,chuva_mm,horas_validas,horas_ausentes,horas_invalidas) VALUES ('A770','2026-10-01',0,24,0,0)",
+        ),
+      /inmet_recorte_historico/,
+    );
     const produtor = await entrar(ctx.api, "produtor");
     const resultado = await ctx
       .api()

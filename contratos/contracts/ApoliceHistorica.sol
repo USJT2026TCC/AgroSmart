@@ -8,13 +8,18 @@ import {ApolicePolicy} from "./ApolicePolicy.sol";
  * valida intervalo, ordem dos periodos e limite de dias desde o inicio.
  */
 contract ApoliceHistorica is ApolicePolicy {
+    // Mesmo recorte de configuracao/historico.json: dias UTC inclusivos.
+    uint64 public constant INICIO_DADOS = 1577836800;
+    uint64 public constant FIM_DADOS = 1790812799;
     bool public constant modoHistorico = true;
     uint64 public instanteHistorico;
     error PeriodoHistoricoInvalido();
 
     constructor(address seguradora_, Termos memory t) ApolicePolicy(seguradora_, t) {
         require(block.chainid == 11155111 || block.chainid == 31337, "Somente demonstracao");
-        require(t.vigenciaInicio >= 946684800 && t.vigenciaInicio % 1 days == 0, "Inicio UTC invalido");
+        require(t.vigenciaInicio >= INICIO_DADOS && t.vigenciaInicio % 1 days == 0, "Inicio UTC invalido");
+        require(t.vigenciaFim <= FIM_DADOS, "Fora da serie INMET");
+        require(t.limiarClimatico >= 1 && t.limiarClimatico <= 366, "Gatilho experimental invalido");
         // Relogio apenas para impedir coberturas futuras no modo historico.
         // Nao gera aleatoriedade nem determina o indice; dados sao de anos anteriores.
         // slither-disable-next-line timestamp

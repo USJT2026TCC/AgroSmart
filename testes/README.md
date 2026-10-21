@@ -19,8 +19,7 @@ Fixtures e dados sinteticos nao representam observacoes de campo. Os testes de b
 
 O fluxo historico usa dados sinteticos identificados nas fixtures para verificar
 datas, inicio da contagem, primeiro acionamento, pagamento unico e ausencia de
-duplicacao. `contratos/unitarios/FluxoHistorico.test.js` integra banco real em
-memoria, API HTTP, oraculo e EVM local; o envio usa o signatario da EVM de teste.
+duplicacao. `contratos/unitarios/FluxoHistorico.test.js` integra PostgreSQL/PostGIS descartavel, API HTTP, oraculo e EVM local; o envio usa o signatario da EVM de teste.
 Os testes do publicador JSON-RPC continuam na suite de integracao do oraculo.
 Nenhum desses testes confirma uma liquidacao historica na Sepolia com MetaMask.
 
@@ -28,4 +27,8 @@ Nenhum desses testes confirma uma liquidacao historica na Sepolia com MetaMask.
 `infraestrutura/banco.test.mjs` verifica escolha do servidor, comandos Compose e
 falha sem Docker. `npm run testar:docker` executa `infraestrutura/docker.integracao.test.mjs`
 contra PostgreSQL/PostGIS real, em projeto/volume exclusivos de teste. Precisa de
-Docker disponivel; resultados de bancos em memoria nao substituem essa verificacao.
+Docker disponivel. Nao existe dependencia de banco embutido.
+
+As suites da API usam `backend/fixtures/banco.js`: cria e remove somente bancos
+`agrosmart_teste_<identificador aleatorio>` no PostgreSQL. O usuario do servidor
+precisa ter permissao CREATE DATABASE. Os dados da aplicacao ficam separados.

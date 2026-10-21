@@ -194,10 +194,6 @@ if (acao === "status") {
       RPC_URL: rpcAlvo,
       API_URL: "http://localhost:3001/api",
       DATABASE_URL: banco.url,
-      DIR_BANCO_LEGADO: banco.docker
-        ? path.join(raiz, "backend", "dados", instancia)
-        : "",
-      DIR_BANCO: path.join(raiz, "backend", "dados", instancia),
       DIR_DADOS: path.join(estadoDir, instancia, "oraculo"),
       DIR_IMPLANTACOES: path.join(raiz, "contratos", "implantacoes"),
       CHAVE_PRIVADA_ORACULO: publica.chave,
@@ -221,7 +217,6 @@ if (acao === "status") {
       if (nome === "app") delete ambienteFilho.CHAVE_DE_SERVICO;
       if (nome !== "backend") {
         delete ambienteFilho.DATABASE_URL;
-        delete ambienteFilho.DIR_BANCO_LEGADO;
       }
       const filho = spawn(process.execPath, argumentos, {
         cwd: path.join(raiz, modulo),

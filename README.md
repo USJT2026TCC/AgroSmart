@@ -54,6 +54,10 @@ ainda não emite `ApoliceHistorica`. A consulta dos dados funciona; a emissão
 histórica fica bloqueada até atualizar e verificar a fábrica na Sepolia.
 Isso não impede usar ou verificar o ETL. Veja [escopo atual](docs/ESCOPO-ATUAL.md).
 
+O recorte está em `configuracao/historico.json` e é aplicado ao ETL, à API, ao
+oráculo e à interface, com as mesmas restrições no banco e no contrato histórico.
+Uso e testes utilizam PostgreSQL/PostGIS; não há banco embutido alternativo.
+
 ## Organização e testes
 
 | Pasta | Responsabilidade |

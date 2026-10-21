@@ -73,4 +73,23 @@ describe("Apolice historica explicita", function () {
       "VigenciaIniciada",
     );
   });
+  it("congela o recorte INMET e recusa cobertura ou gatilho fora dele", async () => {
+    const limites = require("../../../configuracao/historico.json");
+    const { apolice } = await cenario();
+    expect(await apolice.INICIO_DADOS()).to.equal(
+      BigInt(Date.parse(limites.inicio + "T00:00:00Z") / 1000),
+    );
+    expect(await apolice.FIM_DADOS()).to.equal(
+      BigInt(Date.parse(limites.fim + "T23:59:59Z") / 1000),
+    );
+    await expect(cenario({ vigenciaInicio: 1577750400 })).to.be.revertedWith(
+      "Inicio UTC invalido",
+    );
+    await expect(cenario({ vigenciaFim: 1790899199 })).to.be.revertedWith(
+      "Fora da serie INMET",
+    );
+    await expect(cenario({ limiarClimatico: 367 })).to.be.revertedWith(
+      "Gatilho experimental invalido",
+    );
+  });
 });

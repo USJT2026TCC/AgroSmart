@@ -1,14 +1,11 @@
-import { mkdirSync } from "node:fs";
-
 import { config } from "../config.js";
 
 /**
  * Conexao com o banco de dados.
  *
  * O iniciador da raiz fornece DATABASE_URL do PostgreSQL/PostGIS no Docker,
- * ou respeita servidor externo explicitamente configurado. PGlite permanece
- * para testes isolados e leitura do banco legado durante a transferencia local.
- * Ambos expõem query, executar, transacao e fechar; dados monetarios numericos
+ * ou respeita servidor externo explicitamente configurado.
+ * Expoe query, executar, transacao e fechar; dados monetarios numericos
  * sao preservados como texto, sem conversao para ponto flutuante.
  */
 
@@ -20,41 +17,6 @@ import { config } from "../config.js";
  * @property {() => Promise<void>} fechar
  * @property {string} motor
  */
-
-/** Abre o PostgreSQL embutido. `diretorio` nulo significa banco em memoria. */
-export async function abrirPGlite(diretorio) {
-  const { PGlite } = await import("@electric-sql/pglite");
-  const { postgis } = await import("@electric-sql/pglite-postgis");
-
-  if (diretorio) mkdirSync(diretorio, { recursive: true });
-
-  const db = await PGlite.create({
-    dataDir: diretorio ?? undefined,
-    extensions: { postgis },
-  });
-
-  // O PGlite informa as linhas afetadas em `affectedRows`; o driver `pg`, em
-  // `rowCount`. Normaliza-se para o nome do `pg`, e o resto do codigo usa um so.
-  const normalizar = (r) => ({
-    ...r,
-    rowCount: r.affectedRows ?? r.rows?.length ?? 0,
-  });
-
-  return {
-    motor: diretorio ? "pglite" : "pglite-memoria",
-    query: async (sql, params = []) => normalizar(await db.query(sql, params)),
-    executar: async (sql) => {
-      await db.exec(sql);
-    },
-    transacao: (fn) =>
-      db.transaction((tx) =>
-        fn({
-          query: async (sql, params = []) => normalizar(await tx.query(sql, params)),
-        }),
-      ),
-    fechar: () => db.close(),
-  };
-}
 
 /** Abre um PostgreSQL de verdade pelo endereco informado. */
 export async function abrirPostgres(url) {
@@ -68,6 +30,26 @@ export async function abrirPostgres(url) {
     max: 10,
     connectionTimeoutMillis: 10000,
   });
+
+  // No primeiro inicio do Docker, o Postgres temporario de inicializacao reinicia.
+  // Aguarda a conexao TCP real; erro de senha ou SQL nao e ocultado por repeticao.
+  try {
+    for (let tentativa = 0; ; tentativa++) {
+      try {
+        await pool.query("SELECT 1");
+        break;
+      } catch (erro) {
+        const transitorio =
+          ["ECONNREFUSED", "ECONNRESET", "EPIPE", "57P03"].includes(erro.code) ||
+          erro.message === "Connection terminated unexpectedly";
+        if (!transitorio || tentativa >= 19) throw erro;
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+    }
+  } catch (erro) {
+    await pool.end();
+    throw erro;
+  }
 
   return {
     motor: "postgres",
@@ -100,12 +82,9 @@ export async function abrirPostgres(url) {
 /**
  * Abre o banco conforme a configuracao.
  *
- * @param {object} [opcoes]
- * @param {boolean} [opcoes.emMemoria] Banco descartavel, usado pelos testes.
  * @returns {Promise<Banco>}
  */
-export async function abrirBanco(opcoes = {}) {
-  if (opcoes.emMemoria) return abrirPGlite(null);
+export async function abrirBanco() {
   if (config.urlDoBanco) return abrirPostgres(config.urlDoBanco);
 
   throw new Error(
