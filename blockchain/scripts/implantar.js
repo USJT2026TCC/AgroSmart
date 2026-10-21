@@ -1,27 +1,25 @@
-/**
- * Implanta a infraestrutura de contratos do AgroSmart.
- *
- * Implanta, nesta ordem:
- *   1. OracleRegistry  - lista de enderecos autorizados a publicar (RF18);
- *   2. ApoliceFactory  - fabrica que emite as apolices (RF07);
- *   3. autoriza o endereco do servico de oraculo no registro.
- *
- * Ao final grava `implantacoes/<rede>.json`, que e o arquivo lido pelo servico de
- * oraculo e pelo back-end. Isso evita que endereco de contrato seja copiado a mao
- * de um terminal para um arquivo de configuracao, que e como esse tipo de projeto
- * costuma quebrar na vespera da apresentacao.
- *
- * Uso:
- *   npx hardhat run scripts/implantar.js --network sepolia
+/** Publica OracleRegistry e ApoliceFactory na Sepolia e grava o manifesto público.
+ * Execute somente para criar uma implantação, usando a conta da seguradora.
  */
-
 const fs = require("node:fs");
 const path = require("node:path");
 const { ethers, network } = require("hardhat");
 
 async function main() {
-  const contas = await ethers.getSigners();
-  const [seguradora] = contas;
+  const arquivo = path.resolve(__dirname, "../implantacoes/sepolia.json");
+  if (fs.existsSync(arquivo) && process.env.NOVA_IMPLANTACAO !== "1")
+    throw new Error(
+      "Já existe uma implantação configurada. Uma nova publicação exige NOVA_IMPLANTACAO=1 e substituirá o manifesto local.",
+    );
+  if (!process.env.CHAVE_PRIVADA_SEGURADORA)
+    throw new Error("Configure CHAVE_PRIVADA_SEGURADORA para publicar contratos.");
+  const [seguradora] = await ethers.getSigners();
+  if (
+    !seguradora ||
+    seguradora.address.toLowerCase() !==
+      new ethers.Wallet(process.env.CHAVE_PRIVADA_SEGURADORA).address.toLowerCase()
+  )
+    throw new Error("A conta de publicação deve ser a seguradora configurada.");
 
   if (
     network.name !== "sepolia" ||
@@ -34,22 +32,27 @@ async function main() {
       ? new ethers.Wallet(process.env.CHAVE_PRIVADA_ORACULO).address
       : null);
 
-  if (!enderecoOraculo) {
-    throw new Error(
-      "Nenhum endereco de oraculo disponivel. Defina ENDERECO_ORACULO ou CHAVE_PRIVADA_ORACULO no .env.",
-    );
-  }
+  if (
+    !enderecoOraculo ||
+    !ethers.isAddress(enderecoOraculo) ||
+    enderecoOraculo === ethers.ZeroAddress
+  )
+    throw new Error("Configure um endereço válido para o oráculo.");
+  if (enderecoOraculo.toLowerCase() === seguradora.address.toLowerCase())
+    throw new Error("Seguradora e oráculo devem usar contas diferentes.");
+  if (
+    process.env.CHAVE_PRIVADA_ORACULO &&
+    new ethers.Wallet(process.env.CHAVE_PRIVADA_ORACULO).address.toLowerCase() !==
+      enderecoOraculo.toLowerCase()
+  )
+    throw new Error("ENDERECO_ORACULO difere da chave configurada para o serviço.");
 
   console.log(`Rede........: ${network.name}`);
   console.log(`Seguradora..: ${seguradora.address}`);
   console.log(`Oraculo.....: ${enderecoOraculo}`);
   console.log("");
 
-  // O bloco e anotado ANTES de qualquer implantacao. Este numero e o ponto de
-  // partida das consultas de evento do aplicativo e do servico de oraculo. Anota-lo
-  // no fim deixaria de fora os eventos emitidos durante a propria implantacao â€”
-  // entre eles o `OraculoAutorizado` â€” e a lista apareceria vazia na tela, sem
-  // nenhum erro que explicasse o motivo.
+  // Inclui todos os eventos da implantação na varredura do indexador.
   const blocoInicial = await ethers.provider.getBlockNumber();
 
   // ---------------------------------------------------------------- registro
@@ -89,14 +92,20 @@ async function main() {
   const destino = path.join(__dirname, "..", "implantacoes");
   fs.mkdirSync(destino, { recursive: true });
 
-  const arquivo = path.join(destino, `${network.name}.json`);
-  fs.writeFileSync(arquivo, `${JSON.stringify(implantacao, null, 2)}\n`);
+  const temporario = arquivo + ".tmp";
+  fs.writeFileSync(temporario, `${JSON.stringify(implantacao, null, 2)}\n`);
+  fs.renameSync(temporario, arquivo);
 
   console.log("");
   console.log(`Enderecos gravados em implantacoes/${network.name}.json`);
 }
 
 main().catch((erro) => {
-  console.error(erro);
+  console.error(
+    erro.shortMessage ||
+      (erro.message && !/https?:|privateKey|requestBody/i.test(erro.message)
+        ? erro.message
+        : "Falha na implantação. Confira configuração e disponibilidade do RPC."),
+  );
   process.exitCode = 1;
 });
