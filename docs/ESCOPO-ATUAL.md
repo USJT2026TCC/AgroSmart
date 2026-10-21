@@ -37,8 +37,8 @@ validado nem prova de adequacao agronomica ou atuarial do gatilho.
 
 Consulte o manifesto publico em `contratos/implantacoes/sepolia.json` para a versao
 efetivamente implantada. Compilacao, teste local, codigo verificado e aceite com
-MetaMask sao verificacoes distintas. Resultados de versoes anteriores ficam em
-`testes/evidencias` e nao comprovam o funcionamento desta revisao.
+MetaMask sao verificacoes distintas. As evidencias da versao vigente ficam em
+`testes/evidencias`.
 
 
 ## Estado da implantacao historica

@@ -4,7 +4,7 @@ import net from "node:net";
 import path from "node:path";
 import { executar, raiz } from "../../scripts/processos.mjs";
 import { abrirPostgres } from "../../backend/src/banco/conexao.js";
-import { migrar } from "../../backend/src/banco/migrar.js";
+import { inicializarBanco } from "../../backend/src/banco/inicializar.js";
 import { importarInmet } from "../../backend/src/banco/importarInmet.js";
 import { semearParaTeste } from "../backend/fixtures/semente.js";
 
@@ -43,7 +43,7 @@ test(
         { cwd: raiz, env },
       );
       banco = await abrirPostgres(url);
-      await migrar(banco);
+      await inicializarBanco(banco);
       await semearParaTeste(banco);
       await banco.query(
         "INSERT INTO auditoria(acao,instante) VALUES ('fixture','2024-02-07T12:34:56.123456Z')",

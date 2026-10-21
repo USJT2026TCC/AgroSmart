@@ -3,7 +3,7 @@ import request from "supertest";
 
 import { criarApp } from "../../../backend/src/app.js";
 import { abrirBancoDeTeste } from "../fixtures/banco.js";
-import { migrar } from "../../../backend/src/banco/migrar.js";
+import { inicializarBanco } from "../../../backend/src/banco/inicializar.js";
 import { semearParaTeste as semear } from "../fixtures/semente.js";
 import { interfaceFactory } from "../../../backend/src/cadeia/rede.js";
 
@@ -81,7 +81,7 @@ export function reciboDeEmissao({
 /** Sobe a aplicacao com banco novo. */
 export async function montar() {
   const banco = await abrirBancoDeTeste();
-  await migrar(banco);
+  await inicializarBanco(banco);
   await semear(banco);
 
   const cadeia = cadeiaFalsa();

@@ -47,7 +47,7 @@ exige `DATABASE_URL`. Segredos ficam no ambiente ou em `.env`, fora do Git.
 | Caminho em `src/` | Responsabilidade |
 |---|---|
 | `index.js`, `app.js`, `config.js` | Inicializacao, rotas e configuracao |
-| `banco/` | Conexao, migracoes, importacao INMET e cadastros iniciais |
+| `banco/` | Conexao, esquema atual, importacao INMET e cadastros iniciais |
 | `seguranca/` | Senhas, sessoes, segundo fator, permissoes e auditoria |
 | `dominio/` | Cotacao, termos, validacao historica, documentos e geometria |
 | `rotas/` | Operacoes HTTP por area do sistema |
@@ -63,8 +63,8 @@ bloqueiam a contratacao. A data climatica original nao e a data da transacao atu
 A fabrica publica ainda precisa ser atualizada para emitir apolices historicas.
 Cadastro, consulta e proposta funcionam; a emissao fica bloqueada ate essa atualizacao.
 
-Rotas de sensores, cadastro de fontes e reputacao foram retirados. Migracoes e tabelas
-antigas permanecem para preservar bancos existentes; nao alimentam o calculo atual.
+O banco e inicializado por `src/banco/esquema.sql`, que contem somente as tabelas
+do fluxo atual. Nao existe cadeia de migracoes de funcionalidades retiradas.
 
 Uso e testes utilizam somente PostgreSQL/PostGIS. A configuracao compartilhada
 `configuracao/historico.json` fixa a estacao e os limites de data; o banco e o contrato

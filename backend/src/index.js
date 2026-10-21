@@ -6,7 +6,7 @@ import { criarApp } from "./app.js";
 import { config } from "./config.js";
 import { abrirBanco } from "./banco/conexao.js";
 import { criarDespachanteDeEmail } from "./notificacoes/email.js";
-import { migrar } from "./banco/migrar.js";
+import { inicializarBanco } from "./banco/inicializar.js";
 import { semear } from "./banco/semente.js";
 import { criarIndexador } from "./cadeia/indexador.js";
 import { criarLeitorDaCadeia } from "./cadeia/leitor.js";
@@ -15,14 +15,14 @@ import { encerrarProvedor } from "./cadeia/rede.js";
 /**
  * Ponto de entrada do backend.
  *
- * Na ordem: abre o banco, aplica as migracoes, semeia a demonstracao (so em
+ * Na ordem: abre o banco, inicializa o esquema atual, semeia a demonstracao (so em
  * desenvolvimento e com banco vazio), liga o indexador e abre a porta.
  */
 async function iniciar() {
   const banco = await abrirBanco();
-  const aplicadas = await migrar(banco);
+  const criadas = await inicializarBanco(banco);
 
-  if (aplicadas.length > 0) console.log(`Migracoes aplicadas: ${aplicadas.join(", ")}`);
+  if (criadas.length > 0) console.log(`Estrutura criada: ${criadas.join(", ")}`);
 
   const importacao = await importarInmet(banco);
   if (importacao.anos)

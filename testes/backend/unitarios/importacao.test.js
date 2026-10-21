@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { abrirBancoDeTeste } from "../fixtures/banco.js";
-import { migrar } from "../../../backend/src/banco/migrar.js";
+import { inicializarBanco } from "../../../backend/src/banco/inicializar.js";
 import { importarInmet } from "../../../backend/src/banco/importarInmet.js";
 
 test("pacote publico inicializa banco vazio e segunda carga e vazia", async () => {
   const banco = await abrirBancoDeTeste();
   try {
-    await migrar(banco);
+    await inicializarBanco(banco);
     assert.deepEqual(await importarInmet(banco), { anos: 7, dias: 2465 });
     assert.deepEqual(await importarInmet(banco), { anos: 0, dias: 0 });
     assert.equal(

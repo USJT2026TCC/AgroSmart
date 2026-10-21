@@ -48,13 +48,14 @@ coincidem com o evento indexado. Latencia de recibo recuperado nao e inferida.
 O intervalo entre data meteorologica passada e transacao atual nao e apresentado
 como tempo de liquidacao: apolices historicas vinculadas sao excluidas dessa media.
 
-Migracoes antigas sao preservadas para atualizar bancos existentes. Caches de download, dados locais e segredos ficam fora do Git. O pacote publico
+Caches de download, dados locais e segredos ficam fora do Git. O pacote publico
 INMET versionado inclui os CSVs originais selecionados e os diarios. Todos os testes estao em `testes/`.
 
 
 ## Banco unico e testes
 
-`npm start` inicia PostgreSQL, aguarda a conexao e aplica as migracoes pendentes.
+`npm start` inicia PostgreSQL, aguarda a conexao e inicializa o esquema atual
+se o banco estiver vazio. `backend/src/banco/esquema.sql` contem apenas o modelo vigente.
 Nao existe banco embutido nem transferencia automatica de outro motor.
 `DATABASE_URL` explicita utiliza servidor externo. O banco de uso e preservado.
 
@@ -68,5 +69,4 @@ datas inclusivas UTC. ETL, interface, API e oraculo leem essa configuracao. As c
 do contrato e as restricoes SQL aplicam o mesmo periodo, conferido pelos testes.
 O relogio atual e usado para sessoes, auditoria e transacoes; nunca como medicao climatica.
 
-Migracoes antigas permanecem como historico estrutural. A tabela antiga de controle
-de transferencia nao e consultada pelo sistema atual e foi preservada sem apagar registros.
+Nao ha migracoes, tabelas de sensores ou controles de transferencia de versoes retiradas.

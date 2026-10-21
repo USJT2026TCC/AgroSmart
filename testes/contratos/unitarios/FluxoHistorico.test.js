@@ -10,7 +10,7 @@ describe("Fluxo historico: API, banco, oraculo e EVM", function () {
   it("calcula a primeira data pelo banco e liquida integralmente na EVM", async function () {
     const { abrirBancoDeTeste } =
       await import("../../backend/fixtures/banco.js");
-    const { migrar } = await import("../../../backend/src/banco/migrar.js");
+    const { inicializarBanco } = await import("../../../backend/src/banco/inicializar.js");
     const { hashDaSerie } =
       await import("../../../backend/src/dominio/reproducao.js");
     const { criarApp } = await import("../../../backend/src/app.js");
@@ -22,7 +22,7 @@ describe("Fluxo historico: API, banco, oraculo e EVM", function () {
     const [seguradora, produtor, oraculo] = await ethers.getSigners();
     let servidor;
     try {
-      await migrar(banco);
+      await inicializarBanco(banco);
       const {
         pacote,
         compromisso,

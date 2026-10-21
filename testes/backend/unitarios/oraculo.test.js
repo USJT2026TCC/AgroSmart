@@ -87,11 +87,6 @@ describe("API do oraculo", () => {
         .send({});
       assert.equal(r.status, 404, rota);
     }
-    assert.equal(
-      (await ctx.banco.query("SELECT count(*)::int AS n FROM fontes")).rows[0]
-        .n,
-      0,
-    );
   });
 
   test("confirmacao exige hash da transacao e indice do evento correspondentes", async () => {
@@ -173,7 +168,7 @@ describe("API do oraculo", () => {
         enviadoEm: "2026-10-06T12:00:00.000Z",
         confirmadoEm: "2026-10-06T12:00:00.180Z",
         acionouPagamento: true,
-        procedencia: { fontesUsadas: ["estacao-inmet-a770"] },
+        procedencia: { modo: "reproducao-historica", estacao: "A770" },
       });
 
     assert.equal(r.status, 201);
@@ -193,19 +188,15 @@ describe("API do oraculo", () => {
       "DELETE FROM publicacoes_oraculo WHERE apolice_endereco=$1 AND periodo=20240208",
       [APOLICE],
     );
-    const r = await ctx
-      .api()
-      .post("/api/oraculo/publicacoes")
-      .set(CHAVE)
-      .send({
-        apolice: APOLICE,
-        periodo: 20240208,
-        txHash,
-        indiceClimatico: 2,
-        recuperada: true,
-        enviadoEm: "2024-02-08T10:00:00Z",
-        confirmadoEm: "2024-02-09T10:00:00Z",
-      });
+    const r = await ctx.api().post("/api/oraculo/publicacoes").set(CHAVE).send({
+      apolice: APOLICE,
+      periodo: 20240208,
+      txHash,
+      indiceClimatico: 2,
+      recuperada: true,
+      enviadoEm: "2024-02-08T10:00:00Z",
+      confirmadoEm: "2024-02-09T10:00:00Z",
+    });
     assert.equal(r.status, 201, JSON.stringify(r.body));
     assert.equal(
       (

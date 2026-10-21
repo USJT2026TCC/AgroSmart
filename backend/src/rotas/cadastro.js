@@ -354,12 +354,6 @@ export function rotasDeCadastro() {
       [id],
     );
 
-    const { rows: legado } = await banco.query(
-      "SELECT 1 FROM fontes WHERE talhao_id = $1 LIMIT 1",
-      [id],
-    );
-    if (legado.length)
-      throw conflito("O talhao possui registros legados de fontes; preserve seu historico.");
     if (rows[0].usos > 0)
       throw conflito("Este talhao ja tem proposta ou apolice e nao pode ser removido.");
 
