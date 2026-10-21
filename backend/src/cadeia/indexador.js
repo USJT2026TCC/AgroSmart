@@ -257,8 +257,13 @@ export function criarIndexador(banco, opcoes = {}) {
         if (evento.nome === "IndicesPublicados") {
           await tx.query(
             `UPDATE publicacoes_oraculo SET confirmada_na_cadeia = true
-              WHERE apolice_endereco = $1 AND periodo = $2`,
-            [origem, Number(evento.argumentos.periodo)],
+              WHERE apolice_endereco = $1 AND periodo = $2 AND tx_hash = $3 AND indice_climatico = $4`,
+            [
+              origem,
+              Number(evento.argumentos.periodo),
+              log.transactionHash.toLowerCase(),
+              Number(evento.argumentos.indiceClimatico),
+            ],
           );
         }
 

@@ -25,7 +25,6 @@ const MENUS = {
     { para: "/seguradora", texto: "Carteira", fim: true },
     { para: "/seguradora/propostas", texto: "Propostas" },
     { para: "/seguradora/talhoes", texto: "Talhoes e produtos" },
-    { para: "/seguradora/fontes", texto: "Fontes" },
     { para: "/seguradora/oraculos", texto: "Oraculos" },
   ],
 };

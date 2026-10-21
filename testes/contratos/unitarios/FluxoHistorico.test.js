@@ -3,7 +3,6 @@ const { expect, montarTermos } = require("./helpers");
 const { ServicoOraculo } = require("../../../oraculo/src/oraculo");
 const { FilaDePublicacoes } = require("../../../oraculo/src/fila");
 const { RegistroDePublicacoes } = require("../../../oraculo/src/registro");
-const { RegistroReputacao } = require("../../../oraculo/src/reputacao");
 const fs = require("node:fs");
 const path = require("node:path");
 
@@ -132,7 +131,6 @@ describe("Fluxo historico: API, banco, oraculo e EVM", function () {
         registro: new RegistroDePublicacoes(
           path.join(tmp, "publicacoes.jsonl"),
         ),
-        reputacao: new RegistroReputacao(),
         opcoes: { esperaBaseMs: 1, dirPacote },
       });
       const entrada = await servico.prepararHistorico(endereco);

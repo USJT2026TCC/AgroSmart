@@ -6,10 +6,10 @@ import { conferirDocumento } from "../dominio/documento.js";
 import { paraPoligonoGeoJson } from "../dominio/geometria.js";
 import { gerarHashDeSenha } from "../seguranca/cripto.js";
 import { auditar, exigirPerfil, exigirSessao } from "../seguranca/sessoes.js";
-import { decimalPositivo, endereco, inteiro, texto, umDe, uuid } from "../validacao.js";
+import { decimalPositivo, inteiro, texto, uuid } from "../validacao.js";
 
 /**
- * Cadastro: produtores, talhoes, produtos e fontes de dados (RF03, RF05, RF11).
+ * Cadastro: produtores, talhoes, produtos (RF03, RF05).
  *
  * O talhao e a unica peca com geometria, e e onde o PostGIS faz diferenca:
  *  - a validade do poligono e conferida pelo banco (ST_IsValid), e nao por um
@@ -26,8 +26,7 @@ const SQL_TALHAO = `
   SELECT t.id, t.identificador, t.cultura, t.area_ha, t.criado_em,
          ST_AsGeoJSON(t.geometria)::json AS geometria,
          p.id AS propriedade_id, p.nome AS propriedade, p.municipio,
-         u.id AS produtor_id, u.nome AS produtor_nome, u.identificador AS produtor_identificador,
-         (SELECT count(*)::int FROM fontes f WHERE f.talhao_id = t.id AND f.ativa) AS fontes_ativas
+         u.id AS produtor_id, u.nome AS produtor_nome, u.identificador AS produtor_identificador
     FROM talhoes t
     JOIN propriedades p ON p.id = t.propriedade_id
     JOIN usuarios u ON u.id = p.produtor_id
@@ -46,9 +45,6 @@ function talhaoPublico(linha) {
       nome: linha.produtor_nome,
       identificador: linha.produtor_identificador,
     },
-    fontesAtivas: linha.fontes_ativas,
-    // RNF16: ao menos duas fontes independentes.
-    atendeMinimoDeFontes: linha.fontes_ativas >= 2,
     criadoEm: linha.criado_em,
   };
 }
@@ -270,6 +266,15 @@ export function rotasDeCadastro() {
           ).rows[0].id;
       }
 
+      if (corpo.propriedadeId) {
+        const { rows: propriedades } = await tx.query(
+          "SELECT 1 FROM propriedades WHERE id = $1 AND produtor_id = $2",
+          [propriedadeId, produtorId],
+        );
+        if (!propriedades.length)
+          throw pedidoInvalido("A propriedade nao pertence ao produtor informado.");
+      }
+
       // Validade e area pelo PostGIS. ST_IsValid, no CHECK da tabela, recusa a
       // autointersecao; ST_Area sobre geography mede no elipsoide.
       const { rows } = await tx.query(
@@ -297,8 +302,7 @@ export function rotasDeCadastro() {
    * Edicao do talhao (RF03): cultura e poligono.
    *
    * So enquanto nenhuma proposta ou apolice depender dele. Depois, o contrato
-   * ja guarda o identificador, e a area cotada e o poligono que recusa fotos de
-   * fora (RF14) precisam continuar os mesmos que o produtor aceitou.
+   * ja guarda o identificador, e a area cotada precisa continuar a mesma que o produtor aceitou.
    */
   r.patch("/talhoes/:id", exigirSessao, exigirPerfil("seguradora"), async (req, res) => {
     const { banco } = req.app.locals;
@@ -350,11 +354,16 @@ export function rotasDeCadastro() {
       [id],
     );
 
+    const { rows: legado } = await banco.query(
+      "SELECT 1 FROM fontes WHERE talhao_id = $1 LIMIT 1",
+      [id],
+    );
+    if (legado.length)
+      throw conflito("O talhao possui registros legados de fontes; preserve seu historico.");
     if (rows[0].usos > 0)
       throw conflito("Este talhao ja tem proposta ou apolice e nao pode ser removido.");
 
     await banco.transacao(async (tx) => {
-      await tx.query("DELETE FROM fontes WHERE talhao_id = $1", [id]);
       await tx.query("DELETE FROM talhoes WHERE id = $1", [id]);
     });
 
@@ -427,86 +436,6 @@ export function rotasDeCadastro() {
 
     await auditar(banco, req, "produto_retirado", { recurso: id });
     res.status(204).end();
-  });
-
-  // -------------------------------------------------------------- fontes
-
-  r.get("/fontes", exigirSessao, exigirPerfil("seguradora"), async (req, res) => {
-    const { banco } = req.app.locals;
-    const params = [];
-    let filtro = "";
-
-    if (req.query.talhaoId) {
-      params.push(uuid(req.query.talhaoId, "talhaoId"));
-      filtro = "WHERE f.talhao_id = $1";
-    }
-
-    const { rows } = await banco.query(
-      `SELECT f.id, f.tipo, f.endereco, f.ativa, f.escore, f.observacoes, f.ultima_leitura_em,
-              ST_X(f.localizacao) AS lon, ST_Y(f.localizacao) AS lat,
-              t.id AS talhao_id, t.identificador AS talhao
-         FROM fontes f JOIN talhoes t ON t.id = f.talhao_id
-         ${filtro}
-        ORDER BY t.identificador, f.id`,
-      params,
-    );
-
-    res.json({ fontes: rows });
-  });
-
-  /**
-   * Registro de fonte (RF11). O endereco e a chave publica com que a estacao ou
-   * o sensor assina os lotes; sem ele cadastrado, nenhuma leitura da fonte e
-   * aceita (RNF17).
-   */
-  r.post("/fontes", exigirSessao, exigirPerfil("seguradora"), async (req, res) => {
-    const { banco } = req.app.locals;
-    const c = req.body ?? {};
-
-    const id = texto(c.id, "id", { max: 60 });
-    if (!/^[a-z0-9][a-z0-9-]*$/.test(id)) {
-      throw pedidoInvalido(
-        'O identificador da fonte aceita apenas letras minusculas, numeros e "-".',
-      );
-    }
-
-    const talhaoId = uuid(c.talhaoId, "talhaoId");
-    const tipo = umDe(c.tipo, "tipo", ["estacao", "sensor_solo"]);
-    const enderecoDaFonte = endereco(c.endereco, "endereco");
-
-    const temLocal = c.lon !== undefined && c.lat !== undefined && c.lon !== "" && c.lat !== "";
-
-    const { rows } = await banco.query(
-      `INSERT INTO fontes (id, talhao_id, tipo, endereco, localizacao)
-       VALUES ($1, $2, $3, $4, CASE WHEN $5::boolean THEN ST_SetSRID(ST_MakePoint($6, $7), 4326) END)
-       RETURNING id`,
-      [id, talhaoId, tipo, enderecoDaFonte, temLocal, Number(c.lon ?? 0), Number(c.lat ?? 0)],
-    );
-
-    await auditar(banco, req, "fonte_registrada", {
-      recurso: rows[0].id,
-      detalhes: { endereco: enderecoDaFonte },
-    });
-    res.status(201).json({ fonte: { id: rows[0].id, talhaoId, tipo, endereco: enderecoDaFonte } });
-  });
-
-  r.patch("/fontes/:id", exigirSessao, exigirPerfil("seguradora"), async (req, res) => {
-    const { banco } = req.app.locals;
-
-    if (typeof req.body?.ativa !== "boolean")
-      throw pedidoInvalido('Informe "ativa" como verdadeiro ou falso.');
-
-    const { rowCount } = await banco.query("UPDATE fontes SET ativa = $2 WHERE id = $1", [
-      req.params.id,
-      req.body.ativa,
-    ]);
-
-    if (rowCount === 0) throw naoEncontrado("Fonte");
-
-    await auditar(banco, req, req.body.ativa ? "fonte_reativada" : "fonte_desativada", {
-      recurso: req.params.id,
-    });
-    res.json({ id: req.params.id, ativa: req.body.ativa });
   });
 
   return r;

@@ -34,12 +34,6 @@ const config = {
   dirImplantacoes:
     process.env.DIR_IMPLANTACOES || path.join(RAIZ, "..", "contratos", "implantacoes"),
 
-  /** Somente compatibilidade com sensores; o modo historico fixa chuva <1 mm. */
-  limiarChuvaMm: Number(process.env.LIMIAR_CHUVA_MM || 1),
-
-  /** Somente compatibilidade com sensores, fora do servico historico. */
-  limiarReputacao: Number(process.env.LIMIAR_REPUTACAO || 0.5),
-
   /** Tentativas de publicacao antes de a entrada da fila ser marcada como falha (RF21). */
   maxTentativas: Number(process.env.MAX_TENTATIVAS || 5),
 

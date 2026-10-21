@@ -46,16 +46,13 @@ const RESTRICOES = {
   talhoes_identificador_key: [409, "Ja existe um talhao com este identificador."],
   talhoes_identificador_check: [400, "O identificador do talhao precisa ter de 1 a 31 caracteres."],
   produto_limiar_climatico: [400, "O produto exige um gatilho climatico maior que zero."],
-  produto_pagamento_integral: [400, "O produto ativo aceita apenas indenizacao integral em parcela unica."],
-  produto_teto_climatico: [
+  produto_pagamento_integral: [
     400,
-    "Configuracao climatica legada invalida.",
+    "O produto ativo aceita apenas indenizacao integral em parcela unica.",
   ],
+  produto_teto_climatico: [400, "Configuracao climatica legada invalida."],
   usuarios_carteira_key: [409, "Esta carteira ja esta vinculada a outro usuario."],
   usuarios_identificador_key: [409, "Ja existe um usuario com este identificador."],
-  fontes_endereco_key: [409, "Este endereco ja assina por outra fonte."],
-  fontes_pkey: [409, "Ja existe uma fonte com este identificador."],
-  lotes_de_leitura_pkey: [409, "Este lote ja foi recebido. Reenvio recusado."],
 };
 
 export function traduzirErroDoBanco(erro) {

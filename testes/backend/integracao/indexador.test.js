@@ -205,12 +205,31 @@ describe("indexador contra um no real", { timeout: 180_000 }, () => {
       [20260911, 29],
       [20260912, 30],
     ]) {
-      await (
+      const recibo = await (
         await contrato.connect(oraculo).publicarIndices(periodo, indice)
       ).wait();
+      const txHash =
+        periodo === 20260911
+          ? ethers.id("relato falso sintetico")
+          : recibo.hash;
+      const valor = periodo === 20260912 ? indice + 1 : indice;
+      await banco.query(
+        "INSERT INTO publicacoes_oraculo (apolice_endereco,periodo,tx_hash,indice_climatico) VALUES ($1,$2,$3,$4)",
+        [apolice, periodo, txHash, valor],
+      );
     }
 
     await indexador.varrer();
+
+    const relatos = (
+      await banco.query(
+        "SELECT confirmada_na_cadeia FROM publicacoes_oraculo ORDER BY confirmada_na_cadeia DESC",
+      )
+    ).rows;
+    assert.deepEqual(
+      relatos.map((r) => r.confirmada_na_cadeia),
+      [true, false, false],
+    );
 
     const { rows: estado } = await banco.query(
       "SELECT situacao, valor_pago_wei, periodo_acionador FROM apolices WHERE endereco = $1",

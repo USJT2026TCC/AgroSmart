@@ -1,37 +1,15 @@
 import { Router } from "express";
 import { hashDaSerie } from "../dominio/reproducao.js";
 
-import { naoEncontrado, pedidoInvalido } from "../erros.js";
+import { pedidoInvalido } from "../erros.js";
 import { auditar, exigirServico } from "../seguranca/sessoes.js";
-import {
-  endereco,
-  hashDeTransacao,
-  inteiro,
-  periodo,
-  texto,
-} from "../validacao.js";
+import { endereco, hashDeTransacao, inteiro, periodo, texto } from "../validacao.js";
 
 /** Interface autenticada entre backend e oraculo.
  * No modo historico, a API entrega dias de inmet_dias e termos congelados;
  * o oraculo recalcula a serie, o indice e assina a publicacao em cadeia.
- * As rotas de leituras e reputacao abaixo pertencem ao percurso legado.
  * O INMET nao assina os arquivos com a chave do servico ou do oraculo.
  */
-
-/** Formato de periodo AAAAMMDD para data UTC no fim daquele dia. */
-function fimDoDia(p) {
-  const t = String(p);
-  return new Date(
-    Date.UTC(
-      Number(t.slice(0, 4)),
-      Number(t.slice(4, 6)) - 1,
-      Number(t.slice(6, 8)),
-      23,
-      59,
-      59,
-    ),
-  );
-}
 
 export function rotasDoOraculo() {
   const r = Router();
@@ -39,7 +17,7 @@ export function rotasDoOraculo() {
   r.use("/oraculo", exigirServico);
 
   /**
-   * Apolices que podem receber publicacao agora, com o talhao e as fontes.
+   * Apolices que podem receber publicacao agora, com o talhao e os termos.
    *
    * Situacao 1 e ATIVA. A situacao aqui e um espelho atualizado pelo indexador;
    * o contrato continua sendo a autoridade, e o oraculo ensaia a chamada antes
@@ -54,10 +32,7 @@ export function rotasDoOraculo() {
     );
     const t = rows[0]?.termos;
     if (!t?.modoHistorico) throw pedidoInvalido("Apolice nao e historica.");
-    if (
-      (await hashDaSerie(banco, t.inicioHistorico, t.fimHistorico)) !==
-      t.hashSerie
-    )
+    if ((await hashDaSerie(banco, t.inicioHistorico, t.fimHistorico)) !== t.hashSerie)
       throw pedidoInvalido(
         "Serie INMET mudou desde a proposta. Emita outra proposta; nao altere os termos.",
       );
@@ -77,12 +52,7 @@ export function rotasDoOraculo() {
     const { rows } = await req.app.locals.banco.query(
       `SELECT a.endereco, a.produtor_carteira, a.valor_indenizacao_wei,
               t.id AS talhao_id, t.identificador AS talhao,
-              p.termos,
-              COALESCE(
-                (SELECT json_agg(json_build_object('id', f.id, 'tipo', f.tipo, 'escore', f.escore) ORDER BY f.id)
-                   FROM fontes f WHERE f.talhao_id = t.id AND f.ativa),
-                '[]'::json
-              ) AS fontes
+              p.termos
          FROM apolices a
          LEFT JOIN talhoes t   ON t.id = a.talhao_id
          LEFT JOIN propostas p ON p.id = a.proposta_id
@@ -91,53 +61,6 @@ export function rotasDoOraculo() {
     );
 
     res.json({ apolices: rows });
-  });
-
-  /**
-   * Leituras de um talhao, no formato que `consolidarIndiceClimatico` espera.
-   *
-   * Vao TODAS as leituras das fontes ativas, validas e invalidas. O oraculo
-   * revalida por conta propria, e a propria contagem de descartes entra na
-   * procedencia que ele grava junto com a publicacao.
-   */
-  r.get("/oraculo/leituras", async (req, res) => {
-    const { banco } = req.app.locals;
-    const talhao = texto(req.query.talhao, "talhao", { max: 31 });
-    const ate = periodo(req.query.ate, "ate");
-    const dias = inteiro(req.query.dias ?? 90, "dias", { min: 1, max: 366 });
-
-    const { rows: talhoes } = await banco.query(
-      "SELECT id FROM talhoes WHERE identificador = $1",
-      [talhao],
-    );
-    if (!talhoes[0]) throw naoEncontrado("Talhao");
-
-    const limite = fimDoDia(ate);
-
-    const { rows } = await banco.query(
-      `SELECT l.fonte_id AS fonte, l.instante, l.chuva_mm, l.temperatura_c, l.umidade_pct
-         FROM leituras l JOIN fontes f ON f.id = l.fonte_id
-        WHERE f.talhao_id = $1 AND f.ativa
-          AND l.instante <= $2
-          AND l.instante > $2::timestamptz - make_interval(days => $3)
-        ORDER BY l.instante`,
-      [talhoes[0].id, limite, dias],
-    );
-
-    // numeric chega como texto; o consolidador espera numero.
-    const numero = (v) => (v === null ? undefined : Number(v));
-
-    res.json({
-      talhao,
-      ate,
-      leituras: rows.map((l) => ({
-        fonte: l.fonte,
-        timestamp: new Date(l.instante).toISOString(),
-        chuvaMm: numero(l.chuva_mm),
-        temperaturaC: numero(l.temperatura_c),
-        umidadePct: numero(l.umidade_pct),
-      })),
-    });
   });
 
   /**
@@ -158,20 +81,34 @@ export function rotasDoOraculo() {
 
     const enviadoEm = c.enviadoEm ? new Date(c.enviadoEm) : null;
     const confirmadoEm = c.confirmadoEm ? new Date(c.confirmadoEm) : null;
+    if (
+      (enviadoEm && !Number.isFinite(enviadoEm.getTime())) ||
+      (confirmadoEm && !Number.isFinite(confirmadoEm.getTime())) ||
+      (enviadoEm && confirmadoEm && confirmadoEm < enviadoEm)
+    )
+      throw pedidoInvalido("Datas do relato invalidas ou fora de ordem.");
     const latencia =
-      enviadoEm && confirmadoEm
-        ? Math.max(0, confirmadoEm.getTime() - enviadoEm.getTime())
-        : null;
+      enviadoEm && confirmadoEm && !c.recuperada ? Math.max(0, confirmadoEm.getTime() - enviadoEm.getTime()) : null;
 
-    const inteiroOuNulo = (v) =>
-      v === undefined || v === null || v === "" ? null : String(BigInt(v));
+    const inteiroOuNulo = (v) => {
+      if (v === undefined || v === null || v === "") return null;
+      if (!/^[0-9]+$/.test(String(v)))
+        throw pedidoInvalido("Gas e custo devem ser inteiros nao negativos.");
+      return String(BigInt(v));
+    };
 
     // O indexador pode ter visto o evento antes de o relato chegar. Nesse caso a
     // publicacao nasce ja confirmada.
     const { rows: vistos } = await banco.query(
       `SELECT 1 FROM eventos_cadeia
-        WHERE contrato = $1 AND nome = 'IndicesPublicados' AND (argumentos->>'periodo')::int = $2`,
-      [apolice, p],
+        WHERE contrato = $1 AND nome = 'IndicesPublicados' AND (argumentos->>'periodo')::int = $2
+          AND tx_hash = $3 AND (argumentos->>'indiceClimatico')::int = $4`,
+      [
+        apolice,
+        p,
+        txHash,
+        inteiro(c.indiceClimatico, "indiceClimatico", { min: 0, max: 4294967295 }),
+      ],
     );
 
     await banco.query(
@@ -209,9 +146,7 @@ export function rotasDoOraculo() {
       detalhes: { periodo: p },
     });
 
-    res
-      .status(201)
-      .json({ registrada: true, confirmadaNaCadeia: vistos.length > 0 });
+    res.status(201).json({ registrada: true, confirmadaNaCadeia: vistos.length > 0 });
   });
 
   /**
@@ -228,7 +163,7 @@ export function rotasDoOraculo() {
     const p = periodo(c.periodo);
     const motivo = texto(c.motivo, "motivo", { max: 500 });
 
-    if (!Number.isInteger(c.tentativas ?? 0))
+    if (!Number.isInteger(c.tentativas ?? 0) || (c.tentativas ?? 0) < 0)
       throw pedidoInvalido('O campo "tentativas" deve ser inteiro.');
 
     const { rows: seguradoras } = await banco.query(

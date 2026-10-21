@@ -160,20 +160,6 @@ export const limitarLogin = rateLimit({
   },
 });
 
-/** Ingestao de leituras e envio de imagens: por minuto, com folga para lotes normais. */
-export const limitarIngestao = rateLimit({
-  windowMs: 60 * 1000,
-  limit: config.limiteDeIngestao,
-  standardHeaders: "draft-8",
-  legacyHeaders: false,
-  message: {
-    erro: {
-      codigo: "muitas_requisicoes",
-      mensagem: "Limite de envio atingido. Aguarde um minuto.",
-    },
-  },
-});
-
 // -------------------------------------------------------------- auditoria
 
 /**

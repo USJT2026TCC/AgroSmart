@@ -15,7 +15,6 @@ import CarteiraDaSeguradora from "./paginas/seguradora/CarteiraDaSeguradora";
 import Propostas from "./paginas/seguradora/Propostas";
 import TalhoesEProdutos from "./paginas/seguradora/TalhoesEProdutos";
 import Oraculos from "./paginas/seguradora/Oraculos";
-import Fontes from "./paginas/seguradora/Fontes";
 import Notificacoes from "./paginas/Notificacoes";
 import Conta from "./paginas/Conta";
 
@@ -130,16 +129,7 @@ export default function App() {
           }
         />
 
-        <Route
-          path="/seguradora/fontes"
-          element={
-            <RotaProtegida perfis={[PERFIS.SEGURADORA]}>
-              <Fontes />
-            </RotaProtegida>
-          }
-        />
-
-        {/* Comuns aos tres perfis. */}
+        {/* Comuns aos dois perfis. */}
         <Route
           path="/notificacoes"
           element={

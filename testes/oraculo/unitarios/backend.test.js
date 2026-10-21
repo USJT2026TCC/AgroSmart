@@ -11,7 +11,6 @@ const { ClienteBackend } = require("../../../oraculo/src/clienteBackend.js");
 const { ServicoOraculo } = require("../../../oraculo/src/oraculo.js");
 const { FilaDePublicacoes, ESTADOS } = require("../../../oraculo/src/fila.js");
 const { RegistroDePublicacoes } = require("../../../oraculo/src/registro.js");
-const { RegistroReputacao } = require("../../../oraculo/src/reputacao.js");
 
 /**
  * Integracao do oraculo com o backend.
@@ -148,7 +147,6 @@ function servicoComFalsos({ publicar, backend, maxTentativas = 2 }) {
     publicador: { publicar },
     fila: new FilaDePublicacoes(path.join(dir, "fila.json"), { maxTentativas }),
     registro: new RegistroDePublicacoes(path.join(dir, "publicacoes.jsonl")),
-    reputacao: new RegistroReputacao(),
     backend,
     opcoes: { esperaBaseMs: 1, maxTentativas },
   });
@@ -181,22 +179,17 @@ const RECIBO = {
   oraculo: "0x3c44",
 };
 
-const leiturasSecas = ["estacao-a", "estacao-b"].flatMap((fonte) =>
-  [0, 1, 2].map((i) => ({
-    fonte,
-    timestamp: `2026-10-0${4 + i}T12:00:00.000Z`,
-    chuvaMm: 0,
-  })),
-);
-
 test("publicacao bem-sucedida e relatada ao backend com gas, latencia e procedencia", async () => {
   const backend = backendQueGrava();
   const servico = servicoComFalsos({ publicar: async () => RECIBO, backend });
 
-  servico.prepararPublicacao({
+  servico.fila.enfileirar({
     apolice: "0xa",
     periodo: 20261006,
-    leituras: leiturasSecas,
+    payload: {
+      indiceClimatico: 3,
+      procedencia: { modo: "reproducao-historica", estacao: "A770" },
+    },
   });
   await servico.drenarFila();
 
@@ -206,17 +199,20 @@ test("publicacao bem-sucedida e relatada ao backend com gas, latencia e proceden
   assert.equal(relato.txHash, RECIBO.txHash);
   assert.equal(relato.periodo, 20261006);
   assert.equal(relato.indiceClimatico, 3);
-  assert.deepEqual(relato.procedencia.fontesUsadas, ["estacao-a", "estacao-b"]);
+  assert.equal(relato.procedencia.estacao, "A770");
 });
 
 test("backend fora do ar nao desfaz a publicacao ja feita na cadeia", async () => {
   const backend = backendQueGrava({ falharRelato: true });
   const servico = servicoComFalsos({ publicar: async () => RECIBO, backend });
 
-  servico.prepararPublicacao({
+  servico.fila.enfileirar({
     apolice: "0xa",
     periodo: 20261006,
-    leituras: leiturasSecas,
+    payload: {
+      indiceClimatico: 3,
+      procedencia: { modo: "reproducao-historica", estacao: "A770" },
+    },
   });
   const resultado = await servico.drenarFila();
 
@@ -236,10 +232,13 @@ test("so a falha definitiva e relatada, e uma unica vez", async () => {
     maxTentativas: 3,
   });
 
-  servico.prepararPublicacao({
+  servico.fila.enfileirar({
     apolice: "0xa",
     periodo: 20261006,
-    leituras: leiturasSecas,
+    payload: {
+      indiceClimatico: 3,
+      procedencia: { modo: "reproducao-historica", estacao: "A770" },
+    },
   });
   await servico.drenarFila();
 
@@ -247,21 +246,4 @@ test("so a falha definitiva e relatada, e uma unica vez", async () => {
   assert.equal(backend.relatos.falhas.length, 1);
   assert.equal(backend.relatos.falhas[0].tentativas, 3);
   assert.match(backend.relatos.falhas[0].motivo, /ECONNREFUSED/);
-});
-
-test("uma fonte climatica nao e suficiente para enfileirar publicacao", () => {
-  const servico = servicoComFalsos({
-    publicar: async () => RECIBO,
-    backend: backendQueGrava(),
-  });
-  assert.throws(
-    () =>
-      servico.prepararPublicacao({
-        apolice: "0xa",
-        periodo: 20261006,
-        leituras: leiturasSecas.filter((l) => l.fonte === "estacao-a"),
-      }),
-    /duas fontes climaticas/,
-  );
-  assert.equal(servico.fila.pendentes().length, 0);
 });

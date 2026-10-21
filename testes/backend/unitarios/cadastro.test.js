@@ -146,15 +146,37 @@ describe("cadastro", () => {
         .send(novoTalhao());
       assert.equal(cadastro.status, 403);
     });
+  });
 
-    test("o talhao indica se atende o minimo de fontes independentes (RNF16)", async () => {
-      const { body } = await ctx.api().get("/api/talhoes").set(com(seguradora));
-      const t1 = body.talhoes.find((t) => t.identificador === "talhao-01");
-      const t2 = body.talhoes.find((t) => t.identificador === "talhao-02");
-
-      assert.equal(t1.atendeMinimoDeFontes, true);
-      assert.equal(t2.atendeMinimoDeFontes, false);
-    });
+  test("nao vincula talhao a propriedade de outro produtor", async () => {
+    const propriedade = (
+      await ctx.banco.query("SELECT id FROM propriedades LIMIT 1")
+    ).rows[0].id;
+    const outro = await ctx
+      .api()
+      .post("/api/produtores")
+      .set(com(seguradora))
+      .send({
+        identificador: "outro.produtor",
+        nome: "Outro",
+        senhaInicial: "senha-de-teste-123",
+      });
+    assert.equal(outro.status, 201);
+    const modelo = (await ctx.api().get("/api/talhoes").set(com(seguradora)))
+      .body.talhoes[0];
+    const r = await ctx
+      .api()
+      .post("/api/talhoes")
+      .set(com(seguradora))
+      .send({
+        identificador: "talhao-outro",
+        cultura: "soja",
+        produtorId: outro.body.produtor.id,
+        propriedadeId: propriedade,
+        poligono: modelo.poligono,
+      });
+    assert.equal(r.status, 400, JSON.stringify(r.body));
+    assert.match(r.body.erro.mensagem, /nao pertence/);
   });
 
   describe("produtos (RF05)", () => {
@@ -251,46 +273,6 @@ describe("cadastro", () => {
     });
   });
 
-  describe("fontes (RF11)", () => {
-    test("registra a fonte com a chave publica que assina os lotes", async () => {
-      const { rows } = await ctx.banco.query(
-        "SELECT id FROM talhoes WHERE identificador = 'talhao-02'",
-      );
-
-      const r = await ctx.api().post("/api/fontes").set(com(seguradora)).send({
-        id: "estacao-milho-01",
-        talhaoId: rows[0].id,
-        tipo: "estacao",
-        endereco: "0x2222222222222222222222222222222222222222",
-        lon: -47.77,
-        lat: -21.17,
-      });
-
-      assert.equal(r.status, 201);
-
-      const lista = await ctx
-        .api()
-        .get(`/api/fontes?talhaoId=${rows[0].id}`)
-        .set(com(seguradora));
-      assert.equal(lista.body.fontes.length, 1);
-      assert.equal(Number(lista.body.fontes[0].escore), 1);
-    });
-
-    test("o mesmo endereco nao assina por duas fontes", async () => {
-      const { rows } = await ctx.banco.query(
-        "SELECT id FROM talhoes WHERE identificador = 'talhao-02'",
-      );
-
-      const r = await ctx.api().post("/api/fontes").set(com(seguradora)).send({
-        id: "estacao-milho-02",
-        talhaoId: rows[0].id,
-        tipo: "estacao",
-        endereco: "0x2222222222222222222222222222222222222222",
-      });
-
-      assert.equal(r.status, 409);
-    });
-  });
   describe("produtores e propriedades (RF03)", () => {
     test("a seguradora cadastra um produtor, que consegue entrar com a senha inicial", async () => {
       const r = await ctx

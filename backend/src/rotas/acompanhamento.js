@@ -10,7 +10,11 @@ import { exigirPerfil, exigirSessao } from "../seguranca/sessoes.js";
 function filtrosDoRelatorio(q) {
   const data = (valor, campo) => {
     if (valor === undefined || valor === "") return null;
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(valor))) {
+    if (
+      !/^\d{4}-\d{2}-\d{2}$/.test(String(valor)) ||
+      !Number.isFinite(Date.parse(`${valor}T00:00:00Z`)) ||
+      new Date(`${valor}T00:00:00Z`).toISOString().slice(0, 10) !== valor
+    ) {
       throw pedidoInvalido(`O filtro "${campo}" deve estar no formato AAAA-MM-DD.`);
     }
     return String(valor);
@@ -77,8 +81,9 @@ export function rotasDeAcompanhamento() {
     // Base filtrada: as apolices que entram em todos os numeros abaixo.
     const BASE = `
       WITH base AS (
-        SELECT a.*, t.cultura, pr.municipio
+        SELECT a.*, t.cultura, pr.municipio, p.termos
           FROM apolices a
+          LEFT JOIN propostas p ON p.id = a.proposta_id
           LEFT JOIN talhoes t ON t.id = a.talhao_id
           LEFT JOIN propriedades pr ON pr.id = t.propriedade_id
          WHERE ($1::date IS NULL OR a.emitida_em >= $1::date)
@@ -98,7 +103,7 @@ export function rotasDeAcompanhamento() {
       COALESCE(sum(valor_indenizacao_wei), 0)::text        AS limite_total_wei,
       COALESCE(sum(valor_pago_wei), 0)::text               AS pago_total_wei`;
 
-    const [carteira, porCultura, porRegiao, liquidacao, publicacoes, fontes, propostas, opcoes] =
+    const [carteira, porCultura, porRegiao, liquidacao, publicacoes, propostas, opcoes] =
       await Promise.all([
         banco.query(`${BASE} SELECT ${AGREGADOS} FROM base`, parametros),
         banco.query(
@@ -122,10 +127,11 @@ export function rotasDeAcompanhamento() {
              FROM base b
              JOIN eventos_cadeia e ON e.contrato = b.endereco AND e.nome = 'PagamentoExecutado'
              CROSS JOIN LATERAL (
-               -- O periodo e um dia em UTC, como no oraculo (consolidador.diaDe).
+               -- O periodo e um dia em UTC, como na serie historica.
                SELECT (to_date(b.periodo_acionador::text, 'YYYYMMDD') + 1)::timestamp AT TIME ZONE 'UTC' AS dia
              ) fim
-            WHERE b.periodo_acionador IS NOT NULL`,
+            WHERE b.periodo_acionador IS NOT NULL
+              AND NOT COALESCE((b.termos->>'modoHistorico')::boolean, false)`,
           parametros,
         ),
         banco.query(
@@ -144,11 +150,6 @@ export function rotasDeAcompanhamento() {
               AND p.apolice_endereco IN (SELECT endereco FROM base)`,
           parametros,
         ),
-        banco.query(`
-          SELECT count(*)::int                                  AS total,
-                 count(*) FILTER (WHERE ativa)::int              AS ativas,
-                 count(*) FILTER (WHERE escore < 0.5)::int       AS abaixo_do_limiar
-            FROM fontes`),
         banco.query(`
           SELECT count(*) FILTER (WHERE situacao IN ('pendente', 'preparada'))::int AS pendentes
             FROM propostas`),
@@ -175,7 +176,6 @@ export function rotasDeAcompanhamento() {
       porRegiao: porRegiao.rows,
       liquidacao: liquidacao.rows[0],
       publicacoes: publicacoes.rows[0],
-      fontes: fontes.rows[0],
       propostasPendentes: propostas.rows[0].pendentes,
     });
   });

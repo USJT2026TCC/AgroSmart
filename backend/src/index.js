@@ -6,7 +6,6 @@ import { transferirPGliteSeNecessario } from "./banco/transferirLegado.js";
 import { criarApp } from "./app.js";
 import { config } from "./config.js";
 import { abrirBanco } from "./banco/conexao.js";
-import { carregarHistoricoClimatico } from "./banco/historico.js";
 import { criarDespachanteDeEmail } from "./notificacoes/email.js";
 import { migrar } from "./banco/migrar.js";
 import { semear } from "./banco/semente.js";
@@ -41,12 +40,6 @@ async function iniciar() {
   if (importacao.anos)
     console.log(
       `INMET importado: ${importacao.anos} anos, ${importacao.dias} dias. Datas originais preservadas.`,
-    );
-
-  const diasDeHistorico = await carregarHistoricoClimatico(banco);
-  if (diasDeHistorico > 0)
-    console.log(
-      `Historico de chuva do INMET carregado: ${diasDeHistorico} dias.`,
     );
 
   if (!config.emProducao && (await semear(banco))) {
@@ -100,7 +93,7 @@ async function iniciar() {
   }
 
   // Encerramento limpo: para o indexador, fecha a porta e o banco. Sem isso, o
-  // PGlite pode ficar com o diretorio de dados travado ate o proximo inicio.
+  // processo pode manter conexoes abertas apos o pedido de encerramento.
   const encerrar = async (sinal) => {
     console.log(`\n${sinal} recebido, encerrando...`);
     indexador?.parar();

@@ -3,9 +3,8 @@
 Consulta a série de São Simão/SP (A770) pela API do backend, calcula os dias secos
 **desde o início da cobertura** e publica o resultado no contrato histórico.
 Não simula sensores, não desloca datas e não acessa o PostgreSQL diretamente.
-Na interface atual, marque **Usar dados historicos de Sao Simao (A770)**; essa
-opção ainda não vem marcada por padrão. Apólices convencionais são ignoradas
-pelo serviço histórico.
+A interface utiliza o modo histórico. Novas propostas convencionais são recusadas
+pelo backend; apólices convencionais antigas são ignoradas pelo serviço.
 
 ## Funcionamento
 
@@ -70,7 +69,6 @@ O período vem da cobertura, não de `--periodo` ou do dia atual.
 | `publicador.js`, `abi.js` | Comunicação com o contrato e recibos |
 | `registro.js` | Procedência, gas e latência observada |
 | `config.js` | Configuração por ambiente |
-| `consolidador.js`, `reputacao.js` | Compatibilidade de sensores; ainda usada pelo backend/testes, fora do serviço histórico |
 
 ## Falhas e testes
 

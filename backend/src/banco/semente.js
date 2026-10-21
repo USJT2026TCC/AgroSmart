@@ -11,42 +11,10 @@ import { gerarHashDeSenha } from "../seguranca/cripto.js";
  * PostGIS. So roda em desenvolvimento e com o banco vazio: em producao, recusa;
  * com usuarios ja cadastrados, nao toca em nada.
  *
- * As fontes guardam somente enderecos publicos. A assinatura e feita fora da API.
  */
-
-/**
- * Fontes do percurso legado de ingestao assinada.
- * A demonstracao historica atual usa somente A770 na tabela inmet_dias;
- * nao depende destes cadastros nem de uma chave simulando o INMET.
- * Preservados para compatibilidade com a API de lotes autenticados.
- */
-export const FONTES_DE_DEMONSTRACAO = [
-  {
-    id: "estacao-inmet-a770",
-    tipo: "estacao",
-    carteira: "0xbcd4042de499d14e55001ccbb24a551f3b954096",
-    lon: -47.57944444,
-    lat: -21.46111111,
-  },
-  {
-    id: "estacao-inmet-a747",
-    tipo: "estacao",
-    carteira: "0x71be63f3384f5fb98995898a86b02fb2426c5788",
-    lon: -48.11388888,
-    lat: -21.33833333,
-  },
-  {
-    id: "sensor-solo-talhao-01",
-    tipo: "sensor_solo",
-    carteira: "0xfabb0ac9d68b0b445fb7357272ff202c5651694a",
-    lon: -47.585,
-    lat: -21.455,
-  },
-];
 
 export async function semear(banco) {
-  if (config.emProducao)
-    throw new Error("A semente de demonstracao nao roda em producao.");
+  if (config.emProducao) throw new Error("A semente de demonstracao nao roda em producao.");
 
   const { rows } = await banco.query("SELECT count(*)::int AS n FROM usuarios");
   if (rows[0].n > 0) return false;
@@ -54,13 +22,7 @@ export async function semear(banco) {
   const senha = await gerarHashDeSenha("agrosmart");
 
   await banco.transacao(async (tx) => {
-    const inserir = async (
-      identificador,
-      nome,
-      perfil,
-      documento,
-      carteira = null,
-    ) =>
+    const inserir = async (identificador, nome, perfil, documento, carteira = null) =>
       (
         await tx.query(
           `INSERT INTO usuarios (identificador, nome, perfil, documento, hash_senha, carteira,
@@ -91,10 +53,7 @@ export async function semear(banco) {
       [produtor, "Fazenda Santa Clara", "Sao Simao/SP"],
     );
 
-    // Os talhoes ficam a poucos quilometros da estacao A770, em area de cana e
-    // graos de Sao Simao. A distancia importa: leitura de chuva vale para a
-    // vizinhanca da estacao, e uma apolice indexada por estacao distante mede
-    // outra lavoura que nao a segurada.
+    // Talhoes ficticios: a demonstracao assume coincidencia com a estacao A770.
     const talhoes = [
       {
         identificador: "talhao-01",
@@ -120,8 +79,6 @@ export async function semear(banco) {
       },
     ];
 
-    const ids = {};
-
     for (const t of talhoes) {
       const geojson = JSON.stringify({
         type: "Polygon",
@@ -135,16 +92,6 @@ export async function semear(banco) {
          RETURNING id`,
         [prop[0].id, t.identificador, t.cultura, geojson],
       );
-
-      ids[t.identificador] = novo[0].id;
-    }
-
-    for (const f of FONTES_DE_DEMONSTRACAO) {
-      await tx.query(
-        `INSERT INTO fontes (id, talhao_id, tipo, endereco, localizacao)
-         VALUES ($1, $2, $3, $4, ST_SetSRID(ST_MakePoint($5, $6), 4326))`,
-        [f.id, ids["talhao-01"], f.tipo, f.carteira, f.lon, f.lat],
-      );
     }
 
     const produtos = [["Estiagem — soja", "soja", 0, 30, 0, "0.006", 450, 180]];
@@ -155,16 +102,7 @@ export async function semear(banco) {
                                limiar_climatico_integral, valor_por_hectare_wei, taxa_premio_bps,
                                vigencia_dias)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-        [
-          nome,
-          cultura,
-          modo,
-          lc,
-          lci,
-          ethers.parseEther(porHa).toString(),
-          taxa,
-          dias,
-        ],
+        [nome, cultura, modo, lc, lci, ethers.parseEther(porHa).toString(), taxa, dias],
       );
     }
 

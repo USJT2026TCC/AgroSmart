@@ -45,16 +45,16 @@ Convenções: caminhos relativos à raiz do repositório; `DECISOES n` aponta pa
 
 | RF | Requisito | Implementação | Testes |
 |---|---|---|---|
-| RF11 | Preparo historico substitui simulacao de sensores no recorte atual | `simulador/src/simulador/preparacao.py`; `backend/src/banco/importarInmet.js` | `testes/simulador/test_preparacao.py`; `testes/backend/unitarios/reproducao.test.js` |
-| RF12 | Plausibilidade e fontes inoperantes | `oraculo/src/consolidador.js` (`validarLeitura`, faixas físicas), usada também pelo backend; coordenada conferida contra a fonte | `testes/oraculo/unitarios/consolidador.test.js`; `testes/backend/unitarios/leituras.test.js` |
-| RF13 | Reputação com limiar mínimo | `oraculo/src/reputacao.js`; `backend/src/dominio/leituras.js` (`atualizarEscore`) | `testes/oraculo/unitarios/reputacao.test.js`; `testes/backend/unitarios/leituras.test.js` |
+| RF11 | Cadastro de sensores retirado do escopo atual | Fonte fixa INMET A770 no pacote e em `inmet_dias` | Rotas antigas respondem 404: `testes/backend/unitarios/oraculo.test.js` |
+| RF12 | Qualidade dos dados historicos | ETL e verificacao da serie, sem preencher lacunas como zero | `testes/simulador/test_preparacao.py`; `testes/oraculo/unitarios/historicoServico.test.js` |
+| RF13 | Reputacao de sensores retirada | Nao se aplica a fonte historica unica | Sem calculo ou cadastro de reputacao |
 
 ### Oráculo e ponte
 
 | RF | Requisito | Implementação | Testes e evidência |
 |---|---|---|---|
 | RF18 | Lista de endereços autorizados | `contratos/contracts/OracleRegistry.sol`; `app/src/paginas/seguradora/Oraculos.jsx` | `testes/contratos/unitarios/OracleRegistry.test.js`, `Seguranca.test.js` |
-| RF19 | Índices consolidados, assinados e publicados em uma transação | `oraculo/src/consolidador.js`, `publicador.js` (`publicarIndices`) | `testes/oraculo/unitarios/consolidador.test.js`; `testes/oraculo/integracao/oraculo.test.js` · Sepolia 07/10 |
+| RF19 | Publicacao do indice historico pelo oraculo autorizado | `oraculo/src/historico.js`, `serieHistorica.js`, `publicador.js` | `testes/oraculo/unitarios/historicoServico.test.js`; `testes/oraculo/integracao/oraculo.test.js` |
 | RF20 | Publicação duplicada recusada | `ApolicePolicy.sol` (`PeriodoJaPublicado`) | `testes/contratos/unitarios/ApolicePolicy.test.js` |
 | RF21 | Fila de retomada preservando o período | `oraculo/src/fila.js` (persistida em disco) | `testes/oraculo/unitarios/fila.test.js`; `testes/oraculo/integracao/oraculo.test.js` (falhas injetadas) |
 | RF22 | Transação, gas e instante de confirmação registrados | `oraculo/src/registro.js`; `backend/src/rotas/oraculo.js` (relato ao backend) | `testes/oraculo/unitarios/registro.test.js`; `testes/backend/unitarios/oraculo.test.js` |
@@ -107,8 +107,8 @@ Convenções: caminhos relativos à raiz do repositório; `DECISOES n` aponta pa
 
 | RNF | Requisito | Como é atendido | Evidência |
 |---|---|---|---|
-| RNF16 | Duas fontes climáticas independentes | `oraculo/src/consolidador.js` (`minimoDeFontes = 2`); aviso no cadastro do talhão | `testes/oraculo/unitarios/consolidador.test.js` · A770 e A747 na demonstração |
-| RNF17 | Lotes assinados permanecem na API legada; o ETL nao fabrica assinaturas de estacao | `backend/src/rotas/leituras.js`; canal configuravel na API | `testes/backend/unitarios/leituras.test.js`; isso nao valida assinatura dos CSVs INMET |
+| RNF16 | Demonstracao com fonte unica declarada | INMET A770; nao utiliza duas fontes independentes | `testes/oraculo/unitarios/historicoServico.test.js` |
+| RNF17 | Autenticacao da API e integridade do pacote | Chave de servico e SHA-256; nao sao assinatura do INMET | `testes/backend/unitarios/oraculo.test.js`; `testes/oraculo/unitarios/historicoServico.test.js` |
 | RNF18 | Decisão reconstituível pela cadeia | Índices e transações nos eventos; linha do tempo lida da rede | `testes/app/telas/apolice.test.jsx` · links do Etherscan nos resultados da Sepolia |
 | RNF20 | Indisponibilidade não perde dados | Leituras no banco; fila do oráculo em disco, com o período original | `testes/oraculo/integracao/oraculo.test.js`; `testes/oraculo/unitarios/fila.test.js` |
 | RNF21 | Indenização em até 72 h do acionamento | Pagamento na mesma transação da publicação | ~27 s na Sepolia; 0,89 h do fim do dia acionador · Medições |
@@ -123,7 +123,7 @@ Convenções: caminhos relativos à raiz do repositório; `DECISOES n` aponta pa
 | HU02 Endereços autorizados | 1 não autorizado revertido com motivo · 2 período duplicado revertido · 3 só a seguradora autoriza · 4 evento a cada publicação · 5 os três caminhos | `testes/contratos/unitarios/OracleRegistry.test.js`, `ApolicePolicy.test.js` |
 | HU03 Liquidação atômica | 1 verificar, atualizar, transferir · 2 guarda de reentrância · 3 duplicado rejeitado · 4 falha não altera a situação · 5 ataque de reentrância falha | `testes/contratos/unitarios/Seguranca.test.js` |
 | HU04 Preparo historico | MQTT e cenarios simulados retirados; comando unico de ETL, datas originais e qualidade diaria | `testes/simulador/test_cli.py`, `test_preparacao.py`, `test_inmet.py` |
-| HU05 Consolidação | 1 fora de faixa descartada e registrada · 2 fonte inoperante · 3 reputação a cada ciclo · 4 fontes usadas registradas | `testes/oraculo/unitarios/consolidador.test.js`, `reputacao.test.js`; `testes/backend/unitarios/leituras.test.js` |
+| HU05 Consolidacao | Substituida por ETL, conferencia da serie e contagem desde a cobertura | `testes/simulador/test_preparacao.py`; `testes/oraculo/unitarios/historicoServico.test.js` |
 | HU06 Publicação assinada | 1 dois índices em uma transação · 2 chave por variável de ambiente · 3 transação, gas e instante gravados · 4 evento capturado | `testes/oraculo/unitarios/registro.test.js`; `testes/oraculo/integracao/oraculo.test.js`; `testes/backend/integracao/indexador.test.js` |
 | HU07 Vínculo da carteira | 1 mensagem única · 2 assinatura verificada no servidor · 3 chave nunca trafega · 4 endereço de outro produtor recusado | `testes/backend/unitarios/carteira.test.js`; `testes/app/telas/produtor.test.jsx` |
 | HU09 Talhões e produtos | 1 desenhado no mapa ou importado em GeoJSON · 2 área calculada · 3 autointerseção recusada · 4 produto completo | `testes/backend/unitarios/cadastro.test.js`; `testes/app/telas/seguradora.test.jsx` |

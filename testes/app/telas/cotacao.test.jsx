@@ -42,45 +42,8 @@ const PRODUTO = {
   vigenciaDias: 180,
 };
 
-const HISTORICO = {
-  aplicavel: true,
-  estacoes: ["A747", "A770"],
-  regra: "1 mm de chuva por dia; dia sem medicao interrompe a contagem",
-  observacao: "Anos com menos de 90% dos dias medidos ficam fora da conta.",
-  anos: [
-    {
-      ano: 2023,
-      maiorIndice: 36,
-      coberturaDosDados: 1,
-      avaliado: true,
-      acionaria: true,
-      percentualBps: 10000,
-    },
-    {
-      ano: 2024,
-      maiorIndice: 18,
-      coberturaDosDados: 1,
-      avaliado: true,
-      acionaria: false,
-      percentualBps: 0,
-    },
-    {
-      ano: 2025,
-      maiorIndice: 15,
-      coberturaDosDados: 0.4,
-      avaliado: false,
-      acionaria: false,
-      percentualBps: 0,
-    },
-  ],
-  anosAvaliados: 2,
-  acionamentos: 1,
-  frequencia: 0.5,
-  pagamentoMedioBps: 5000,
-};
-
 describe("cotacao e contratacao (RF06, RNF04, HU10)", () => {
-  test("mostra limite, premio, exemplos do que aciona e o historico da localidade, e envia a proposta", async () => {
+  test("mostra cotacao historica e envia periodo e gatilho na proposta", async () => {
     const { chamadas } = await abrir("/produtor/cotacao", {
       perfil: "produtor",
       rotas: {
@@ -92,7 +55,6 @@ describe("cotacao e contratacao (RF06, RNF04, HU10)", () => {
             valorIndenizacaoWei: "1080000000000000000",
             premioWei: "41040000000000000",
             termos: PRODUTO,
-            historico: HISTORICO,
           },
         },
         "POST /propostas": {
@@ -106,19 +68,18 @@ describe("cotacao e contratacao (RF06, RNF04, HU10)", () => {
       target: { value: "pr1" },
     });
 
-    expect(await achar(/teria acionado em/)).toBeTruthy();
-    expect(await achar(/sem dados suficientes/)).toBeTruthy();
-    expect(screen.getAllByText("Sim").length).toBeGreaterThan(0);
+    expect(await achar(/Contratacao hipotetica/)).toBeTruthy();
+    expect(await achar(/Dados historicos do INMET/)).toBeTruthy();
 
     fireEvent.change(screen.getByLabelText("Inicio da cobertura"), {
-      target: { value: "2026-11-01" },
+      target: { value: "2024-02-08" },
     });
     await waitFor(() =>
       expect(
         chamadas.some(
           (c) =>
             c.caminho === "/cotacoes" &&
-            c.corpo.inicioDaVigencia === "2026-11-01",
+            c.corpo.inicioDaVigencia === "2024-02-08",
         ),
       ).toBe(true),
     );
@@ -133,7 +94,7 @@ describe("cotacao e contratacao (RF06, RNF04, HU10)", () => {
         chamadas.some(
           (c) =>
             c.caminho === "/propostas" &&
-            c.corpo.inicioDaVigencia === "2026-11-01",
+            c.corpo.inicioDaVigencia === "2024-02-08",
         ),
       ).toBe(true),
     );
@@ -154,7 +115,6 @@ describe("cotacao e contratacao (RF06, RNF04, HU10)", () => {
             valorIndenizacaoWei: "1",
             premioWei: "1",
             termos: PRODUTO,
-            historico: HISTORICO,
           },
         },
       },
@@ -201,9 +161,6 @@ test("modo historico envia datas e gatilho escolhidos, sem transacao na consulta
       },
     },
   });
-  fireEvent.click(
-    await screen.findByRole("checkbox", { name: /Usar dados historicos/ }),
-  );
   fireEvent.change(screen.getByLabelText("Gatilho experimental (dias secos)"), {
     target: { value: "10" },
   });

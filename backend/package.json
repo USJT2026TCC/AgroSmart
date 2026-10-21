@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "API do AgroSmart: autenticacao, cadastro georreferenciado, ingestao assinada de leituras, indexacao dos eventos da cadeia e integracao com o oraculo.",
+  "description": "API do AgroSmart: autenticacao, cadastro georreferenciado, serie historica INMET, indexacao dos eventos da cadeia e integracao com o oraculo.",
   "main": "src/index.js",
   "scripts": {
     "iniciar": "node src/index.js",

@@ -3,8 +3,6 @@
 const path = require("node:path");
 
 const { config, exigirChave, lerImplantacao } = require("./config");
-const { consolidarIndiceClimatico } = require("./consolidador");
-const { RegistroReputacao } = require("./reputacao");
 const { FilaDePublicacoes, ESTADOS, descreverErro } = require("./fila");
 const { RegistroDePublicacoes } = require("./registro");
 const { Publicador } = require("./publicador");
@@ -14,7 +12,7 @@ const { ClienteBackend } = require("./clienteBackend");
  * Servico de oraculo do AgroSmart.
  *
  * Amarra as quatro pecas que fazem a travessia acontecer:
- *   consolidador -> fila -> publicador -> registro
+ *   serie historica verificada -> fila -> publicador -> registro
  *
  * A ordem importa. A consolidacao grava na fila antes de qualquer tentativa de
  * publicacao, de modo que uma queda da rede ou do proprio processo nao perca o
@@ -22,23 +20,20 @@ const { ClienteBackend } = require("./clienteBackend");
  * o custo e a latencia vao para o registro de auditoria (RF22).
  */
 class ServicoOraculo {
-  constructor({ publicador, fila, registro, reputacao, backend = null, opcoes = {} }) {
+  constructor({ publicador, fila, registro, backend = null, opcoes = {} }) {
     this.publicador = publicador;
 
     // O servico operacional consulta dados no backend e relata suas publicacoes.
     this.backend = backend;
     this.fila = fila;
     this.registro = registro;
-    this.reputacao = reputacao;
 
-    this.limiarChuvaMm = opcoes.limiarChuvaMm ?? config.limiarChuvaMm;
-    this.limiarReputacao = opcoes.limiarReputacao ?? config.limiarReputacao;
     this.esperaBaseMs = opcoes.esperaBaseMs ?? config.esperaBaseMs;
     this.maxTentativas = opcoes.maxTentativas ?? config.maxTentativas;
     if (!Number.isInteger(this.esperaBaseMs) || this.esperaBaseMs < 0 || this.esperaBaseMs > 60000)
       throw new Error("ESPERA_BASE_MS deve ser inteiro entre 0 e 60000.");
     this.dirPacote = opcoes.dirPacote;
-    this.somenteHistorico = opcoes.somenteHistorico ?? false;
+    this.somenteHistorico = true;
   }
 
   async prepararHistorico(apolice) {
@@ -110,9 +105,6 @@ class ServicoOraculo {
         maxTentativas: opcoes.maxTentativas ?? config.maxTentativas,
       }),
       registro: new RegistroDePublicacoes(path.join(dirDados, "publicacoes.jsonl")),
-      reputacao: new RegistroReputacao({
-        arquivo: path.join(dirDados, "reputacao.json"),
-      }),
       backend:
         opcoes.backend ??
         (config.apiUrl && config.chaveDeServico
@@ -124,59 +116,6 @@ class ServicoOraculo {
           : null),
       opcoes,
     });
-  }
-
-  /**
-   * Consolida o periodo e coloca a publicacao na fila.
-   *
-   * Nao toca na rede. Separar preparo de envio e o que permite consolidar mesmo
-   * com a rede indisponivel e publicar depois, preservando o periodo original.
-   *
-   * @param {object} entrada
-   * @param {string} entrada.apolice Endereco do contrato da apolice.
-   * @param {number} entrada.periodo Periodo de referencia, em AAAAMMDD.
-   * @param {object[]} entrada.leituras Leituras de campo do periodo e dos dias anteriores.
-   *
-   * @returns {{consolidacao: object, entrada: object|null, novo: boolean, alertas: string[]}}
-   */
-  prepararPublicacao({ apolice, periodo, leituras }) {
-    const consolidacao = consolidarIndiceClimatico(leituras, {
-      periodo,
-      limiarChuvaMm: this.limiarChuvaMm,
-      reputacao: this.reputacao,
-      limiarReputacao: this.limiarReputacao,
-    });
-
-    this.reputacao.salvar();
-
-    // Caminho legado de ingestao assinada: exige dois canais.
-    // A demonstracao historica usa prepararHistorico, uma estacao e datas originais.
-    // Nao ha substituicao por fotografia nem liberacao manual neste protocolo.
-    if (consolidacao.fontesUsadas.length < 2) {
-      throw new Error("RNF16: publicacao bloqueada; exigidas duas fontes climaticas validas.");
-    }
-    const alertas = [...consolidacao.alertas];
-
-    const payload = {
-      indiceClimatico: consolidacao.indiceClimatico,
-      // Guardado junto com a publicacao para tornar a decisao reconstituivel (RNF18).
-      procedencia: {
-        fontesUsadas: consolidacao.fontesUsadas,
-        fontesDescartadas: consolidacao.fontesDescartadas,
-        leiturasValidas: consolidacao.leiturasValidas,
-        leiturasDescartadas: consolidacao.leiturasDescartadas,
-        interrompidoPor: consolidacao.interrompidoPor,
-        limiarChuvaMm: this.limiarChuvaMm,
-      },
-    };
-
-    const { entrada, novo } = this.fila.enfileirar({
-      apolice,
-      periodo,
-      payload,
-    });
-
-    return { consolidacao, entrada, novo, alertas };
   }
 
   /**
@@ -334,14 +273,6 @@ class ServicoOraculo {
   /** Libera a conexao com o no, para que o processo possa terminar. */
   encerrar() {
     this.publicador.encerrar();
-  }
-
-  /** Consolida, enfileira e publica em um unico passo. */
-  async processarPeriodo(entrada, aoProgredir) {
-    const preparo = this.prepararPublicacao(entrada);
-    const resultado = await this.drenarFila(aoProgredir);
-
-    return { ...preparo, ...resultado };
   }
 }
 

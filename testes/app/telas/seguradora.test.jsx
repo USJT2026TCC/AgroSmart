@@ -249,61 +249,6 @@ describe("oraculos autorizados (RF18)", () => {
   });
 });
 
-describe("fontes de dados (RF11, RF13)", () => {
-  test("registra uma fonte e desativa outra", async () => {
-    const { chamadas } = await abrir("/seguradora/fontes", {
-      perfil: "seguradora",
-      rotas: {
-        "GET /fontes": {
-          fontes: [
-            {
-              id: "estacao-inmet-a770",
-              tipo: "estacao",
-              endereco: "0xBcd4042DE499D14e55001CcbB24a551F3b954096",
-              talhao: "talhao-01",
-              escore: "0.42",
-              observacoes: 3312,
-              ultima_leitura_em: "2026-10-07T00:00:00Z",
-              ativa: true,
-            },
-          ],
-        },
-        "GET /talhoes": { talhoes: [{ id: "t1", identificador: "talhao-01" }] },
-        "POST /fontes": { fonte: { id: "nova" } },
-        "PATCH /fontes/:id": { ok: true },
-      },
-    });
-
-    expect(await achar("fora do indice")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Desativar" }));
-    await waitFor(() =>
-      expect(
-        chamadas.some((c) => c.metodo === "PATCH" && c.corpo.ativa === false),
-      ).toBe(true),
-    );
-
-    fireEvent.change(screen.getByLabelText("Identificador"), {
-      target: { value: "sensor-02" },
-    });
-
-    // Texto que nao e endereco Ethereum: recusado na tela, sem ir ao servidor.
-    fireEvent.change(screen.getByLabelText("Chave publica (endereco)"), {
-      target: { value: "Q2WD89CC5B2KTBXVCR25DU5195XVM4KZ2T" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Registrar" }));
-    expect(await achar(/precisa ser um endereco Ethereum/)).toBeTruthy();
-    expect(
-      chamadas.some((c) => c.metodo === "POST" && c.caminho === "/fontes"),
-    ).toBe(false);
-
-    fireEvent.change(screen.getByLabelText("Chave publica (endereco)"), {
-      target: { value: "0x90F79bf6EB2c4f870365E785982E1f101E93b906" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Registrar" }));
-    expect(await achar(/Fonte sensor-02 registrada/)).toBeTruthy();
-  });
-});
-
 const RELATORIO = {
   filtros: {},
   opcoesDeFiltro: { culturas: ["milho", "soja"], regioes: ["Sao Simao/SP"] },

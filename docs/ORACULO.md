@@ -20,16 +20,14 @@ A auditoria local é idempotente por apólice, período e hash da transação. U
 interrupção anterior ao retorno do hash pelo RPC exige conferir a cadeia antes
 de reabrir uma falha. Execute somente um serviço por diretório de estado.
 
-`consolidador.js`, `reputacao.js` e os métodos correspondentes permanecem porque
-a API legada e testes existentes ainda dependem deles. O comando `servico` não
-usa esse percurso nem publica suas entradas. Sua remoção total depende da
-revisão do backend, não de apagar arquivos isoladamente.
+`consolidador.js`, `reputacao.js`, os métodos de sensores e suas rotas na API foram
+removidos. A fila continua recusando entradas antigas de sensores para impedir
+que estado persistido do protocolo anterior seja publicado pelo serviço histórico.
 
 O bloco e os recibos continuam com suas datas atuais. O contrato histórico
 interpreta a cobertura hipotética e continua responsável por autorização,
 garantia e pagamento. A implantação pública dessa fábrica está pendente;
 esta revisão não modifica contratos implantados nem comprova pagamento na Sepolia.
 
-Na interface atual, o modo historico ainda precisa ser selecionado explicitamente.
-A revisao da interface/backend deve avaliar a retirada desse caminho convencional;
-o servico historico ignora apolices convencionais e bloqueia entradas de sensores.
+A interface usa contratacao historica. O backend recusa novas propostas convencionais;
+o servico ignora apolices convencionais antigas e bloqueia entradas de sensores.

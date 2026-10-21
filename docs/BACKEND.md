@@ -37,13 +37,19 @@ As rotas do oraculo exigem chave de servico, diferente da chave privada da block
 O indexador confirma eventos em cadeia; um relato do oraculo sozinho nao e confirmacao.
 O banco nao transfere ETH e o resultado de uma consulta nao significa pagamento.
 
-O percurso legado `POST /leituras` recebe lotes HTTP assinados sobre os bytes exatos
-do corpo: mensagem EIP-191 `AgroSmart:leituras:v1` seguida de `sha256:<hash>`.
-Ele nao e necessario ao modo historico importado. A importacao nao fabrica
-assinaturas de sensores nem afirma que o INMET assinou digitalmente os arquivos.
+Rotas de ingestao de sensores e cadastro de fontes foram removidas.
+A importacao nao fabrica assinaturas de sensores nem afirma que o INMET assinou
+digitalmente os arquivos. A autenticacao da API usa a chave de servico.
+Novas cotacoes e propostas exigem reproducao historica explicita; propostas
+convencionais antigas permanecem consultaveis, mas seu preparo e bloqueado.
 
-Migracoes antigas sao preservadas para atualizar bancos existentes. Dados locais,
-originais baixados e segredos ficam fora do Git. Todos os testes estao em `testes/`.
+Relatos sao confirmados somente quando apolice, periodo, hash da transacao e indice
+coincidem com o evento indexado. Latencia de recibo recuperado nao e inferida.
+O intervalo entre data meteorologica passada e transacao atual nao e apresentado
+como tempo de liquidacao: apolices historicas vinculadas sao excluidas dessa media.
+
+Migracoes antigas sao preservadas para atualizar bancos existentes. Caches de download, dados locais e segredos ficam fora do Git. O pacote publico
+INMET versionado inclui os CSVs originais selecionados e os diarios. Todos os testes estao em `testes/`.
 
 
 ## Docker e transicao

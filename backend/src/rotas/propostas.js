@@ -4,13 +4,8 @@ import { termosHistoricos } from "../dominio/reproducao.js";
 import { conflito, naoEncontrado, pedidoInvalido } from "../erros.js";
 import { apoliceDoRecibo } from "../cadeia/leitor.js";
 import { registrarApoliceEmitida } from "../dominio/apolices.js";
-import { historicoDaCondicao } from "../dominio/historicoClimatico.js";
 import { calcularCotacao } from "../dominio/cotacao.js";
-import {
-  descreverTermos,
-  montarStructDeTermos,
-  resumirTermos,
-} from "../dominio/termos.js";
+import { descreverTermos, montarStructDeTermos, resumirTermos } from "../dominio/termos.js";
 import { auditar, exigirPerfil, exigirSessao } from "../seguranca/sessoes.js";
 import { decimalPositivo, hashDeTransacao, uuid } from "../validacao.js";
 
@@ -23,8 +18,7 @@ import { decimalPositivo, hashDeTransacao, uuid } from "../validacao.js";
  *     area medida pelo PostGIS — o valor que o navegador mostrou serve de
  *     previa, mas o que vale e o do servidor;
  *
- *  2. a SEGURADORA prepara a emissao. O backend fixa a vigencia pelo relogio da
- *     cadeia, gera o texto canonico dos termos e o resumo, e devolve a struct
+ *  2. a SEGURADORA prepara a emissao. O backend preserva a cobertura historica em UTC, gera o texto canonico dos termos e o resumo, e devolve a struct
  *     pronta para `emitirApolice`;
  *
  *  3. a seguradora assina a emissao na carteira dela e informa o identificador
@@ -100,13 +94,11 @@ async function carregarBase(banco, { talhaoId, produtoId, produtorId }) {
 
   // Talhao de outro produtor responde como inexistente, e nao como proibido:
   // "proibido" confirmaria que o identificador existe.
-  if (!talhao || talhao.produtor_id !== produtorId)
-    throw naoEncontrado("Talhao");
+  if (!talhao || talhao.produtor_id !== produtorId) throw naoEncontrado("Talhao");
 
-  const { rows: produtos } = await banco.query(
-    "SELECT * FROM produtos WHERE id = $1 AND ativo",
-    [produtoId],
-  );
+  const { rows: produtos } = await banco.query("SELECT * FROM produtos WHERE id = $1 AND ativo", [
+    produtoId,
+  ]);
 
   const produto = produtos[0];
   if (!produto) throw naoEncontrado("Produto");
@@ -125,9 +117,7 @@ function areaSegurada(valor, talhao) {
   const area = decimalPositivo(valor, "areaHa", { casas: 4 });
 
   if (Number(area) > Number(talhao.area_ha)) {
-    throw pedidoInvalido(
-      `A area segurada excede os ${talhao.area_ha} ha medidos do talhao.`,
-    );
+    throw pedidoInvalido(`A area segurada excede os ${talhao.area_ha} ha medidos do talhao.`);
   }
 
   return area;
@@ -144,198 +134,102 @@ function termosDoProduto(produto) {
   };
 }
 
-/** Raio, em metros, das estacoes que contam como "historico da localidade". */
-const RAIO_DO_HISTORICO_M = 100_000;
-
-/** Prazo maximo entre a proposta e o inicio da cobertura. */
-const MAXIMO_DE_DIAS_ATE_O_INICIO = 120;
-
-/** Data como AAAA-MM-DD, venha do banco (Date) ou da requisicao (texto). */
-function isoDaData(valor) {
-  return valor instanceof Date
-    ? valor.toISOString().slice(0, 10)
-    : String(valor).slice(0, 10);
-}
-
-/**
- * Data de inicio pedida pelo produtor (opcional). Hoje ou ate 120 dias a frente:
- * mais longe que isso, as condicoes do produto podem mudar antes de a cobertura
- * comecar.
- */
-function dataDeInicio(valor, { limitarAoPrazo = true } = {}) {
-  if (valor === undefined || valor === null || valor === "") return null;
-
-  const texto = String(valor);
-  if (
-    !/^\d{4}-\d{2}-\d{2}$/.test(texto) ||
-    Number.isNaN(Date.parse(`${texto}T00:00:00Z`))
-  ) {
-    throw pedidoInvalido("A data de inicio deve estar no formato AAAA-MM-DD.");
-  }
-
-  if (!limitarAoPrazo) return texto;
-
-  const dias =
-    (Date.parse(`${texto}T00:00:00Z`) -
-      Date.parse(`${new Date().toISOString().slice(0, 10)}T00:00:00Z`)) /
-    86_400_000;
-  // -1: a data local do produtor pode estar um dia atras do UTC (Brasil e UTC-3).
-  if (dias < -1 || dias > MAXIMO_DE_DIAS_ATE_O_INICIO) {
-    throw pedidoInvalido(
-      `A cobertura deve comecar entre hoje e daqui a ${MAXIMO_DE_DIAS_ATE_O_INICIO} dias.`,
-    );
-  }
-
-  return texto;
-}
-
 export function rotasDePropostas() {
   const r = Router();
 
   /**
    * Simulacao de cotacao (RF06). Nao grava nada.
    */
-  r.post(
-    "/cotacoes",
-    exigirSessao,
-    exigirPerfil("produtor"),
-    async (req, res) => {
-      const { banco } = req.app.locals;
-      const { talhao, produto } = await carregarBase(banco, {
-        talhaoId: uuid(req.body?.talhaoId, "talhaoId"),
-        produtoId: uuid(req.body?.produtoId, "produtoId"),
-        produtorId: req.usuario.id,
-      });
+  r.post("/cotacoes", exigirSessao, exigirPerfil("produtor"), async (req, res) => {
+    const { banco } = req.app.locals;
+    const { talhao, produto } = await carregarBase(banco, {
+      talhaoId: uuid(req.body?.talhaoId, "talhaoId"),
+      produtoId: uuid(req.body?.produtoId, "produtoId"),
+      produtorId: req.usuario.id,
+    });
 
-      const area = areaSegurada(req.body?.areaHa ?? talhao.area_ha, talhao);
-      const { valorIndenizacaoWei, premioWei } = calcularCotacao({
-        areaHa: area,
-        valorPorHectareWei: produto.valor_por_hectare_wei,
-        taxaPremioBps: produto.taxa_premio_bps,
-      });
+    const area = areaSegurada(req.body?.areaHa ?? talhao.area_ha, talhao);
+    const { valorIndenizacaoWei, premioWei } = calcularCotacao({
+      areaHa: area,
+      valorPorHectareWei: produto.valor_por_hectare_wei,
+      taxaPremioBps: produto.taxa_premio_bps,
+    });
 
-      const termos = await termosHistoricos(
-        banco,
-        req.body,
-        termosDoProduto(produto),
-      );
-      // Na simulacao, qualquer data: o produtor pode comparar epocas do ano. So a
-      // proposta limita o inicio a 120 dias.
-      const inicio =
-        dataDeInicio(req.body?.inicioDaVigencia, { limitarAoPrazo: false }) ??
-        new Date().toISOString().slice(0, 10);
-
-      // Historico climatico da localidade (RF06): estacoes do INMET a ate 100 km
-      // do talhao, medido pelo PostGIS sobre o elipsoide.
-      const { rows: linhas } = termos.modoHistorico
-        ? { rows: [] }
-        : await banco.query(
-            `SELECT h.estacao, h.data::text AS data, h.chuva_mm, h.horas_validas
-         FROM historico_chuva h
-         JOIN estacoes_inmet e ON e.codigo = h.estacao
-         JOIN talhoes t ON t.id = $1
-        WHERE ST_DWithin(e.posicao::geography, ST_Centroid(t.geometria)::geography, $2)`,
-            [talhao.id, RAIO_DO_HISTORICO_M],
-          );
-
-      const historico = historicoDaCondicao({
-        linhas,
-        inicio,
-        vigenciaDias: Number(termos.vigenciaDias),
+    const termos = await termosHistoricos(banco, req.body, termosDoProduto(produto));
+    res.json({
+      cotacao: {
+        areaSeguradaHa: area,
+        areaMedidaDoTalhaoHa: talhao.area_ha,
+        valorIndenizacaoWei: valorIndenizacaoWei.toString(),
+        premioWei: premioWei.toString(),
         termos,
-      });
-
-      res.json({
-        cotacao: {
-          areaSeguradaHa: area,
-          areaMedidaDoTalhaoHa: talhao.area_ha,
-          valorIndenizacaoWei: valorIndenizacaoWei.toString(),
-          premioWei: premioWei.toString(),
-          termos,
-          historico,
-        },
-      });
-    },
-  );
+      },
+    });
+  });
 
   /**
    * Proposta (UC05, primeira metade). Exige carteira vinculada: e para ela que a
    * indenizacao seria transferida, e ela precisa ter sido comprovada por
    * assinatura antes (RF02).
    */
-  r.post(
-    "/propostas",
-    exigirSessao,
-    exigirPerfil("produtor"),
-    async (req, res) => {
-      const { banco } = req.app.locals;
+  r.post("/propostas", exigirSessao, exigirPerfil("produtor"), async (req, res) => {
+    const { banco } = req.app.locals;
 
-      if (!req.usuario.carteira) {
-        throw pedidoInvalido(
-          "Vincule a carteira antes de enviar a proposta: e para ela que a indenizacao seria transferida.",
-        );
-      }
-
-      const talhaoId = uuid(req.body?.talhaoId, "talhaoId");
-      const produtoId = uuid(req.body?.produtoId, "produtoId");
-      const { talhao, produto } = await carregarBase(banco, {
-        talhaoId,
-        produtoId,
-        produtorId: req.usuario.id,
-      });
-
-      const area = areaSegurada(req.body?.areaHa, talhao);
-      const { valorIndenizacaoWei, premioWei } = calcularCotacao({
-        areaHa: area,
-        valorPorHectareWei: produto.valor_por_hectare_wei,
-        taxaPremioBps: produto.taxa_premio_bps,
-      });
-      const termosPropostos = await termosHistoricos(
-        banco,
-        req.body,
-        termosDoProduto(produto),
+    if (!req.usuario.carteira) {
+      throw pedidoInvalido(
+        "Vincule a carteira antes de enviar a proposta: e para ela que a indenizacao seria transferida.",
       );
-      const inicioDesejado = dataDeInicio(req.body?.inicioDaVigencia, {
-        limitarAoPrazo: !termosPropostos.modoHistorico,
-      });
+    }
 
-      const { rows } = await banco.query(
-        `INSERT INTO propostas (produtor_id, talhao_id, produto_id, area_segurada_ha, carteira_produtor,
+    const talhaoId = uuid(req.body?.talhaoId, "talhaoId");
+    const produtoId = uuid(req.body?.produtoId, "produtoId");
+    const { talhao, produto } = await carregarBase(banco, {
+      talhaoId,
+      produtoId,
+      produtorId: req.usuario.id,
+    });
+
+    const area = areaSegurada(req.body?.areaHa, talhao);
+    const { valorIndenizacaoWei, premioWei } = calcularCotacao({
+      areaHa: area,
+      valorPorHectareWei: produto.valor_por_hectare_wei,
+      taxaPremioBps: produto.taxa_premio_bps,
+    });
+    const termosPropostos = await termosHistoricos(banco, req.body, termosDoProduto(produto));
+    const inicioDesejado = termosPropostos.inicioHistorico;
+
+    const { rows } = await banco.query(
+      `INSERT INTO propostas (produtor_id, talhao_id, produto_id, area_segurada_ha, carteira_produtor,
                               valor_indenizacao_wei, premio_wei, termos, inicio_desejado)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING id`,
-        [
-          req.usuario.id,
-          talhaoId,
-          produtoId,
-          area,
-          req.usuario.carteira,
-          valorIndenizacaoWei.toString(),
-          premioWei.toString(),
-          JSON.stringify(termosPropostos),
-          inicioDesejado,
-        ],
-      );
+      [
+        req.usuario.id,
+        talhaoId,
+        produtoId,
+        area,
+        req.usuario.carteira,
+        valorIndenizacaoWei.toString(),
+        premioWei.toString(),
+        JSON.stringify(termosPropostos),
+        inicioDesejado,
+      ],
+    );
 
-      await auditar(banco, req, "proposta_enviada", { recurso: rows[0].id });
+    await auditar(banco, req, "proposta_enviada", { recurso: rows[0].id });
 
-      const { rows: completas } = await banco.query(
-        `${SQL_PROPOSTA} WHERE p.id = $1`,
-        [rows[0].id],
-      );
-      res.status(201).json({ proposta: propostaPublica(completas[0]) });
-    },
-  );
+    const { rows: completas } = await banco.query(`${SQL_PROPOSTA} WHERE p.id = $1`, [rows[0].id]);
+    res.status(201).json({ proposta: propostaPublica(completas[0]) });
+  });
 
   r.get("/propostas", exigirSessao, async (req, res) => {
     const { banco } = req.app.locals;
 
     const { rows } =
       req.usuario.perfil === "produtor"
-        ? await banco.query(
-            `${SQL_PROPOSTA} WHERE p.produtor_id = $1 ORDER BY p.criada_em DESC`,
-            [req.usuario.id],
-          )
+        ? await banco.query(`${SQL_PROPOSTA} WHERE p.produtor_id = $1 ORDER BY p.criada_em DESC`, [
+            req.usuario.id,
+          ])
         : req.usuario.perfil === "seguradora"
           ? await banco.query(`${SQL_PROPOSTA} ORDER BY p.criada_em DESC`)
           : { rows: [] };
@@ -347,238 +241,184 @@ export function rotasDePropostas() {
    * Preparacao da emissao (RF08).
    *
    * Pode ser chamada de novo enquanto a proposta nao foi emitida — a seguradora
-   * pode ter desistido de assinar e voltado no dia seguinte. Cada chamada fixa
-   * uma vigencia nova e, portanto, um resumo novo; so o ultimo vale.
+   * pode ter desistido de assinar e voltado no dia seguinte. As datas historicas e o gatilho sao preservados; o preparo gera o compromisso dos termos.
    */
-  r.post(
-    "/propostas/:id/preparar",
-    exigirSessao,
-    exigirPerfil("seguradora"),
-    async (req, res) => {
-      const { banco, cadeia } = req.app.locals;
-      const id = uuid(req.params.id, "id");
+  r.post("/propostas/:id/preparar", exigirSessao, exigirPerfil("seguradora"), async (req, res) => {
+    const { banco, cadeia } = req.app.locals;
+    const id = uuid(req.params.id, "id");
 
-      const { rows } = await banco.query(`${SQL_PROPOSTA} WHERE p.id = $1`, [
-        id,
-      ]);
-      const p = rows[0];
+    const { rows } = await banco.query(`${SQL_PROPOSTA} WHERE p.id = $1`, [id]);
+    const p = rows[0];
 
-      if (!p) throw naoEncontrado("Proposta");
-      if (p.situacao === "emitida")
-        throw conflito("Esta proposta ja foi emitida.");
-      if (p.situacao === "recusada")
-        throw conflito("Esta proposta foi recusada.");
+    if (!p) throw naoEncontrado("Proposta");
+    if (p.situacao === "emitida") throw conflito("Esta proposta ja foi emitida.");
+    if (p.situacao === "recusada") throw conflito("Esta proposta foi recusada.");
 
-      if (
-        Number(p.termos.modoPagamento) !== 0 ||
-        Number(p.termos.limiarClimaticoIntegral) !== 0
-      ) {
-        throw conflito(
-          "Proposta legada incompativel. Refaca a cotacao com indenizacao integral.",
-        );
-      }
+    if (Number(p.termos.modoPagamento) !== 0 || Number(p.termos.limiarClimaticoIntegral) !== 0) {
+      throw conflito("Proposta legada incompativel. Refaca a cotacao com indenizacao integral.");
+    }
 
-      if (!cadeia.disponivel()) {
-        throw conflito(
-          "Nenhum contrato implantado na rede configurada. Implante antes de emitir.",
-        );
-      }
+    if (!cadeia.disponivel()) {
+      throw conflito("Nenhum contrato implantado na rede configurada. Implante antes de emitir.");
+    }
 
-      if (p.termos.modoHistorico && cadeia.suportaHistorico?.() === false) {
-        throw conflito(
-          "A fabrica implantada ainda nao suporta reproducao historica. Atualize a implantacao antes de emitir.",
-        );
-      }
-      // Modo historico preserva dias UTC originais e nao usa o relogio atual.
-      // No caminho convencional, a vigencia comeca na data pedida, a meia-noite de Brasilia
-      // (03:00 UTC), ou agora, se a data ja passou ou nao foi pedida. So com o
-      // inicio no futuro existe janela para o cancelamento do RF10.
-      const agora = await cadeia.instanteAtual();
-      const pedido = p.inicio_desejado
-        ? Math.floor(
-            Date.parse(`${isoDaData(p.inicio_desejado)}T03:00:00Z`) / 1000,
-          )
-        : 0;
-      const inicio = p.termos.modoHistorico
-        ? Math.floor(Date.parse(`${p.termos.inicioHistorico}T00:00:00Z`) / 1000)
-        : Math.max(agora, pedido);
-      const fim = p.termos.modoHistorico
-        ? Math.floor(Date.parse(`${p.termos.fimHistorico}T23:59:59Z`) / 1000)
-        : inicio + Number(p.termos.vigenciaDias) * 86400;
+    if (p.termos.modoHistorico && cadeia.suportaHistorico?.() !== true) {
+      throw conflito(
+        "A fabrica implantada ainda nao suporta reproducao historica. Atualize a implantacao antes de emitir.",
+      );
+    }
+    if (!p.termos.modoHistorico)
+      throw conflito("Proposta convencional legada: refaca a cotacao historica.");
+    const inicio = Math.floor(Date.parse(`${p.termos.inicioHistorico}T00:00:00Z`) / 1000);
+    const fim = Math.floor(Date.parse(`${p.termos.fimHistorico}T23:59:59Z`) / 1000);
 
-      const dados = {
-        ...p.termos,
-        propostaId: p.id,
-        carteiraProdutor: p.carteira_produtor,
-        talhao: p.talhao_identificador,
-        cultura: p.talhao_cultura,
-        areaHa: p.area_segurada_ha,
-        modoPagamento: p.termos.modoPagamento,
-        limiarClimatico: p.termos.limiarClimatico,
-        limiarClimaticoIntegral: p.termos.limiarClimaticoIntegral,
-        valorIndenizacaoWei: p.valor_indenizacao_wei,
-        premioWei: p.premio_wei,
-        vigenciaInicio: inicio,
-        vigenciaFim: fim,
-      };
+    const dados = {
+      ...p.termos,
+      propostaId: p.id,
+      carteiraProdutor: p.carteira_produtor,
+      talhao: p.talhao_identificador,
+      cultura: p.talhao_cultura,
+      areaHa: p.area_segurada_ha,
+      modoPagamento: p.termos.modoPagamento,
+      limiarClimatico: p.termos.limiarClimatico,
+      limiarClimaticoIntegral: p.termos.limiarClimaticoIntegral,
+      valorIndenizacaoWei: p.valor_indenizacao_wei,
+      premioWei: p.premio_wei,
+      vigenciaInicio: inicio,
+      vigenciaFim: fim,
+    };
 
-      const descricao = descreverTermos(dados);
-      const hashTermos = resumirTermos(descricao);
+    const descricao = descreverTermos(dados);
+    const hashTermos = resumirTermos(descricao);
 
-      await banco.query(
-        `UPDATE propostas
+    await banco.query(
+      `UPDATE propostas
           SET situacao = 'preparada', descricao_dos_termos = $2, hash_termos = $3,
               vigencia_inicio = to_timestamp($4), vigencia_fim = to_timestamp($5), atualizada_em = now()
         WHERE id = $1`,
-        [id, descricao, hashTermos, inicio, fim],
-      );
+      [id, descricao, hashTermos, inicio, fim],
+    );
 
-      await auditar(banco, req, "emissao_preparada", {
-        recurso: id,
-        detalhes: { hashTermos },
-      });
+    await auditar(banco, req, "emissao_preparada", {
+      recurso: id,
+      detalhes: { hashTermos },
+    });
 
-      res.json({
-        termos: montarStructDeTermos(dados, hashTermos),
-        descricaoDosTermos: descricao,
-        hashTermos,
-        fabrica: cadeia.enderecoDaFabrica(),
-        modoHistorico: !!p.termos.modoHistorico,
-      });
-    },
-  );
+    res.json({
+      termos: montarStructDeTermos(dados, hashTermos),
+      descricaoDosTermos: descricao,
+      hashTermos,
+      fabrica: cadeia.enderecoDaFabrica(),
+      modoHistorico: !!p.termos.modoHistorico,
+    });
+  });
 
   /**
    * Confirmacao da emissao (RF07, RF08). O backend confere tudo na cadeia.
    */
-  r.post(
-    "/propostas/:id/emissao",
-    exigirSessao,
-    exigirPerfil("seguradora"),
-    async (req, res) => {
-      const { banco, cadeia } = req.app.locals;
-      const id = uuid(req.params.id, "id");
-      const txHash = hashDeTransacao(req.body?.txHash);
+  r.post("/propostas/:id/emissao", exigirSessao, exigirPerfil("seguradora"), async (req, res) => {
+    const { banco, cadeia } = req.app.locals;
+    const id = uuid(req.params.id, "id");
+    const txHash = hashDeTransacao(req.body?.txHash);
 
-      const { rows } = await banco.query(
-        "SELECT * FROM propostas WHERE id = $1",
-        [id],
-      );
-      const proposta = rows[0];
+    const { rows } = await banco.query("SELECT * FROM propostas WHERE id = $1", [id]);
+    const proposta = rows[0];
 
-      if (!proposta) throw naoEncontrado("Proposta");
-      if (!proposta.hash_termos)
-        throw conflito("Prepare a emissao antes de confirmar.");
+    if (!proposta) throw naoEncontrado("Proposta");
+    if (!proposta.hash_termos) throw conflito("Prepare a emissao antes de confirmar.");
 
-      const recibo = await cadeia.recibo(txHash);
+    const recibo = await cadeia.recibo(txHash);
 
-      // Transacao ainda nao minerada: o aplicativo pode tentar de novo em alguns
-      // segundos. E o indexador vai encontrar a emissao de qualquer forma.
-      if (!recibo)
-        throw conflito(
-          "Transacao ainda nao confirmada na rede. Tente de novo em instantes.",
-        );
-      if (recibo.status !== 1)
-        throw pedidoInvalido("A transacao foi revertida na rede.");
+    // Transacao ainda nao minerada: o aplicativo pode tentar de novo em alguns
+    // segundos. E o indexador vai encontrar a emissao de qualquer forma.
+    if (!recibo)
+      throw conflito("Transacao ainda nao confirmada na rede. Tente de novo em instantes.");
+    if (recibo.status !== 1) throw pedidoInvalido("A transacao foi revertida na rede.");
 
-      const fabrica = cadeia.enderecoDaFabrica();
+    const fabrica = cadeia.enderecoDaFabrica();
 
-      if (recibo.para !== fabrica) {
-        throw pedidoInvalido(
-          "A transacao nao foi enviada a fabrica de apolices oficial.",
-        );
-      }
+    if (recibo.para !== fabrica) {
+      throw pedidoInvalido("A transacao nao foi enviada a fabrica de apolices oficial.");
+    }
 
-      const emitida = apoliceDoRecibo(recibo, fabrica);
-      if (!emitida)
-        throw pedidoInvalido("A transacao nao emitiu nenhuma apolice.");
+    const emitida = apoliceDoRecibo(recibo, fabrica);
+    if (!emitida) throw pedidoInvalido("A transacao nao emitiu nenhuma apolice.");
 
-      // O resumo gravado no contrato precisa ser o que o backend gerou. Se nao for,
-      // a seguradora assinou termos diferentes dos acordados — e o cadastro nao
-      // pode ligar esta apolice a esta proposta.
-      if (emitida.hashTermos !== proposta.hash_termos) {
-        await auditar(banco, req, "emissao_recusada_hash_divergente", {
-          recurso: id,
-          txHash,
-          detalhes: {
-            esperado: proposta.hash_termos,
-            naCadeia: emitida.hashTermos,
-          },
-        });
-
-        throw pedidoInvalido(
-          "O resumo dos termos gravado no contrato nao corresponde ao desta proposta.",
-          {
-            esperado: proposta.hash_termos,
-            naCadeia: emitida.hashTermos,
-          },
-        );
-      }
-
-      const termos = await cadeia.termosDaApolice(emitida.endereco);
-
-      if (!!termos.modoHistorico !== !!proposta.termos.modoHistorico)
-        throw pedidoInvalido("Modo do contrato difere da proposta.");
-      if (termos.produtor !== proposta.carteira_produtor) {
-        throw pedidoInvalido(
-          "A carteira beneficiaria no contrato nao e a do produtor da proposta.",
-        );
-      }
-
-      if (termos.valorIndenizacao !== String(proposta.valor_indenizacao_wei)) {
-        throw pedidoInvalido(
-          "O limite gravado no contrato difere do limite cotado.",
-        );
-      }
-
-      const registro = await registrarApoliceEmitida(banco, {
-        endereco: emitida.endereco,
-        produtor: termos.produtor,
-        seguradora: termos.seguradora,
-        hashTermos: termos.hashTermos,
-        talhaoBytes32: termos.talhao,
-        valorIndenizacaoWei: termos.valorIndenizacao,
+    // O resumo gravado no contrato precisa ser o que o backend gerou. Se nao for,
+    // a seguradora assinou termos diferentes dos acordados — e o cadastro nao
+    // pode ligar esta apolice a esta proposta.
+    if (emitida.hashTermos !== proposta.hash_termos) {
+      await auditar(banco, req, "emissao_recusada_hash_divergente", {
+        recurso: id,
         txHash,
-        bloco: recibo.bloco,
-      });
-
-      await auditar(banco, req, "apolice_emitida", {
-        recurso: emitida.endereco,
-        txHash,
-      });
-
-      res.json({
-        apolice: {
-          endereco: emitida.endereco,
-          txEmissao: txHash,
-          bloco: recibo.bloco,
+        detalhes: {
+          esperado: proposta.hash_termos,
+          naCadeia: emitida.hashTermos,
         },
-        ...registro,
       });
-    },
-  );
 
-  r.post(
-    "/propostas/:id/recusar",
-    exigirSessao,
-    exigirPerfil("seguradora"),
-    async (req, res) => {
-      const { banco } = req.app.locals;
-      const id = uuid(req.params.id, "id");
-
-      const { rowCount } = await banco.query(
-        `UPDATE propostas SET situacao = 'recusada', atualizada_em = now()
-        WHERE id = $1 AND situacao IN ('pendente', 'preparada')`,
-        [id],
+      throw pedidoInvalido(
+        "O resumo dos termos gravado no contrato nao corresponde ao desta proposta.",
+        {
+          esperado: proposta.hash_termos,
+          naCadeia: emitida.hashTermos,
+        },
       );
+    }
 
-      if (rowCount === 0)
-        throw conflito("A proposta nao existe ou ja foi emitida.");
+    const termos = await cadeia.termosDaApolice(emitida.endereco);
 
-      await auditar(banco, req, "proposta_recusada", { recurso: id });
-      res.status(204).end();
-    },
-  );
+    if (!!termos.modoHistorico !== !!proposta.termos.modoHistorico)
+      throw pedidoInvalido("Modo do contrato difere da proposta.");
+    if (termos.produtor !== proposta.carteira_produtor) {
+      throw pedidoInvalido("A carteira beneficiaria no contrato nao e a do produtor da proposta.");
+    }
+
+    if (termos.valorIndenizacao !== String(proposta.valor_indenizacao_wei)) {
+      throw pedidoInvalido("O limite gravado no contrato difere do limite cotado.");
+    }
+
+    const registro = await registrarApoliceEmitida(banco, {
+      endereco: emitida.endereco,
+      produtor: termos.produtor,
+      seguradora: termos.seguradora,
+      hashTermos: termos.hashTermos,
+      talhaoBytes32: termos.talhao,
+      valorIndenizacaoWei: termos.valorIndenizacao,
+      txHash,
+      bloco: recibo.bloco,
+    });
+
+    await auditar(banco, req, "apolice_emitida", {
+      recurso: emitida.endereco,
+      txHash,
+    });
+
+    res.json({
+      apolice: {
+        endereco: emitida.endereco,
+        txEmissao: txHash,
+        bloco: recibo.bloco,
+      },
+      ...registro,
+    });
+  });
+
+  r.post("/propostas/:id/recusar", exigirSessao, exigirPerfil("seguradora"), async (req, res) => {
+    const { banco } = req.app.locals;
+    const id = uuid(req.params.id, "id");
+
+    const { rowCount } = await banco.query(
+      `UPDATE propostas SET situacao = 'recusada', atualizada_em = now()
+        WHERE id = $1 AND situacao IN ('pendente', 'preparada')`,
+      [id],
+    );
+
+    if (rowCount === 0) throw conflito("A proposta nao existe ou ja foi emitida.");
+
+    await auditar(banco, req, "proposta_recusada", { recurso: id });
+    res.status(204).end();
+  });
 
   return r;
 }

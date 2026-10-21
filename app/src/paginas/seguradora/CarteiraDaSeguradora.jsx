@@ -253,9 +253,7 @@ export default function CarteiraDaSeguradora() {
           </div>
 
           <details className="avancado">
-            <summary>
-              Numeros tecnicos: custo da rede, fontes de dados e enderecos dos contratos
-            </summary>
+            <summary>Numeros tecnicos: custo da rede e enderecos dos contratos</summary>
             <div className="cartao">
               <h2>Custo e latencia da travessia</h2>
               <p className="silencioso">
@@ -295,27 +293,6 @@ export default function CarteiraDaSeguradora() {
               )}
             </div>
 
-            <div className="cartao">
-              <h2>Fontes de dados</h2>
-              <div className="grade">
-                <Indicador
-                  rotulo="Fontes ativas"
-                  valor={`${relatorio.fontes.ativas} de ${relatorio.fontes.total}`}
-                />
-                <Indicador
-                  rotulo="Abaixo do limiar de reputacao"
-                  valor={relatorio.fontes.abaixo_do_limiar}
-                  nota={
-                    relatorio.fontes.abaixo_do_limiar > 0
-                      ? "suas leituras nao entram no indice"
-                      : "todas operando"
-                  }
-                />
-              </div>
-              <p>
-                <Link to="/seguradora/fontes">Gerenciar fontes</Link>
-              </p>
-            </div>
             {implantacao ? (
               <div className="cartao">
                 <h2>Infraestrutura</h2>

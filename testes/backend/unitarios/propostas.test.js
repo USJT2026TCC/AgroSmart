@@ -113,8 +113,22 @@ describe("propostas e emissao", () => {
   let talhaoId;
   let produtoId;
 
+  const cobertura = {
+    reproducaoHistorica: true,
+    inicioDaVigencia: "2024-02-07",
+    fimDaVigencia: "2024-02-09",
+    gatilhoDias: 2,
+  };
   before(async () => {
     ctx = await montar();
+    // Tres dias e hashes sinteticos; nao sao medicoes reais.
+    await ctx.banco.query(
+      "INSERT INTO inmet_arquivos (estacao,ano,sha256_original,sha256_diario,procedencia) VALUES ('A770',2024,$1,$1,'{}')",
+      ["0".repeat(64)],
+    );
+    await ctx.banco.query(
+      "INSERT INTO inmet_dias (estacao,data,chuva_mm,horas_validas,horas_ausentes,horas_invalidas) VALUES ('A770','2024-02-07',0,24,0,0),('A770','2024-02-08',0,24,0,0),('A770','2024-02-09',3,24,0,0)",
+    );
     produtor = await entrar(ctx.api, "produtor");
     seguradora = await entrar(ctx.api, "seguradora");
     talhaoId = await idDoTalhao(ctx.banco);
@@ -133,7 +147,7 @@ describe("propostas e emissao", () => {
       .api()
       .post("/api/propostas")
       .set(com(produtor))
-      .send({ talhaoId, produtoId, areaHa });
+      .send({ ...cobertura, talhaoId, produtoId, areaHa });
     assert.equal(r.status, 201, JSON.stringify(r.body));
     return r.body.proposta;
   }
@@ -162,6 +176,7 @@ describe("propostas e emissao", () => {
       txHash,
       reciboDeEmissao({
         apolice,
+        modoHistorico: true,
         produtor: dono,
         talhao: ethers.encodeBytes32String("talhao-01"),
         valor,
@@ -172,6 +187,7 @@ describe("propostas e emissao", () => {
     );
 
     ctx.cadeia.estado.termos.set(apolice.toLowerCase(), {
+      modoHistorico: true,
       produtor: dono.toLowerCase(),
       talhao: ethers.encodeBytes32String("talhao-01"),
       cultura: ethers.encodeBytes32String("soja"),
@@ -214,7 +230,7 @@ describe("propostas e emissao", () => {
       .api()
       .post("/api/cotacoes")
       .set(com(produtor))
-      .send({ talhaoId, produtoId, areaHa: "180" });
+      .send({ ...cobertura, talhaoId, produtoId, areaHa: "180" });
 
     assert.equal(r.status, 200);
     assert.equal(r.body.cotacao.valorIndenizacaoWei, "1080000000000000000");
@@ -223,7 +239,7 @@ describe("propostas e emissao", () => {
       .api()
       .post("/api/cotacoes")
       .set(com(produtor))
-      .send({ talhaoId, produtoId, areaHa: "999" });
+      .send({ ...cobertura, talhaoId, produtoId, areaHa: "999" });
     assert.equal(excesso.status, 400);
     assert.match(excesso.body.erro.mensagem, /excede/);
   });
@@ -250,7 +266,7 @@ describe("propostas e emissao", () => {
       .api()
       .post("/api/propostas")
       .set(com(produtor))
-      .send({ talhaoId, produtoId, areaHa: "10" });
+      .send({ ...cobertura, talhaoId, produtoId, areaHa: "10" });
     assert.equal(r.status, 400);
     assert.match(r.body.erro.mensagem, /Vincule a carteira/);
 
@@ -260,16 +276,19 @@ describe("propostas e emissao", () => {
     );
   });
 
-  test("preparar devolve a struct pronta para emitirApolice, com vigencia pelo relogio da cadeia", async () => {
+  test("preparar preserva os dias historicos UTC na struct de emissao", async () => {
     const proposta = await novaProposta();
     const preparo = await preparar(proposta.id);
 
     assert.equal(preparo.fabrica, FABRICA);
     assert.equal(preparo.termos.valorIndenizacao, "1080000000000000000");
-    assert.equal(preparo.termos.vigenciaInicio, ctx.cadeia.estado.instante);
+    assert.equal(
+      preparo.termos.vigenciaInicio,
+      Date.parse("2024-02-07T00:00:00Z") / 1000,
+    );
     assert.equal(
       preparo.termos.vigenciaFim,
-      ctx.cadeia.estado.instante + 180 * 86_400,
+      Date.parse("2024-02-09T23:59:59Z") / 1000,
     );
     assert.equal(
       preparo.termos.hashTermos,
@@ -281,71 +300,14 @@ describe("propostas e emissao", () => {
     );
   });
 
-  test("a cotacao traz o historico climatico real das estacoes do INMET proximas (RF06)", async () => {
-    const produtoIntegral = await idDoProduto(ctx.banco, "Estiagem — soja");
-    const cotar = async (inicioDaVigencia) => {
-      const r = await ctx
-        .api()
-        .post("/api/cotacoes")
-        .set(com(produtor))
-        .send({
-          talhaoId,
-          produtoId: produtoIntegral,
-          areaHa: "180",
-          inicioDaVigencia,
-        });
-      assert.equal(r.status, 200, JSON.stringify(r.body));
-      return r.body.cotacao.historico;
-    };
-
-    // Comecando em maio, a cobertura atravessa a seca do inverno paulista: os
-    // 30 dias sem chuva aconteceram em todos os anos avaliados.
-    const seca = await cotar("2027-05-01");
-    assert.equal(seca.aplicavel, true);
-    assert.deepEqual(seca.estacoes, ["A747", "A770"]);
-    assert.ok(seca.anosAvaliados >= 8, `anos avaliados: ${seca.anosAvaliados}`);
-    assert.equal(seca.acionamentos, seca.anosAvaliados);
-
-    // Comecando em outubro, a cobertura cai nas chuvas: aciona raramente.
-    const chuvas = await cotar("2026-10-07");
-    assert.ok(chuvas.frequencia < 0.25, `frequencia: ${chuvas.frequencia}`);
-  });
-
-  test("a vigencia comeca na data pedida pelo produtor, a meia-noite de Brasilia (RF10)", async () => {
-    const daqui30 = new Date(Date.now() + 30 * 86_400_000)
-      .toISOString()
-      .slice(0, 10);
-
+  test("recusa nova contratacao convencional", async () => {
     const r = await ctx
       .api()
       .post("/api/propostas")
       .set(com(produtor))
-      .send({ talhaoId, produtoId, areaHa: "180", inicioDaVigencia: daqui30 });
-    assert.equal(r.status, 201, JSON.stringify(r.body));
-
-    const preparo = await preparar(r.body.proposta.id);
-    const esperado = Date.parse(`${daqui30}T03:00:00Z`) / 1000;
-
-    assert.equal(preparo.termos.vigenciaInicio, esperado);
-    assert.equal(preparo.termos.vigenciaFim, esperado + 180 * 86_400);
-  });
-
-  test("data de inicio no passado, longe demais ou mal formada e recusada", async () => {
-    const anteontem = new Date(Date.now() - 2 * 86_400_000)
-      .toISOString()
-      .slice(0, 10);
-    const daqui200 = new Date(Date.now() + 200 * 86_400_000)
-      .toISOString()
-      .slice(0, 10);
-
-    for (const inicioDaVigencia of [anteontem, daqui200, "15/11/2026"]) {
-      const r = await ctx
-        .api()
-        .post("/api/propostas")
-        .set(com(produtor))
-        .send({ talhaoId, produtoId, areaHa: "180", inicioDaVigencia });
-      assert.equal(r.status, 400, inicioDaVigencia);
-    }
+      .send({ talhaoId, produtoId, areaHa: "1", reproducaoHistorica: false });
+    assert.equal(r.status, 400);
+    assert.match(r.body.erro.mensagem, /apenas reproducao historica/);
   });
 
   test("emissao correta liga a apolice a proposta", async () => {

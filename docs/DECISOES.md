@@ -1088,3 +1088,18 @@ PGlite para PostgreSQL local vazio, preservando origem e vinculos. Destino preen
 nao e mesclado automaticamente. Servidor externo explicito nao recebe dados locais
 automaticamente. Docker e um requisito de ambiente; sua ausencia nao deve gerar
 troca silenciosa do banco nem sucesso de validacao de contêiner inexistente.
+
+
+### Revisao de backend — 21/10/2026
+
+O fluxo operacional passa a aceitar somente novas propostas historicas INMET A770.
+Foram retirados a ingestao assinada de sensores, cadastro de fontes, reputacao,
+consolidacao entre estacoes e a carga climatica anterior de cotacao. Os registros
+e migracoes antigos ficam preservados no banco para nao apagar historico.
+O oraculo deixa de carregar `consolidador.js` e `reputacao.js`, agora removidos.
+
+Relatos exigem coincidencia de apolice, periodo, transacao e indice para confirmacao
+pelo indexador. Datas meteorologicas historicas nao entram na media de demora ate
+pagamento das apolices historicas vinculadas; recibos recuperados nao inventam
+latencia original. Essas mudancas substituem as descricoes operacionais antigas
+de sensores e reputacao deste arquivo, mantidas como registro das decisoes passadas.

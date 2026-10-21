@@ -1,22 +1,11 @@
 import assert from "node:assert/strict";
-import { randomUUID } from "node:crypto";
 import { after, before, describe, test } from "node:test";
 
 import { ethers } from "ethers";
 
-import consolidador from "../../../oraculo/src/consolidador.js";
-import { assinarLote } from "../../../backend/src/dominio/assinaturaDeLote.js";
-import { carteiraDeFonteDeDemonstracao } from "../fixtures/fontes.js";
 import { PRODUTOR_NA_CADEIA, com, entrar, montar } from "./ajuda.js";
 
-/**
- * Interface entre o backend e o servico de oraculo.
- *
- * O teste central aqui e o de ponta a ponta sem cadeia: leituras assinadas entram
- * pela ingestao, saem pela API do oraculo, e o consolidador do proprio oraculo
- * calcula o indice sobre elas. Se o formato de saida divergir do que o
- * consolidador espera, este teste quebra.
- */
+/** API autenticada: relatos e falhas; ingestao de sensores foi retirada. */
 describe("API do oraculo", () => {
   let ctx;
   const CHAVE = { "X-Chave-De-Servico": "chave-de-teste" };
@@ -72,87 +61,99 @@ describe("API do oraculo", () => {
     );
   });
 
-  test("lista as apolices ativas com o talhao e as fontes", async () => {
+  test("lista as apolices ativas sem cadastro de sensores", async () => {
     const r = await ctx.api().get("/api/oraculo/apolices-ativas").set(CHAVE);
 
     assert.equal(r.status, 200);
     assert.equal(r.body.apolices.length, 1);
     assert.equal(r.body.apolices[0].talhao, "talhao-01");
-    assert.equal(r.body.apolices[0].fontes.length, 3);
+    assert.equal("fontes" in r.body.apolices[0], false);
   });
 
-  test("de ponta a ponta: leituras assinadas viram indice no consolidador do oraculo", async () => {
-    // 35 dias de estiagem depois de um dia de chuva, nas duas estacoes.
-    const inicio = Date.UTC(2026, 8, 1);
-    const dias = Array.from({ length: 36 }, (_, i) => ({
-      instante: new Date(
-        inicio + i * 86_400_000 + 12 * 3_600_000,
-      ).toISOString(),
-      chuvaMm: i === 0 ? 12 : 0,
-      temperaturaC: 30,
-      umidadePct: 40,
-    }));
-
-    for (const [fonte, indice] of [
-      ["estacao-inmet-a770", 10],
-      ["sensor-solo-talhao-01", 12],
+  test("rotas de sensores removidas respondem 404", async () => {
+    const token = await entrar(ctx.api, "seguradora");
+    for (const [metodo, rota] of [
+      ["post", "/leituras"],
+      ["get", "/fontes"],
+      ["post", "/fontes"],
+      ["patch", "/fontes/antiga"],
+      ["get", "/oraculo/leituras"],
     ]) {
-      const corpo = JSON.stringify({
-        lote: randomUUID(),
-        fonte,
-        enviadoEm: new Date().toISOString(),
-        leituras: dias,
-      });
       const r = await ctx
         .api()
-        .post("/api/leituras")
-        .set("Content-Type", "application/json")
-        .set(
-          "X-Assinatura",
-          await assinarLote(
-            Buffer.from(corpo),
-            carteiraDeFonteDeDemonstracao(indice),
-          ),
-        )
-        .send(corpo);
-
-      assert.equal(r.status, 201, JSON.stringify(r.body));
+        [metodo](`/api${rota}`)
+        .set(com(token))
+        .set(CHAVE)
+        .send({});
+      assert.equal(r.status, 404, rota);
     }
-
-    const r = await ctx
-      .api()
-      .get("/api/oraculo/leituras?talhao=talhao-01&ate=20261006&dias=90")
-      .set(CHAVE);
-    assert.equal(r.status, 200);
-    assert.equal(r.body.leituras.length, 72);
-
-    const resultado = consolidador.consolidarIndiceClimatico(r.body.leituras, {
-      periodo: 20261006,
-    });
-
-    assert.equal(resultado.indiceClimatico, 35);
-    assert.equal(resultado.interrompidoPor, "chuva");
-    assert.deepEqual(resultado.fontesUsadas, [
-      "estacao-inmet-a770",
-      "sensor-solo-talhao-01",
-    ]);
-    assert.deepEqual(resultado.alertas, []);
+    assert.equal(
+      (await ctx.banco.query("SELECT count(*)::int AS n FROM fontes")).rows[0]
+        .n,
+      0,
+    );
   });
 
-  test("leituras de fonte desativada nao vao para o oraculo", async () => {
+  test("confirmacao exige hash da transacao e indice do evento correspondentes", async () => {
+    const hash = "0x" + "11".repeat(32);
     await ctx.banco.query(
-      "UPDATE fontes SET ativa = false WHERE id = 'sensor-solo-talhao-01'",
+      `INSERT INTO eventos_cadeia (contrato, nome, bloco, indice_log, tx_hash, argumentos, instante)
+      VALUES ($1, 'IndicesPublicados', 1, 0, $2, $3, now())`,
+      [
+        APOLICE,
+        hash,
+        JSON.stringify({ periodo: 20240208, indiceClimatico: 2 }),
+      ],
     );
-
-    const r = await ctx
-      .api()
-      .get("/api/oraculo/leituras?talhao=talhao-01&ate=20261006")
-      .set(CHAVE);
-    assert.ok(r.body.leituras.every((l) => l.fonte === "estacao-inmet-a770"));
-
+    const relatar = (txHash, indiceClimatico) =>
+      ctx
+        .api()
+        .post("/api/oraculo/publicacoes")
+        .set(CHAVE)
+        .send({ apolice: APOLICE, periodo: 20240208, txHash, indiceClimatico });
+    assert.equal(
+      (await relatar("0x" + "22".repeat(32), 2)).body.confirmadaNaCadeia,
+      false,
+    );
     await ctx.banco.query(
-      "UPDATE fontes SET ativa = true WHERE id = 'sensor-solo-talhao-01'",
+      "DELETE FROM publicacoes_oraculo WHERE apolice_endereco=$1 AND periodo=20240208",
+      [APOLICE],
     );
+    assert.equal((await relatar(hash, 3)).body.confirmadaNaCadeia, false);
+    // Remove somente o relato sintetico incorreto deste teste antes da tentativa correta.
+    await ctx.banco.query(
+      "DELETE FROM publicacoes_oraculo WHERE tx_hash = $1",
+      [hash],
+    );
+    const correta = await relatar(hash, 2);
+    assert.equal(correta.status, 201, JSON.stringify(correta.body));
+    assert.equal(correta.body.confirmadaNaCadeia, true);
+  });
+
+  test("relato com datas ou custos invalidos responde 400", async () => {
+    const base = {
+      apolice: APOLICE,
+      periodo: 20240208,
+      txHash: "0x" + "33".repeat(32),
+      indiceClimatico: 2,
+    };
+    for (const extra of [
+      { enviadoEm: "invalida" },
+      { gasUsado: "abc" },
+      { custoWei: "-1" },
+      { enviadoEm: "2024-02-09", confirmadoEm: "2024-02-08" },
+    ]) {
+      assert.equal(
+        (
+          await ctx
+            .api()
+            .post("/api/oraculo/publicacoes")
+            .set(CHAVE)
+            .send({ ...base, ...extra })
+        ).status,
+        400,
+      );
+    }
   });
 
   test("o relato de publicacao fica pendente ate o evento aparecer na cadeia (RF22)", async () => {
@@ -184,6 +185,37 @@ describe("API do oraculo", () => {
     );
     assert.equal(rows[0].latencia_ms, 180);
     assert.equal(rows[0].gas_usado, "231849");
+  });
+
+  test("recibo recuperado nao inventa latencia original", async () => {
+    const txHash = "0x" + "44".repeat(32);
+    await ctx.banco.query(
+      "DELETE FROM publicacoes_oraculo WHERE apolice_endereco=$1 AND periodo=20240208",
+      [APOLICE],
+    );
+    const r = await ctx
+      .api()
+      .post("/api/oraculo/publicacoes")
+      .set(CHAVE)
+      .send({
+        apolice: APOLICE,
+        periodo: 20240208,
+        txHash,
+        indiceClimatico: 2,
+        recuperada: true,
+        enviadoEm: "2024-02-08T10:00:00Z",
+        confirmadoEm: "2024-02-09T10:00:00Z",
+      });
+    assert.equal(r.status, 201, JSON.stringify(r.body));
+    assert.equal(
+      (
+        await ctx.banco.query(
+          "SELECT latencia_ms FROM publicacoes_oraculo WHERE tx_hash=$1",
+          [txHash],
+        )
+      ).rows[0].latencia_ms,
+      null,
+    );
   });
 
   test("falha de publicacao notifica a seguradora uma unica vez (RF27)", async () => {

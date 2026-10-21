@@ -12,8 +12,7 @@
  * chave privada do oraculo na cadeia — essa nunca sai desta maquina.
  *
  * O backend NAO e confiavel para o numero que vai para a cadeia: o oraculo
- * confere os termos e o pacote publico e recalcula a estiagem. A consulta de
- * leituras abaixo pertence somente a compatibilidade com sensores.
+ * confere os termos e o pacote publico e recalcula a estiagem. A API nao calcula o indice pago.
  */
 class ClienteBackend {
   /**
@@ -60,16 +59,6 @@ class ClienteBackend {
 
   async apolicesAtivas() {
     return (await this.requisitar("GET", "/oraculo/apolices-ativas")).apolices;
-  }
-
-  /** Compatibilidade com a API de sensores; fora do servico historico. */
-  async leituras(talhao, ate, dias = 90) {
-    const q = new URLSearchParams({
-      talhao,
-      ate: String(ate),
-      dias: String(dias),
-    });
-    return (await this.requisitar("GET", `/oraculo/leituras?${q}`)).leituras;
   }
 
   serieHistorica(apolice) {

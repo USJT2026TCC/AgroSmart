@@ -76,9 +76,7 @@ test.describe("oraculo contra um no real", { timeout: 240_000 }, () => {
     const r = spawnSync(
       process.execPath,
       [
-        ["ciclo", "publicar"].includes(argumentos[0])
-          ? path.join(__dirname, "..", "ferramentas", "cli-simulacao.cjs")
-          : path.join(ORACULO, "src", "index.js"),
+        path.join(ORACULO, "src", "index.js"),
         ...argumentos,
       ],
       {
@@ -207,65 +205,6 @@ test.describe("oraculo contra um no real", { timeout: 240_000 }, () => {
     assert.equal(codigo, 0, saida);
     assert.match(saida, /Autorizado a publicar: sim/);
     assert.match(saida, /Rede\.+: integracao/);
-  });
-
-  test("publicar um periodo de safra normal nao aciona", () => {
-    const { codigo, saida } = oraculo(
-      "publicar",
-      "--apolice",
-      apoliceClimatica,
-      "--periodo",
-      "20261001",
-      "--cenario",
-      "safra_normal",
-    );
-    assert.equal(codigo, 0, saida);
-    assert.match(saida, /20261001/);
-    assert.doesNotMatch(saida, /SIM/);
-  });
-
-  test("publicar o mesmo periodo de novo e recusado pelo contrato (RF20)", () => {
-    const { saida } = oraculo(
-      "publicar",
-      "--apolice",
-      apoliceClimatica,
-      "--periodo",
-      "20261001",
-      "--cenario",
-      "safra_normal",
-    );
-    // A fila ja sabe que o periodo foi concluido; nem chega a gastar uma chamada.
-    assert.match(saida, /ja publicado antes \(0x[0-9a-f]{64}\)/);
-  });
-
-  test("ciclo de estiagem severa, com leituras defeituosas, aciona e paga", () => {
-    const { codigo, saida } = oraculo(
-      "ciclo",
-      "--apolice",
-      apoliceClimatica,
-      "--cenario",
-      "estiagem_severa",
-      "--periodo",
-      "20261020",
-      "--periodos",
-      "8",
-      "--com-falhas",
-    );
-    assert.equal(codigo, 0, saida);
-    assert.match(saida, /SIM/);
-  });
-
-  test("fila e estatisticas mostram o que foi publicado", () => {
-    const fila = oraculo("fila");
-    assert.equal(fila.codigo, 0, fila.saida);
-    assert.match(fila.saida, /concluida/);
-
-    const reaberta = oraculo("fila", "--reabrir", "chave-que-nao-existe");
-    assert.match(reaberta.saida, /nao encontrada/);
-
-    const estatisticas = oraculo("estatisticas");
-    assert.equal(estatisticas.codigo, 0, estatisticas.saida);
-    assert.match(estatisticas.saida, /"acionamentos": 1/);
   });
 
   test("publicador historico transmite, confirma e recupera o mesmo recibo sem novo pagamento", async () => {

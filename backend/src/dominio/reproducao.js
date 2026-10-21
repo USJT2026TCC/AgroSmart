@@ -14,14 +14,15 @@ export async function hashDaSerie(banco, inicio, fim) {
     "SELECT ano,sha256_original,sha256_diario FROM inmet_arquivos WHERE estacao='A770' AND ano BETWEEN $1 AND $2 ORDER BY ano",
     [Number(inicio.slice(0, 4)), Number(fim.slice(0, 4))],
   );
-  if (!rows.length)
-    throw pedidoInvalido(
-      "Prepare os dados do INMET antes de contratar a demonstracao historica.",
-    );
+  if (rows.length !== Number(fim.slice(0, 4)) - Number(inicio.slice(0, 4)) + 1)
+    throw pedidoInvalido("Prepare os dados do INMET antes de contratar a demonstracao historica.");
   return createHash("sha256").update(JSON.stringify(rows)).digest("hex");
 }
 export async function termosHistoricos(banco, corpo, base) {
-  if (corpo.reproducaoHistorica !== true) return base;
+  if (corpo.reproducaoHistorica !== true)
+    throw pedidoInvalido(
+      "O sistema aceita apenas reproducao historica INMET. Informe periodo e gatilho experimental.",
+    );
   const inicio = dataHistorica(corpo.inicioDaVigencia),
     fim = dataHistorica(corpo.fimDaVigencia);
   const dias = (Date.parse(fim) - Date.parse(inicio)) / 86400000 + 1;
@@ -31,11 +32,9 @@ export async function termosHistoricos(banco, corpo, base) {
     );
   const gatilho = corpo.gatilhoDias;
   if (!Number.isInteger(gatilho) || gatilho < 1 || gatilho > 366)
-    throw pedidoInvalido(
-      "Gatilho experimental deve ser inteiro entre 1 e 366 dias.",
-    );
+    throw pedidoInvalido("Gatilho experimental deve ser inteiro entre 1 e 366 dias.");
   const { rows } = await banco.query(
-    "SELECT count(*)::int AS total,count(*) FILTER (WHERE horas_validas>=20)::int AS validos FROM inmet_dias WHERE estacao='A770' AND data BETWEEN $1 AND $2",
+    "SELECT count(*)::int AS total,count(*) FILTER (WHERE horas_validas BETWEEN 20 AND 24 AND chuva_mm IS NOT NULL AND chuva_mm>=0 AND chuva_mm<=horas_validas*500)::int AS validos FROM inmet_dias WHERE estacao='A770' AND data BETWEEN $1 AND $2",
     [inicio, fim],
   );
   if (!rows[0]?.validos)

@@ -123,8 +123,33 @@ describe("relatorio da carteira (RF29)", () => {
     );
   });
 
+  test("datas climaticas historicas nao viram latencia de liquidacao atual", async () => {
+    const b = ctx.banco;
+    const produtoId = (await b.query("SELECT id FROM produtos LIMIT 1")).rows[0]
+      .id;
+    const talhaoId = await idDoTalhao(b);
+    const produtorId = (
+      await b.query("SELECT id FROM usuarios WHERE identificador='produtor'")
+    ).rows[0].id;
+    const proposta = (
+      await b.query(
+        `INSERT INTO propostas (produtor_id,talhao_id,produto_id,area_segurada_ha,carteira_produtor,valor_indenizacao_wei,premio_wei,termos) VALUES ($1,$2,$3,1,$4,1000,0,'{"modoHistorico":true}') RETURNING id`,
+        [produtorId, talhaoId, produtoId, PRODUTOR_NA_CADEIA],
+      )
+    ).rows[0].id;
+    await b.query("UPDATE apolices SET proposta_id=$1 WHERE endereco='0xa1'", [
+      proposta,
+    ]);
+    const r = await relatorio();
+    assert.equal(r.body.carteira.liquidadas, 1);
+    assert.equal(r.body.liquidacao.pagamentos, 0);
+    assert.equal(r.body.liquidacao.media_horas, null);
+    await b.query("UPDATE apolices SET proposta_id=NULL WHERE endereco='0xa1'");
+  });
+
   test("datas mal formadas sao recusadas, e so a seguradora ve o relatorio", async () => {
     assert.equal((await relatorio("?de=01/09/2026")).status, 400);
+    assert.equal((await relatorio("?de=2026-02-30")).status, 400);
 
     const r = await ctx
       .api()

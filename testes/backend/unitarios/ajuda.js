@@ -3,7 +3,6 @@ import request from "supertest";
 
 import { criarApp } from "../../../backend/src/app.js";
 import { abrirBanco } from "../../../backend/src/banco/conexao.js";
-import { carregarHistoricoClimatico } from "../../../backend/src/banco/historico.js";
 import { migrar } from "../../../backend/src/banco/migrar.js";
 import { semearParaTeste as semear } from "../fixtures/semente.js";
 import { interfaceFactory } from "../../../backend/src/cadeia/rede.js";
@@ -37,6 +36,7 @@ export function cadeiaFalsa() {
   return {
     estado,
     disponivel: () => true,
+    suportaHistorico: () => true,
     enderecoDaFabrica: () => FABRICA,
     instanteAtual: async () => estado.instante,
     recibo: async (txHash) => estado.recibos.get(txHash) ?? null,
@@ -83,7 +83,6 @@ export async function montar() {
   const banco = await abrirBanco({ emMemoria: true });
   await migrar(banco);
   await semear(banco);
-  await carregarHistoricoClimatico(banco);
 
   const cadeia = cadeiaFalsa();
   const app = criarApp({ banco, cadeia });

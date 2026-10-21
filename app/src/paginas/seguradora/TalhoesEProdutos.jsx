@@ -262,7 +262,6 @@ export default function TalhoesEProdutos() {
     }
   }
 
-
   return (
     <div className="pagina">
       <h1>Talhoes e produtos</h1>
@@ -565,7 +564,10 @@ export default function TalhoesEProdutos() {
               </select>
             </Campo>
 
-            <p>Indenizacao integral em parcela unica. Gatilho experimental de estiagem, sem calibracao por cultura, solo ou fase da safra.</p>
+            <p>
+              Indenizacao integral em parcela unica. Gatilho experimental de estiagem, sem
+              calibracao por cultura, solo ou fase da safra.
+            </p>
 
             <Campo rotulo="Aciona com quantos dias sem chuva" htmlFor="limiar">
               <input
@@ -626,7 +628,6 @@ export default function TalhoesEProdutos() {
                 <th>Produtor e propriedade</th>
                 <th>Cultura</th>
                 <th className="numero">Area</th>
-                <th>Fontes</th>
                 <th />
               </tr>
             </thead>
@@ -642,13 +643,6 @@ export default function TalhoesEProdutos() {
                   </td>
                   <td>{t.cultura}</td>
                   <td className="numero">{Number(t.areaHa).toFixed(2)} ha</td>
-                  <td>
-                    {t.atendeMinimoDeFontes ? (
-                      <Selo tipo="sucesso">{t.fontesAtivas} ativas</Selo>
-                    ) : (
-                      <Selo tipo="alerta">{t.fontesAtivas} — abaixo do minimo</Selo>
-                    )}
-                  </td>
                   <td>
                     <div className="linha-de-botoes">
                       <button
@@ -711,8 +705,7 @@ export default function TalhoesEProdutos() {
           ) : null}
 
           <RodapeDaFronteira>
-            Area calculada pelo PostGIS sobre o elipsoide. O RNF16 pede ao menos duas fontes
-            independentes por talhao.
+            Area calculada pelo PostGIS. A demonstracao historica utiliza a estacao INMET A770.
           </RodapeDaFronteira>
         </div>
       )}

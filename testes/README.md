@@ -6,9 +6,9 @@ Execute `npm test` na raiz. Esta pasta concentra:
 |---|---|
 | contratos | Testes de contrato, contratos de ataque e ferramentas de ensaio |
 | backend | Testes da API e integracao do indexador |
-| oraculo | Consolidacao, fila, integracao e fontes sinteticas |
+| oraculo | Serie historica, integridade, fila, publicador e integracao |
 | app | Testes de telas e carteira falsa exclusiva de teste |
-| simulador | Download, preparacao, cache, lacunas e envio de leituras |
+| simulador | Download, preparacao, cache e lacunas |
 | medicoes | Scripts de desempenho e compatibilidade |
 | configuracao | Configuracoes de cobertura, Python e Slither |
 | evidencias | Registros de verificacoes anteriores, identificados pela data |
