@@ -8,22 +8,10 @@ import { gerarHashDeSenha } from "../seguranca/cripto.js";
 import { auditar, exigirPerfil, exigirSessao } from "../seguranca/sessoes.js";
 import { decimalPositivo, inteiro, texto, uuid } from "../validacao.js";
 
-/**
- * Cadastro: produtores, talhoes, produtos (RF03, RF05).
- *
- * O talhao e a unica peca com geometria, e e onde o PostGIS faz diferenca:
- *  - a validade do poligono e conferida pelo banco (ST_IsValid), e nao por um
- *    algoritmo escrito a mao;
- *  - a area e calculada sobre o elipsoide (geography), e nao sobre o plano.
- *
- * O segundo ponto nao e detalhe. A aproximacao plana que o aplicativo usava
- * antes do backend dava 492,8 ha para um poligono que tem 459,9 ha — 7% a mais.
- * Como o limite da apolice e area x valor por hectare, a apolice sairia com
- * cobertura maior do que a area delimitada justifica.
- */
+/** Cadastro de produtores, propriedades, talhoes e produtos de seguro. */
 
 const SQL_TALHAO = `
-  SELECT t.id, t.identificador, t.cultura, t.area_ha, t.criado_em,
+  SELECT t.id, t.identificador, t.cultura, t.area_ha, t.origem_area, t.criado_em,
          ST_AsGeoJSON(t.geometria)::json AS geometria,
          p.id AS propriedade_id, p.nome AS propriedade, p.municipio,
          u.id AS produtor_id, u.nome AS produtor_nome, u.identificador AS produtor_identificador
@@ -38,6 +26,7 @@ function talhaoPublico(linha) {
     identificador: linha.identificador,
     cultura: linha.cultura,
     areaHa: linha.area_ha,
+    origemArea: linha.origem_area,
     poligono: linha.geometria,
     propriedade: { id: linha.propriedade_id, nome: linha.propriedade, municipio: linha.municipio },
     produtor: {
@@ -227,7 +216,9 @@ export function rotasDeCadastro() {
     const identificador = texto(corpo.identificador, "identificador", { max: 31 });
     const cultura = texto(corpo.cultura, "cultura", { max: 40 }).toLowerCase();
     const produtorId = uuid(corpo.produtorId, "produtorId");
-    const geojson = paraPoligonoGeoJson(corpo.poligono);
+    const geojson = corpo.poligono ? paraPoligonoGeoJson(corpo.poligono) : null;
+    const area = geojson ? null : decimalPositivo(corpo.areaHa, "areaHa", { casas: 4 });
+    if (area && Number(area) >= 1e10) throw pedidoInvalido("Area fora do limite permitido.");
 
     // Um bytes32 comporta 31 bytes, e caracteres acentuados ocupam mais de um.
     if (Buffer.byteLength(identificador, "utf8") > 31) {
@@ -275,15 +266,15 @@ export function rotasDeCadastro() {
           throw pedidoInvalido("A propriedade nao pertence ao produtor informado.");
       }
 
-      // Validade e area pelo PostGIS. ST_IsValid, no CHECK da tabela, recusa a
-      // autointersecao; ST_Area sobre geography mede no elipsoide.
+      // Sem poligono, preserva a area declarada e nao fabrica limites geograficos.
       const { rows } = await tx.query(
-        `WITH g AS (SELECT ST_SetSRID(ST_GeomFromGeoJSON($4), 4326) AS geom)
-         INSERT INTO talhoes (propriedade_id, identificador, cultura, geometria, area_ha)
-         SELECT $1, $2, $3, g.geom, round((ST_Area(g.geom::geography) / 10000)::numeric, 4)
+        `WITH g AS (SELECT CASE WHEN $4::text IS NULL THEN NULL ELSE ST_SetSRID(ST_GeomFromGeoJSON($4), 4326) END AS geom)
+         INSERT INTO talhoes (propriedade_id, identificador, cultura, geometria, area_ha, origem_area)
+         SELECT $1, $2, $3, g.geom, COALESCE($5::numeric, round((ST_Area(g.geom::geography) / 10000)::numeric, 4)),
+                CASE WHEN g.geom IS NULL THEN 'informada' ELSE 'poligono' END
            FROM g
          RETURNING id`,
-        [propriedadeId, identificador, cultura, JSON.stringify(geojson)],
+        [propriedadeId, identificador, cultura, geojson ? JSON.stringify(geojson) : null, area],
       );
 
       return rows[0].id;
@@ -310,6 +301,12 @@ export function rotasDeCadastro() {
     const cultura =
       texto(req.body?.cultura, "cultura", { max: 40, obrigatorio: false })?.toLowerCase() ?? null;
     const geojson = req.body?.poligono ? paraPoligonoGeoJson(req.body.poligono) : null;
+    const area =
+      req.body?.areaHa !== undefined
+        ? decimalPositivo(req.body.areaHa, "areaHa", { casas: 4 })
+        : null;
+    if (area && Number(area) >= 1e10) throw pedidoInvalido("Area fora do limite permitido.");
+    if (area && geojson) throw pedidoInvalido("Informe area ou poligono, nao ambos.");
 
     const { rows: usos } = await banco.query(
       `SELECT (SELECT count(*) FROM propostas WHERE talhao_id = $1 AND situacao <> 'recusada')::int
@@ -318,7 +315,7 @@ export function rotasDeCadastro() {
     );
     if (usos[0].n > 0) {
       throw conflito(
-        "O talhao ja tem proposta ou apolice. Alterar cultura ou poligono mudaria o que foi contratado.",
+        "O talhao ja tem proposta ou apolice. Alterar cultura ou area mudaria o que foi contratado.",
       );
     }
 
@@ -327,12 +324,13 @@ export function rotasDeCadastro() {
                               ELSE ST_SetSRID(ST_GeomFromGeoJSON($3), 4326) END AS geom)
        UPDATE talhoes t
           SET cultura   = COALESCE($2, t.cultura),
-              geometria = COALESCE(g.geom, t.geometria),
-              area_ha   = CASE WHEN g.geom IS NULL THEN t.area_ha
+              geometria = CASE WHEN $4::numeric IS NOT NULL THEN NULL ELSE COALESCE(g.geom, t.geometria) END,
+              origem_area = CASE WHEN $4::numeric IS NOT NULL THEN 'informada' WHEN g.geom IS NOT NULL THEN 'poligono' ELSE t.origem_area END,
+              area_ha   = CASE WHEN $4::numeric IS NOT NULL THEN $4::numeric WHEN g.geom IS NULL THEN t.area_ha
                                ELSE round((ST_Area(g.geom::geography) / 10000)::numeric, 4) END
          FROM g
         WHERE t.id = $1`,
-      [id, cultura, geojson ? JSON.stringify(geojson) : null],
+      [id, cultura, geojson ? JSON.stringify(geojson) : null, area],
     );
     if (rowCount === 0) throw naoEncontrado("Talhao");
 

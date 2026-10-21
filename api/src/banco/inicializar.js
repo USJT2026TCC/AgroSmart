@@ -28,6 +28,9 @@ export async function inicializarBanco(banco) {
     const presentes = new Set(tabelas.map((t) => t.tablename));
     if (esperadas.some((t) => !presentes.has(t)))
       throw new Error("Banco incompleto: confira o esquema atual antes de iniciar.");
+    await banco.executar(`ALTER TABLE talhoes ALTER COLUMN geometria DROP NOT NULL;
+      ALTER TABLE talhoes ADD COLUMN IF NOT EXISTS origem_area text NOT NULL DEFAULT 'poligono'
+        CHECK (origem_area IN ('poligono', 'informada'));`);
     return [];
   }
   const sql = readFileSync(new URL("./esquema.sql", import.meta.url), "utf8");

@@ -15,7 +15,7 @@ import { decimalPositivo, hashDeTransacao, uuid } from "../validacao.js";
  * O fluxo tem tres tempos, e a divisao nao e acidental:
  *
  *  1. o PRODUTOR envia a proposta. A cotacao e recalculada aqui, a partir da
- *     area medida pelo PostGIS — o valor que o navegador mostrou serve de
+ *     area cadastrada do talhao — o valor que o navegador mostrou serve de
  *     previa, mas o que vale e o do servidor;
  *
  *  2. a SEGURADORA prepara a emissao. O backend preserva a cobertura historica em UTC, gera o texto canonico dos termos e o resumo, e devolve a struct
@@ -84,7 +84,7 @@ const SQL_PROPOSTA = `
 /** Carrega talhao e produto conferindo que pertencem ao produtor e combinam entre si. */
 async function carregarBase(banco, { talhaoId, produtoId, produtorId }) {
   const { rows: talhoes } = await banco.query(
-    `SELECT t.id, t.identificador, t.cultura, t.area_ha, p.produtor_id
+    `SELECT t.id, t.identificador, t.cultura, t.area_ha, t.origem_area, p.produtor_id
        FROM talhoes t JOIN propriedades p ON p.id = t.propriedade_id
       WHERE t.id = $1`,
     [talhaoId],
@@ -112,12 +112,12 @@ async function carregarBase(banco, { talhaoId, produtoId, produtorId }) {
   return { talhao, produto };
 }
 
-/** Confere a area informada contra a area medida do talhao. */
+/** A area segurada nao pode ultrapassar a area cadastrada do talhao. */
 function areaSegurada(valor, talhao) {
   const area = decimalPositivo(valor, "areaHa", { casas: 4 });
 
   if (Number(area) > Number(talhao.area_ha)) {
-    throw pedidoInvalido(`A area segurada excede os ${talhao.area_ha} ha medidos do talhao.`);
+    throw pedidoInvalido(`A area segurada excede os ${talhao.area_ha} ha cadastrados do talhao.`);
   }
 
   return area;
@@ -159,7 +159,8 @@ export function rotasDePropostas() {
     res.json({
       cotacao: {
         areaSeguradaHa: area,
-        areaMedidaDoTalhaoHa: talhao.area_ha,
+        areaDoTalhaoHa: talhao.area_ha,
+        origemArea: talhao.origem_area,
         valorIndenizacaoWei: valorIndenizacaoWei.toString(),
         premioWei: premioWei.toString(),
         termos,

@@ -22,3 +22,5 @@ provisorio por localStorage. Consultar um periodo nao envia transacao.
 | cadeia/ | MetaMask, contratos, eventos e enderecos |
 | paginas/ | Telas do produtor e da seguradora |
 | componentes/ | Elementos compartilhados da interface |
+
+Em **Cadastros**, a seguradora segue produtor → propriedade/talhão e cultura → conferência. A área é digitada em hectares e identificada como informada, sem desenho no mapa. Produtos de seguro têm aba própria; consultas e edições ficam em **Consultar e editar**. O cadastro não exige transação na MetaMask.

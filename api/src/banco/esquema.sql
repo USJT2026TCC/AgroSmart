@@ -242,8 +242,9 @@ CREATE TABLE public.talhoes (
     propriedade_id uuid NOT NULL,
     identificador text NOT NULL,
     cultura text NOT NULL,
-    geometria public.geometry(Polygon,4326) NOT NULL,
+    geometria public.geometry(Polygon,4326),
     area_ha numeric(14,4) NOT NULL,
+    origem_area text DEFAULT 'poligono' NOT NULL CHECK (origem_area IN ('poligono', 'informada')),
     criado_em timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT talhoes_geometria_check CHECK (public.st_isvalid(geometria)),
     CONSTRAINT talhoes_identificador_check CHECK (((char_length(identificador) >= 1) AND (char_length(identificador) <= 31)))

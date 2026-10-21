@@ -562,15 +562,6 @@ tbody tr:last-child td {
   font-weight: 650;
 }
 
-/* Desenho do talhao sobre o mapa (HU09) */
-.desenho-do-talhao__mapa {
-  height: 320px;
-  border-radius: 8px;
-  border: 1px solid var(--borda, #2b3a2e);
-  margin-bottom: 8px;
-  cursor: crosshair;
-}
-
 /* Secoes recolhidas: o que e detalhe tecnico ou caminho alternativo fica a um
    clique, sem disputar espaco com o fluxo principal da tela. */
 details.avancado {
@@ -599,4 +590,71 @@ ol.passos {
 
 ol.passos li {
   margin-bottom: 4px;
+}
+
+/* Cadastro guiado da seguradora. */
+.abas-cadastro {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 1.5rem 0;
+}
+.etapas-cadastro {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+.etapas-cadastro li {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 1rem;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  color: var(--tinta-suave);
+}
+.etapas-cadastro li[aria-current] {
+  border-color: var(--verde-500);
+  background: var(--verde-100);
+  color: var(--tinta);
+}
+.etapas-cadastro li span {
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  min-width: 1.8rem;
+  text-align: center;
+}
+.resumo-cadastro {
+  display: grid;
+  grid-template-columns: minmax(8rem, 1fr) 2fr;
+  gap: 0.6rem 1rem;
+}
+.resumo-cadastro dt {
+  color: var(--tinta-suave);
+}
+.resumo-cadastro dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.cadastro-seguradora .cartao {
+  margin-bottom: 1.2rem;
+}
+@media (max-width: 600px) {
+  .etapas-cadastro {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .etapas-cadastro li {
+    padding: 0.65rem;
+  }
+  .resumo-cadastro {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+  .resumo-cadastro dd {
+    margin-bottom: 0.6rem;
+  }
 }

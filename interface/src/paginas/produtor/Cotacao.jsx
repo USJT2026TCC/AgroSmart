@@ -11,8 +11,7 @@ import { Aviso, Campo, Carregando, RodapeDaFronteira } from "../../componentes/u
 /**
  * Simulacao de cotacao e envio da proposta (RF06, RNF04, HU10).
  *
- * O limite e o premio vem do servidor, calculados em BigInt sobre a area que o
- * PostGIS mediu no elipsoide. Os exemplos numericos do que aciona e do que nao
+ * O limite e o premio vem do servidor, calculados em BigInt sobre a area cadastrada. Os exemplos numericos do que aciona e do que nao
  * aciona vem de `regraDeGatilho.js`, a mesma regra do contrato — a equivalencia e
  * verificada caso a caso por `testes/blockchain/unitarios/RegraDeGatilho.test.js`.
  */
@@ -212,7 +211,7 @@ export default function Cotacao() {
             htmlFor="area"
             ajuda={
               talhao
-                ? `O talhao tem ${Number(talhao.areaHa).toFixed(2)} ha, medidos pelo PostGIS sobre o poligono cadastrado.`
+                ? `O talhao tem ${Number(talhao.areaHa).toFixed(2)} ha, de área ${talhao.origemArea === "informada" ? "informada pela seguradora" : "medida por polígono"}.`
                 : null
             }
           >

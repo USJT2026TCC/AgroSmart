@@ -5,7 +5,7 @@ API Node.js/Express do AgroSmart, com PostgreSQL/PostGIS.
 ## O que faz
 
 - Autentica usuarios, controla perfis e comprova a carteira do produtor por assinatura.
-- Cadastra produtores, propriedades, talhoes e produtos; mede area pelo PostGIS.
+- Cadastra produtores, propriedades, talhoes e produtos; aceita área informada em hectares ou medida pelo PostGIS quando há polígono.
 - Importa o pacote publico INMET A770 e consulta sua serie historica.
 - Calcula cotacoes, registra propostas historicas e prepara os termos para a seguradora assinar na MetaMask.
 - Confere a emissao na blockchain e indexa garantia, publicacoes, pagamentos e cancelamentos.

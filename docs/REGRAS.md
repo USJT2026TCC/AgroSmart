@@ -16,6 +16,7 @@ hipotética; o gatilho é experimental, sem validação agronômica ou atuarial 
 | Garantia | Depósito pela seguradora do valor integral da indenização |
 | Indenização | Pagamento único de 100% do valor contratado ao atingir o gatilho |
 | Prêmio | Valor informativo apresentado pela aplicação |
+| Área | Informada em hectares pela seguradora; a área segurada não pode ultrapassar a cadastrada |
 
 O oráculo publica a primeira data que atinge o gatilho. Se isso não ocorrer,
 publica o último dia da cobertura, permitindo à seguradora resgatar a garantia.

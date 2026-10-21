@@ -24,7 +24,7 @@ const MENUS = {
   [PERFIS.SEGURADORA]: [
     { para: "/seguradora", texto: "Carteira", fim: true },
     { para: "/seguradora/propostas", texto: "Propostas" },
-    { para: "/seguradora/talhoes", texto: "Talhoes e produtos" },
+    { para: "/seguradora/talhoes", texto: "Cadastros" },
     { para: "/seguradora/oraculos", texto: "Oraculos" },
   ],
 };
