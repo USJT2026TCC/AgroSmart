@@ -24,3 +24,5 @@ provisorio por localStorage. Consultar um periodo nao envia transacao.
 | componentes/ | Elementos compartilhados da interface |
 
 Em **Cadastros**, a seguradora segue produtor → propriedade/talhão e cultura → conferência. A área é digitada em hectares e identificada como informada, sem desenho no mapa. Produtos de seguro têm aba própria; consultas e edições ficam em **Consultar e editar**. O cadastro não exige transação na MetaMask.
+
+A **Carteira** destaca propostas aguardando emissão e apólices que precisam de garantia. Filtros de emissão, cultura e município são aplicados aos indicadores e à lista de apólices. Sem apólices, o painel apresenta os próximos passos; relatórios e detalhes da rede ficam recolhidos.

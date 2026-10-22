@@ -658,3 +658,217 @@ ol.passos li {
     margin-bottom: 0.6rem;
   }
 }
+
+/* Visao operacional da seguradora. */
+.painel-titulo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-bottom: 0.7rem;
+}
+.painel-sobre {
+  font-size: 0.73rem;
+  letter-spacing: 0.12em;
+  color: var(--tinta-suave);
+  margin-bottom: 0.4rem;
+  font-weight: 650;
+}
+.painel-titulo h1 {
+  font-size: 1.85rem;
+}
+.painel-titulo button {
+  white-space: nowrap;
+}
+.painel-rede {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  font-size: 0.82rem;
+  margin-bottom: 1.4rem;
+}
+.painel-rede > .silencioso {
+  margin-left: auto;
+}
+.painel-ponto {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--sucesso);
+}
+.painel-ponto.atencao {
+  background: var(--alerta);
+}
+.painel-pendencias {
+  padding: 1.3rem 1.5rem;
+  border: 1px solid var(--borda);
+  border-left: 4px solid var(--verde-500);
+  border-radius: var(--raio);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  background: var(--verde-100);
+  margin-bottom: 1.4rem;
+}
+.painel-pendencias > div {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.painel-contagem {
+  font-size: 2.2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.painel-pendencias h2 {
+  font-size: 1rem;
+}
+.painel-pendencias p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--tinta-suave);
+}
+.acao-painel {
+  display: inline-block;
+  padding: 0.65rem 1rem;
+  background: var(--verde-700);
+  color: #fff;
+  border-radius: var(--raio-pequeno);
+  text-decoration: none;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.acao-painel:hover {
+  background: var(--verde-900);
+  color: #fff;
+}
+.painel-indicadores {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+.painel-indicadores .rotulo {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.86rem;
+}
+.painel-apolices {
+  margin-bottom: 1rem;
+}
+.painel-link {
+  white-space: nowrap;
+  font-weight: 600;
+}
+.painel-vazio {
+  text-align: center;
+  padding: 2.2rem 2rem;
+  margin-bottom: 1.2rem;
+}
+.painel-vazio h2 {
+  font-size: 1.3rem;
+}
+.painel-vazio > p {
+  color: var(--tinta-suave);
+}
+.painel-vazio-simbolo {
+  display: inline-block;
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--verde-700);
+  margin-bottom: 0.8rem;
+}
+.painel-primeiros-passos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+  list-style: none;
+  margin: 2rem 0;
+  padding: 0;
+  text-align: left;
+}
+.painel-primeiros-passos li {
+  border-top: 1px solid var(--borda);
+  padding-top: 1rem;
+}
+.painel-primeiros-passos li > span {
+  display: inline-block;
+  background: var(--verde-100);
+  border-radius: 50%;
+  width: 1.7rem;
+  text-align: center;
+  margin-right: 0.6rem;
+  color: var(--tinta);
+}
+.painel-primeiros-passos p {
+  font-size: 0.9rem;
+  color: var(--tinta-suave);
+  margin: 0.6rem 0 0;
+}
+.painel-vazio .linha-de-botoes {
+  justify-content: center;
+  align-items: center;
+}
+.painel-filtros,
+.painel-detalhes {
+  margin-bottom: 1rem;
+}
+.painel-filtros summary,
+.painel-detalhes summary,
+.painel-conexao summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.painel-filtros[open] summary,
+.painel-detalhes[open] summary,
+.painel-conexao[open] summary {
+  margin-bottom: 1rem;
+}
+.painel-filtros .campo {
+  margin-bottom: 0.5rem;
+}
+.painel-conexao {
+  padding: 0.8rem 0;
+  font-size: 0.85rem;
+  color: var(--tinta-suave);
+}
+.painel-conexao dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.5rem 1rem;
+}
+.painel-conexao dd {
+  margin: 0;
+}
+@media (max-width: 700px) {
+  .painel-titulo {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .painel-titulo h1 {
+    font-size: 1.5rem;
+  }
+  .painel-pendencias {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1rem;
+  }
+  .painel-indicadores,
+  .painel-primeiros-passos {
+    grid-template-columns: 1fr;
+  }
+  .painel-vazio {
+    padding: 1.5rem 1rem;
+  }
+  .painel-primeiros-passos {
+    gap: 1rem;
+  }
+  .painel-rede > .silencioso {
+    margin-left: 0;
+  }
+  .painel-conexao dl {
+    grid-template-columns: 1fr;
+  }
+}

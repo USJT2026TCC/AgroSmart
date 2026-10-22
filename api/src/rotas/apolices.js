@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { filtrosDoRelatorio } from "../dominio/filtrosDaCarteira.js";
 
 import { naoEncontrado } from "../erros.js";
 import { resumirTermos } from "../dominio/termos.js";
@@ -66,7 +67,17 @@ export function rotasDeApolices() {
       return;
     }
 
-    const { rows } = await banco.query(`${SQL_APOLICE} ORDER BY a.emitida_em DESC`);
+    const filtro = filtrosDoRelatorio(req.query);
+    const { rows } = await banco.query(
+      `${SQL_APOLICE}
+      LEFT JOIN propriedades pr ON pr.id = t.propriedade_id
+      WHERE ($1::date IS NULL OR a.emitida_em >= ($1::date::timestamp AT TIME ZONE 'UTC'))
+        AND ($2::date IS NULL OR a.emitida_em < (($2::date + 1)::timestamp AT TIME ZONE 'UTC'))
+        AND ($3::text IS NULL OR t.cultura = $3)
+        AND ($4::text IS NULL OR pr.municipio = $4)
+      ORDER BY a.emitida_em DESC`,
+      [filtro.de, filtro.ate, filtro.cultura, filtro.regiao],
+    );
     res.json({ apolices: rows.map(apolicePublica) });
   });
 

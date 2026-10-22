@@ -1,35 +1,12 @@
 import { Router } from "express";
+import { filtrosDoRelatorio } from "../dominio/filtrosDaCarteira.js";
 
-import { naoEncontrado, pedidoInvalido } from "../erros.js";
+import { naoEncontrado } from "../erros.js";
 import { exigirPerfil, exigirSessao } from "../seguranca/sessoes.js";
 
 /**
  * Notificacoes, relatorios, auditoria e saude do servico (RF27, RF29).
  */
-/** Filtros do relatorio (RF29): periodo de emissao, cultura e regiao (municipio). */
-function filtrosDoRelatorio(q) {
-  const data = (valor, campo) => {
-    if (valor === undefined || valor === "") return null;
-    if (
-      !/^\d{4}-\d{2}-\d{2}$/.test(String(valor)) ||
-      !Number.isFinite(Date.parse(`${valor}T00:00:00Z`)) ||
-      new Date(`${valor}T00:00:00Z`).toISOString().slice(0, 10) !== valor
-    ) {
-      throw pedidoInvalido(`O filtro "${campo}" deve estar no formato AAAA-MM-DD.`);
-    }
-    return String(valor);
-  };
-  const textoOpcional = (valor) =>
-    valor === undefined || valor === "" ? null : String(valor).slice(0, 120);
-
-  return {
-    de: data(q.de, "de"),
-    ate: data(q.ate, "ate"),
-    cultura: textoOpcional(q.cultura)?.toLowerCase() ?? null,
-    regiao: textoOpcional(q.regiao),
-  };
-}
-
 export function rotasDeAcompanhamento() {
   const r = Router();
 
@@ -86,8 +63,8 @@ export function rotasDeAcompanhamento() {
           LEFT JOIN propostas p ON p.id = a.proposta_id
           LEFT JOIN talhoes t ON t.id = a.talhao_id
           LEFT JOIN propriedades pr ON pr.id = t.propriedade_id
-         WHERE ($1::date IS NULL OR a.emitida_em >= $1::date)
-           AND ($2::date IS NULL OR a.emitida_em < $2::date + 1)
+         WHERE ($1::date IS NULL OR a.emitida_em >= ($1::date::timestamp AT TIME ZONE 'UTC'))
+           AND ($2::date IS NULL OR a.emitida_em < (($2::date + 1)::timestamp AT TIME ZONE 'UTC'))
            AND ($3::text IS NULL OR t.cultura = $3)
            AND ($4::text IS NULL OR pr.municipio = $4)
       )`;
