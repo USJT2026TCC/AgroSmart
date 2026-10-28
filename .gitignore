@@ -1,0 +1,41 @@
+# Dependências
+node_modules/
+.venv/
+
+# Segredos: nunca versionar
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# Gerados no build ou na execução
+blockchain/artifacts/
+blockchain/cache/
+interface/dist/
+interface/src/cadeia/implantacoes.json
+api/dados/
+oraculo/dados*/
+etl/dados/
+etl/build/
+*.egg-info/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Estado local do sistema (banco, fila do oráculo, segredos gerados)
+.execucao/
+
+# Testes e evidências ficam só na máquina local
+testes/
+
+# Ferramentas e configurações pessoais
+.claude/
+AGENTS.md
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
+~$*.docx

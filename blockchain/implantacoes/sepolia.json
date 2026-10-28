@@ -1,0 +1,15 @@
+{
+  "versaoProtocolo": "clima-historico-v4",
+  "rede": "sepolia",
+  "chainId": 11155111,
+  "implantadoEm": "2026-10-28T04:04:26.939Z",
+  "blocoInicial": 12009798,
+  "txImplantacao": "0x024ed550f789797cb6b9afb8811cda7cda7835bb76231bd39416badb8aa1e2f4",
+  "gasImplantacao": "13064296",
+  "seguradora": "0x95eA48b7BF91446CF12C156aC2FDeA75Af03fD70",
+  "oraculoAutorizado": "0xeFCf4d0c3f22ac012896c2D9c6bA35e9fd7D691D",
+  "contratos": {
+    "OracleRegistry": "0xb9821B9aA456Ce8Ccc2B489c1C7381Ffff1f5Aa3",
+    "ApoliceFactory": "0xE9CE1a3AC2685ec7Eb54205E6E72eeE4bfaFB386"
+  }
+}
