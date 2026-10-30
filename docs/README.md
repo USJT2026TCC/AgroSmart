@@ -1,5 +1,4 @@
-# Diagrama
+# Documentação
 
-`fluxo-dados.svg` é a imagem usada no README principal. Mostra o preparo dos dados,
-a importação no banco, a avaliação pelo oráculo, o contrato e a consulta dos resultados.
-O rodapé identifica a emissão e o depósito da garantia que antecedem essa avaliação.
+- `AgroSmart_Especificacao_para_Desenvolvimento.docx`: especificação para orientar a construção do software, com requisitos, regras, casos de uso, modelos, integrações e critérios de aceitação.
+- `fluxo-dados.svg`: diagrama do fluxo usado no README principal, do preparo dos dados à consulta dos resultados.
