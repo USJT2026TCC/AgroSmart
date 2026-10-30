@@ -1,0 +1,93 @@
+services:
+  banco:
+    image: postgres:16-bookworm
+    container_name: agrosmart-banco
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-agrosmart}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-agrosmart_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-agrosmart}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - dados_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build: .
+    image: agrosmart:atual
+    restart: unless-stopped
+    init: true
+    command: ["node", "api/src/index.js"]
+    env_file:
+      - path: .execucao/api.env
+        required: false
+    environment:
+      PORTA: "3001"
+    ports:
+      - "127.0.0.1:3001:3001"
+    depends_on:
+      banco:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3001/api/saude').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 30s
+
+  oraculo:
+    image: agrosmart:atual
+    restart: unless-stopped
+    init: true
+    working_dir: /agrosmart/oraculo
+    command: ["node", "src/index.js", "servico", "--intervalo", "5000"]
+    env_file:
+      - path: .execucao/oraculo.env
+        required: false
+    environment:
+      API_URL: http://api:3001/api
+      DIR_DADOS: /agrosmart/.execucao/oraculo
+    volumes:
+      - ./.execucao/oraculo:/agrosmart/.execucao/oraculo
+    depends_on:
+      api:
+        condition: service_healthy
+
+  interface:
+    image: agrosmart:atual
+    restart: unless-stopped
+    init: true
+    command: ["node", "scripts/servir-interface.mjs"]
+    environment:
+      PORTA: "5173"
+      API_ALVO: http://api:3001
+    ports:
+      - "127.0.0.1:5173:5173"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:5173').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  dados_pg:

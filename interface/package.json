@@ -1,0 +1,30 @@
+{
+  "name": "agrosmart-app",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Aplicativo do produtor e painel da seguradora do AgroSmart, integrados aos contratos e ao oraculo.",
+  "scripts": {
+    "enderecos": "node scripts/sincronizar-enderecos.mjs",
+    "build": "npm run enderecos && vite build",
+    "testar": "vitest run --config ../testes/interface/vitest.config.mjs",
+    "cobertura": "vitest run --config ../testes/interface/vitest.config.mjs --coverage"
+  },
+  "dependencies": {
+    "ethers": "^6.13.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.18.4"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
+    "@vitejs/plugin-react": "^6.1.2",
+    "@vitest/coverage-v8": "^5.0.3",
+    "jsdom": "^25.0.1",
+    "playwright-core": "^1.64.0",
+    "prettier": "^3.9.8",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.3"
+  }
+}

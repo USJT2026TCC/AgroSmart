@@ -1,0 +1,9 @@
+{
+  "estacao": "A770",
+  "inicio": "2020-01-01",
+  "fim": "2026-09-30",
+  "chuvaDiaSecoMm": 1,
+  "horasMinimas": 20,
+  "gatilhoMinimo": 1,
+  "gatilhoMaximo": 366
+}

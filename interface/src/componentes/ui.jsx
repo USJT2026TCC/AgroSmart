@@ -1,0 +1,81 @@
+import { linkDoExplorador } from "../cadeia/rede";
+import { enderecoCurto, hashCurto, rotuloSituacao } from "../cadeia/formatos";
+
+/** Componentes reutilizados pelas telas. */
+
+/** Caixa de aviso. `tipo` define a cor: informacao, sucesso, alerta ou erro. */
+export function Aviso({ tipo = "informacao", titulo, children }) {
+  return (
+    <div className={`aviso ${tipo}`} role={tipo === "erro" ? "alert" : "status"}>
+      {titulo ? <strong>{titulo}</strong> : null}
+      {titulo ? <br /> : null}
+      {children}
+    </div>
+  );
+}
+
+/** Selo colorido da situacao da apolice. */
+export function SeloSituacao({ situacao }) {
+  const cores = { 0: "alerta", 1: "informacao", 2: "sucesso", 3: "neutro", 4: "neutro" };
+
+  return <span className={`selo ${cores[situacao] ?? "neutro"}`}>{rotuloSituacao(situacao)}</span>;
+}
+
+/** Selo generico. */
+export function Selo({ tipo = "neutro", children }) {
+  return <span className={`selo ${tipo}`}>{children}</span>;
+}
+
+/** Indicador numerico do painel. */
+export function Indicador({ rotulo, valor, nota }) {
+  return (
+    <div className="indicador">
+      <div className="rotulo">{rotulo}</div>
+      <div className="valor">{valor}</div>
+      {nota ? <div className="nota">{nota}</div> : null}
+    </div>
+  );
+}
+
+/** Campo de formulario com rotulo e texto de ajuda. */
+export function Campo({ rotulo, ajuda, children, htmlFor }) {
+  return (
+    <div className="campo">
+      <label htmlFor={htmlFor}>{rotulo}</label>
+      {children}
+      {ajuda ? <div className="ajuda">{ajuda}</div> : null}
+    </div>
+  );
+}
+
+/** Estado de carregamento. */
+export function Carregando({ children = "Consultando a rede…" }) {
+  return <div className="carregando">{children}</div>;
+}
+
+/** Endereco ou transacao com link para o Etherscan da Sepolia. */
+export function LinkDaCadeia({ valor, tipo = "tx", curto = true }) {
+  if (!valor) return <span className="silencioso">—</span>;
+
+  const texto = curto ? (tipo === "address" ? enderecoCurto(valor) : hashCurto(valor)) : valor;
+  const href = linkDoExplorador(valor, tipo);
+
+  if (!href) {
+    return (
+      <span className="mono" title={valor}>
+        {texto}
+      </span>
+    );
+  }
+
+  return (
+    <a className="mono" href={href} target="_blank" rel="noreferrer" title={valor}>
+      {texto}
+    </a>
+  );
+}
+
+/** Rodape que lembra de que lado da fronteira o dado da tela veio. */
+export function RodapeDaFronteira({ children }) {
+  return <p className="rodape-fronteira">{children}</p>;
+}

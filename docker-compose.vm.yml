@@ -1,0 +1,19 @@
+# Acesso pela internet, com HTTPS automatico. O npm start inclui este arquivo quando
+# DOMINIO esta preenchido em blockchain/.env (por exemplo, 20-1-2-3.sslip.io na VM).
+# So o Caddy fica exposto: banco, API e interface continuam presos a 127.0.0.1.
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    command: ["caddy", "reverse-proxy", "--from", "${DOMINIO}", "--to", "interface:5173"]
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - certificados:/data
+    depends_on:
+      interface:
+        condition: service_healthy
+
+volumes:
+  certificados:
