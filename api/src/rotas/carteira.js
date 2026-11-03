@@ -9,7 +9,7 @@ import { exigirPerfil, exigirSessao } from "../seguranca/sessoes.js";
 import { endereco as enderecoValido, uuid } from "../validacao.js";
 
 /**
- * Vinculo da carteira ao cadastro por assinatura (RF02, HU07).
+ * Vinculo da carteira ao cadastro por assinatura.
  *
  * O desafio nasce na API, e e aqui que a assinatura e conferida:
  *
@@ -17,7 +17,7 @@ import { endereco as enderecoValido, uuid } from "../validacao.js";
  *  2. a carteira do produtor assina, no navegador;
  *  3. o servidor recupera o endereco que assinou e, so entao, grava o vinculo.
  *
- * A chave privada nao trafega em nenhum momento (RNF15).
+ * A chave privada nao trafega em nenhum momento.
  */
 export function rotasDeCarteira() {
   const r = Router();
@@ -97,7 +97,7 @@ export function rotasDeCarteira() {
       );
     }
 
-    // HU07, criterio 4: endereco ja vinculado a outro produtor e recusado. A
+    // endereco ja vinculado a outro produtor e recusado. A
     // restricao UNIQUE do banco cobre a corrida entre dois pedidos simultaneos;
     // esta consulta so da a mensagem certa no caso comum.
     const { rows: donos } = await banco.query(

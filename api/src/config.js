@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 /**
  * Configuracao do backend.
  *
- * Todo segredo vem de variavel de ambiente (RNF14), gravada pelo `npm start` da
+ * Todo segredo vem de variavel de ambiente, gravada pelo `npm start` da
  * raiz. Nenhum valor sensivel tem padrao embutido no codigo.
  */
 

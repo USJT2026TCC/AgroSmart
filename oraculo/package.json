@@ -7,7 +7,7 @@
   "scripts": {
     "testar": "node --test \"../testes/oraculo/unitarios/*.test.js\"",
     "testar:integracao": "node --test --test-concurrency=1 \"../testes/oraculo/integracao/*.test.js\"",
-    "cobertura": "c8 --reports-dir ../testes/gerados/oraculo/cobertura --all --src src --include \"src/**\" --reporter text-summary npm run testar:tudo",
+    "cobertura": "c8 --reports-dir ../testes/gerados/oraculo/cobertura --all --src src --include \"src/**\" --reporter text-summary --reporter json-summary npm run testar:tudo",
     "testar:tudo": "npm run testar && npm run testar:integracao"
   },
   "dependencies": {

@@ -9,12 +9,12 @@ import { Aviso, Campo, LinkDaCadeia } from "../../componentes/ui";
 import { implantacaoDaRede } from "../../cadeia/rede";
 
 /**
- * Vinculo da carteira ao cadastro por assinatura (RF02, HU07).
+ * Vinculo da carteira ao cadastro por assinatura.
  *
  * O desafio nasce no servidor, com numero unico e prazo de cinco minutos. A
  * carteira assina no navegador; o servidor recupera o endereco que assinou e so
  * grava o vinculo se ele for exatamente o endereco declarado. A chave privada nao
- * sai da carteira em nenhum momento (RNF15).
+ * sai da carteira em nenhum momento.
  */
 export default function VincularCarteira() {
   const { usuario, recarregarUsuario } = useSessao();

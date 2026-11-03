@@ -85,7 +85,7 @@ export async function exigirSessao(req, _res, proximo) {
 }
 
 /**
- * Exige um dos perfis informados (RF04, RNF10).
+ * Exige um dos perfis informados.
  *
  * E esta verificacao, no servidor, que protege de verdade. A do aplicativo so
  * esconde menus: um cliente adulterado a contorna, esta nao.

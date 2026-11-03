@@ -5,13 +5,13 @@ const { ethers } = require("ethers");
 const { ABI_APOLICE, ABI_REGISTRY } = require("./abi");
 
 /**
- * Travessia da fronteira: assina e submete os indices a cadeia (RF19, RF22).
+ * Travessia da fronteira: assina e submete os indices a cadeia.
  *
  * Esta e a unica classe do servico que fala com a rede. A separacao e proposital:
  * a regra historica fica em `historico.js`, testavel sem blockchain, e
  * aqui ficam apenas assinatura, envio e leitura do recibo.
  *
- * A chave privada vem de variavel de ambiente e nunca e escrita em log (RNF14).
+ * A chave privada vem de variavel de ambiente e nunca e escrita em log.
  */
 class Publicador {
   /**
@@ -31,8 +31,8 @@ class Publicador {
     // O tempo limite padrao do ethers para uma requisicao e de 300 segundos, e
     // na deteccao inicial de rede ele ainda repete a tentativa varias vezes. Com
     // o no fora do ar, o servico simplesmente travaria, em vez de falhar e
-    // devolver a publicacao a fila. Como o RNF20 exige que a indisponibilidade da
-    // rede nao cause perda de dados, o que importa aqui e falhar rapido: a
+    // devolver a publicacao a fila. A indisponibilidade da rede não deve perder
+    // dados; a requisição falha com tempo limitado, enquanto a
     // entrada continua na fila e a proxima tentativa vem com espera crescente.
     const requisicao = new ethers.FetchRequest(rpcUrl);
     requisicao.timeout = timeoutMs;
@@ -67,7 +67,7 @@ class Publicador {
   }
 
   /**
-   * Confere se este oraculo continua autorizado no registro (RF18).
+   * Confere se este oraculo continua autorizado no registro.
    *
    * Vale checar antes de montar uma transacao: a seguradora pode ter revogado o
    * endereco, e descobrir isso por uma revert custa gas a toa.
@@ -95,7 +95,7 @@ class Publicador {
     return c.verTermos();
   }
 
-  /** Se o periodo ja foi publicado nessa apolice (RF20). */
+  /** Se o periodo ja foi publicado nessa apolice. */
   async periodoJaPublicado(enderecoApolice, periodo) {
     const apolice = new ethers.Contract(enderecoApolice, ABI_APOLICE, this.provider);
 
@@ -140,7 +140,7 @@ class Publicador {
   }
 
   /**
-   * Publica o indice do periodo em uma unica transacao (RF19).
+   * Publica o indice do periodo em uma unica transacao.
    *
    * A chamada e simulada com `staticCall` antes do envio. Isso antecipa as
    * rejeicoes previsiveis — endereco revogado, periodo duplicado, apolice fora de

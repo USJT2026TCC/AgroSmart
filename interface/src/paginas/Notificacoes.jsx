@@ -7,7 +7,7 @@ import { emDataHora } from "../cadeia/formatos";
 import { Aviso, Carregando, LinkDaCadeia, Selo } from "../componentes/ui";
 
 /**
- * Notificacoes (RF27).
+ * Notificacoes.
  *
  * Geradas pelo indexador do backend a partir dos eventos da cadeia — emissao,
  * garantia, pagamento — e pelo oraculo, quando uma publicacao falha de vez. Cada

@@ -38,7 +38,7 @@ function SemAcesso() {
     <div className="pagina">
       <h1>Sem acesso</h1>
       <Aviso tipo="erro">
-        Esta tela pertence a outro perfil. O acesso e restrito conforme o perfil autenticado (RF04).
+        Esta tela pertence a outro perfil. O acesso e restrito conforme o perfil autenticado.
       </Aviso>
       <button className="secundario" onClick={() => navegar("/")}>
         Voltar ao inicio

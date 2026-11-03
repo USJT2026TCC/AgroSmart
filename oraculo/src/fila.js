@@ -60,7 +60,7 @@ class FilaDePublicacoes {
   /**
    * Coloca uma publicacao na fila. Repetir a mesma apolice e periodo nao cria
    * uma segunda entrada: o contrato rejeitaria a duplicata de qualquer forma
-   * (RF20), e gastar gas para descobrir isso seria desperdicio.
+   *, e gastar gas para descobrir isso seria desperdicio.
    *
    * @returns {{entrada: object, novo: boolean}}
    */
@@ -151,7 +151,7 @@ class FilaDePublicacoes {
     };
 
     // Recusa explicita do contrato e definitiva: repetir a mesma chamada da a
-    // mesma resposta. As novas tentativas do RF21 sao para a rede indisponivel.
+    // mesma resposta. As novas tentativas sao para a rede indisponivel.
     entrada.estado =
       ehRecusaDoContrato(erro) || erro?.definitivo || entrada.tentativas >= this.maxTentativas
         ? ESTADOS.FALHA

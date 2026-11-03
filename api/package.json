@@ -7,8 +7,8 @@
   "main": "src/index.js",
   "scripts": {
     "testar": "node --import ../testes/api/unitarios/preparar.js --test --test-concurrency=1 \"../testes/api/unitarios/*.test.js\"",
-    "testar:integracao": "node --test --test-concurrency=1 \"../testes/api/integracao/*.test.js\"",
-    "cobertura": "c8 --reports-dir ../testes/gerados/api/cobertura --all --src src --include \"src/**\" --reporter text-summary npm run testar"
+    "testar:integracao": "node --test --test-concurrency=1 \"../testes/api/integracao/*.test.js\" \"../testes/api/integracao/*.test.mjs\"",
+    "cobertura": "c8 --reports-dir ../testes/gerados/api/cobertura --all --src src --include \"src/**\" --reporter text-summary --reporter json-summary npm run testar"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

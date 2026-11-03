@@ -29,7 +29,7 @@ export default function Cotacao() {
   const [propostas, setPropostas] = useState([]);
   const [talhaoId, setTalhaoId] = useState("");
   const [inicioDaVigencia, setInicioDaVigencia] = useState("2024-02-07");
-  const [fimDaVigencia, setFimDaVigencia] = useState("2025-02-07");
+  const [fimDaVigencia, setFimDaVigencia] = useState(limites.fim);
   const [gatilhoDias, setGatilhoDias] = useState(30);
   const [avaliacaoHistorica, setAvaliacaoHistorica] = useState(null);
   const [cotacao, setCotacao] = useState(null);
@@ -118,7 +118,7 @@ export default function Cotacao() {
     };
   }, [talhao, produto, inicioDaVigencia, fimDaVigencia, gatilhoDias]);
 
-  /** A condicao em linguagem corrente (RNF04). */
+  /** A condicao em linguagem corrente. */
   const textoDaCondicao = useMemo(
     () => (produto ? condicaoEmPalavras(cotacao?.termos ?? produto) : null),
     [produto, cotacao],

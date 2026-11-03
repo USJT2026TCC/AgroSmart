@@ -157,11 +157,11 @@ export async function lerPublicacoes(endereco, provedor) {
 }
 
 /**
- * Linha do tempo da apolice, reconstruida dos eventos da cadeia (RF09).
+ * Linha do tempo da apolice, reconstruida dos eventos da cadeia.
  *
  * Nada aqui vem de banco de dados: o historico e remontado a partir do que a
  * propria rede guarda, o que e justamente o que torna a decisao auditavel por
- * qualquer parte, sem depender da palavra da seguradora (RNF18).
+ * qualquer parte, sem depender da palavra da seguradora.
  */
 export async function lerLinhaDoTempo(endereco, provedor) {
   const contrato = contratoApolice(endereco, provedor);
@@ -174,7 +174,7 @@ export async function lerLinhaDoTempo(endereco, provedor) {
     "CondicaoAvaliada",
     "PagamentoExecutado",
     "GarantiaResgatada",
-    "ApoliceCancelada", // RF10
+    "ApoliceCancelada",
   ];
 
   // Uma consulta por trecho para todos os eventos do contrato ("*"), e nao uma

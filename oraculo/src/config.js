@@ -6,7 +6,7 @@ const path = require("node:path");
 /**
  * Configuracao do servico de oraculo.
  *
- * Todo segredo vem de variavel de ambiente, nunca do codigo (RNF14). O `npm start`
+ * Todo segredo vem de variavel de ambiente, nunca do codigo. O `npm start`
  * da raiz grava as variaveis em .execucao/oraculo.env e o Docker as entrega ao servico.
  *
  * Os enderecos dos contratos vem de `blockchain/implantacoes/<rede>.json`, gerado
@@ -28,7 +28,7 @@ const config = {
   dirImplantacoes:
     process.env.DIR_IMPLANTACOES || path.join(RAIZ, "..", "blockchain", "implantacoes"),
 
-  /** Tentativas de publicacao antes de a entrada da fila ser marcada como falha (RF21). */
+  /** Tentativas de publicacao antes de a entrada da fila ser marcada como falha. */
   maxTentativas: Number(process.env.MAX_TENTATIVAS || 5),
 
   /** Espera inicial entre tentativas, em milissegundos. Dobra a cada tentativa. */
@@ -42,7 +42,7 @@ const config = {
    *
    * O padrao do ethers e de 300 segundos. Com o no fora do ar, isso faria o
    * servico travar em vez de devolver a publicacao a fila e tentar de novo mais
-   * tarde, que e o comportamento exigido pelo RNF20.
+   * tarde, sem perder o estado da fila.
    */
   timeoutMs: Number(process.env.TIMEOUT_MS || 10000),
 

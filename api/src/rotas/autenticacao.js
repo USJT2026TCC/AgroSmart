@@ -7,7 +7,7 @@ import { abrirSessao, exigirSessao, limitarLogin, revogarSessao } from "../segur
 import { texto } from "../validacao.js";
 
 /**
- * Autenticacao (RF04, HU13): login por senha dos dois perfis fixos da
+ * Autenticacao: login por senha dos dois perfis fixos da
  * demonstracao, sessao por token opaco e encerramento da sessao.
  */
 

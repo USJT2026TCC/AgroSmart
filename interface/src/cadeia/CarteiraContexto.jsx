@@ -8,8 +8,7 @@ import { mensagemDeErro } from "./formatos";
  * Conexao com a carteira do produtor ou da seguradora.
  *
  * A chave privada nunca passa por aqui: o aplicativo pede a assinatura, a carteira
- * assina, e o que volta e apenas o resultado. O RNF15 diz que a chave privada do
- * produtor nunca deve ser armazenada, e a forma de garantir isso e nunca te-la.
+ * assina, e o aplicativo recebe apenas o resultado. A chave privada permanece na carteira.
  *
  * Duas conexoes coexistem de proposito:
  *  - `provedorLeitura` fala direto com o no RPC configurado. Le a cadeia mesmo sem

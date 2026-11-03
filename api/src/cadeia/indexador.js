@@ -16,15 +16,14 @@ import {
  *
  * Varre os blocos novos, guarda os eventos dos contratos e reage a eles: registra
  * apolices emitidas, atualiza a situacao de cada uma, confirma as publicacoes que
- * o oraculo relatou e gera as notificacoes (RF27).
+ * o oraculo relatou e gera as notificacoes.
  *
  * POR QUE VARRER, E NAO ESCUTAR
  *
  * O `contract.on(...)` do ethers so ve o que acontece enquanto o processo esta de
  * pe. Se o backend reinicia no momento de um pagamento, o evento se perde. O
  * indexador guarda o ultimo bloco processado no banco e, ao voltar, continua dali
- * — nenhum evento fica de fora, o que e o mesmo principio do RNF20 aplicado ao
- * caminho de volta, da cadeia para o sistema.
+ * para recuperar os eventos ainda não processados na volta da conexão.
  *
  * IDEMPOTENCIA
  *

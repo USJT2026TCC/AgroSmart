@@ -26,8 +26,15 @@ __pycache__/
 # Estado local do sistema (banco, fila do oráculo, segredos gerados)
 .execucao/
 
-# Testes e evidências ficam só na máquina local
-testes/
+# Saídas e arquivos locais dos testes
+testes/gerados/
+testes/medicoes/
+testes/evidencias/*
+!testes/evidencias/validacao-2026-11-03/
+coverage/
+coverage.json
+.scenarios/
+.nyc_output/
 
 # Ferramentas e configurações pessoais
 .claude/

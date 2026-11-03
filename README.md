@@ -20,9 +20,9 @@ O sistema está no ar em **[https://35-199-108-185.sslip.io/produtor](https://35
 Não é preciso instalar nada além da extensão [MetaMask](https://metamask.io) no navegador,
 com a rede **Sepolia** ativada.
 
-| Perfil | Usuário | Senha |
-|---|---|---|
-| Produtor | `produtor` | `agrosmart` |
+| Perfil     | Usuário      | Senha       |
+| ---------- | ------------ | ----------- |
+| Produtor   | `produtor`   | `agrosmart` |
 | Seguradora | `seguradora` | `agrosmart` |
 
 A **carteira da seguradora** pertence à equipe do projeto: só nós aprovamos propostas,
@@ -60,19 +60,19 @@ A interface acompanha tudo pela API e mostra cada transação com link para o Et
 
 ## Regras do seguro
 
-| Regra | Valor |
-|---|---|
-| Cultura e local | Soja; talhão considerado no mesmo lugar da estação A770 |
-| Cobertura | Datas entre 01/01/2020 e 31/12/2024 (UTC, início e fim inclusos) |
-| Dia seco | Menos de 1 mm de chuva no dia |
-| Dia utilizável | Pelo menos 20 horas válidas de medição; a contratação exige todos os dias utilizáveis |
-| Contagem | Dias secos seguidos desde o início da cobertura; chuva ou dia inválido zera |
-| Gatilho | De 1 a 366 dias, escolhido pelo produtor na proposta |
-| Indenização | Valor fixo do produto, pago uma única vez e por inteiro |
-| Propostas | Uma em análise por talhão |
-| Carteiras | A do produtor não pode ser a da seguradora nem a do oráculo |
-| Beneficiário | Trocar a carteira cadastrada não altera o destinatário das apólices já emitidas |
-| Cancelamento | Possível antes da primeira publicação do oráculo; a garantia volta à seguradora |
+| Regra           | Valor                                                                                                                |
+| --------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Cultura e local | Soja; talhão considerado no mesmo lugar da estação A770                                                              |
+| Cobertura       | Datas entre 01/01/2020 e 31/12/2024 (UTC, início e fim inclusos)                                                     |
+| Dia seco        | Menos de 1 mm de chuva no dia                                                                                        |
+| Dia utilizável  | Pelo menos 20 horas válidas de medição; a contratação exige todos os dias utilizáveis                                |
+| Contagem        | Dias secos seguidos desde o início da cobertura; chuva de 1 mm ou mais zera; dia não utilizável bloqueia a cobertura |
+| Gatilho         | De 1 a 366 dias, escolhido pelo produtor na proposta                                                                 |
+| Indenização     | Valor fixo do produto, pago uma única vez e por inteiro                                                              |
+| Propostas       | Uma em análise por talhão                                                                                            |
+| Carteiras       | A do produtor não pode ser a da seguradora nem a do oráculo                                                          |
+| Beneficiário    | Trocar a carteira cadastrada não altera o destinatário das apólices já emitidas                                      |
+| Cancelamento    | Possível antes da primeira publicação do oráculo; a garantia volta à seguradora                                      |
 
 O gatilho é experimental: não há validação agronômica nem cálculo de prejuízo. O
 contrato confere quem publica e se a data está na cobertura, mas confia na contagem
@@ -80,27 +80,27 @@ do oráculo autorizado.
 
 ## Estrutura
 
-| Pasta | O que tem |
-|---|---|
-| `interface/` | Aplicação web (React) usada pelos dois perfis |
-| `api/` | Backend (Node.js + PostgreSQL): login, cadastros, propostas e leitura da blockchain |
-| `oraculo/` | Serviço que calcula os dias secos e publica no contrato |
-| `blockchain/` | Contratos Solidity e o script de implantação na Sepolia |
-| `etl/` | Ferramenta Python que baixa e prepara os dados do INMET (só para reconstruí-los) |
-| `api/recursos/inmet/A770/` | Série do INMET já preparada, importada no banco ao iniciar |
-| `configuracao/` | Limites compartilhados: período, estação, perfis, cultura e município |
-| `scripts/` | Inicialização pelo Docker, preparo dos dados e o passo a passo para executar o sistema |
-| `docker-compose.yml`, `docker-compose.vm.yml` | Serviços do Docker; o segundo acrescenta o HTTPS na VM |
-| `docs/` | Diagrama do fluxo |
+| Pasta                                         | O que tem                                                                              |
+| --------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `interface/`                                  | Aplicação web (React) usada pelos dois perfis                                          |
+| `api/`                                        | Backend (Node.js + PostgreSQL): login, cadastros, propostas e leitura da blockchain    |
+| `oraculo/`                                    | Serviço que calcula os dias secos e publica no contrato                                |
+| `blockchain/`                                 | Contratos Solidity e o script de implantação na Sepolia                                |
+| `etl/`                                        | Ferramenta Python que baixa e prepara os dados do INMET (só para reconstruí-los)       |
+| `api/recursos/inmet/A770/`                    | Série do INMET já preparada, importada no banco ao iniciar                             |
+| `configuracao/`                               | Limites compartilhados: período, estação, perfis, cultura e município                  |
+| `scripts/`                                    | Inicialização pelo Docker, preparo dos dados e o passo a passo para executar o sistema |
+| `docker-compose.yml`, `docker-compose.vm.yml` | Serviços do Docker; o segundo acrescenta o HTTPS na VM                                 |
+| `docs/`                                       | Diagrama do fluxo                                                                      |
 
 O `npm start` sobe quatro serviços no Docker: banco (PostgreSQL), API (porta 3001),
 oráculo e interface (porta 5173). A Sepolia e a MetaMask ficam fora do Docker.
 
 ## Contratos em uso
 
-| Contrato | Endereço na Sepolia |
-|---|---|
-| Fábrica de apólices | [0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834](https://sepolia.etherscan.io/address/0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834#code) |
+| Contrato             | Endereço na Sepolia                                                                                                                |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Fábrica de apólices  | [0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834](https://sepolia.etherscan.io/address/0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834#code) |
 | Registro de oráculos | [0xb9821B9aA456Ce8Ccc2B489c1C7381Ffff1f5Aa3](https://sepolia.etherscan.io/address/0xb9821B9aA456Ce8Ccc2B489c1C7381Ffff1f5Aa3#code) |
 
 A fábrica está verificada no Etherscan e corresponde à tag `sepolia-2026-11-03`;
@@ -108,4 +108,9 @@ ela limita a cobertura a 01/01/2020–31/12/2024. O registro de oráculos foi ma
 com fontes verificadas na tag `sepolia-2026-10-28`. O indexador acompanha as fábricas
 listadas no manifesto e preserva a consulta às apólices existentes.
 
-Os testes automatizados ficam na máquina da equipe e não acompanham o repositório.
+## Testes
+
+A pasta `testes/` reúne as suítes automatizadas, o roteiro de demonstração na Sepolia
+e as evidências da versão avaliada. Execute `npm test` após preparar os requisitos
+descritos em `testes/README.md`. Resultados de teste local e evidências da Sepolia
+são identificados separadamente.

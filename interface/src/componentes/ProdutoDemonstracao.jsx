@@ -1,3 +1,4 @@
+import limites from "../../../configuracao/historico.json";
 import { ESCOPO } from "../../../configuracao/escopo.js";
 import { Aviso } from "./ui";
 
@@ -24,7 +25,10 @@ export default function ProdutoDemonstracao({ produtos }) {
         </div>
         <div>
           <dt>Dados</dt>
-          <dd>INMET, 2020 a set/2026</dd>
+          <dd>
+            INMET, {limites.inicio.split("-").reverse().join("/")} a{" "}
+            {limites.fim.split("-").reverse().join("/")}
+          </dd>
         </div>
       </dl>
       <span className="selo sucesso">Produto fixo da demonstração</span>

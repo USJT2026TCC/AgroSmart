@@ -13,7 +13,7 @@ import { Aviso } from "./ui";
 /**
  * Barra superior: identidade, navegacao por perfil, notificacoes e carteira.
  *
- * A navegacao muda conforme o perfil autenticado (RF04, na interface). O controle
+ * A navegacao muda conforme o perfil autenticado. O controle
  * de verdade esta no backend: esconder um link nao impede ninguem de chamar a API.
  */
 

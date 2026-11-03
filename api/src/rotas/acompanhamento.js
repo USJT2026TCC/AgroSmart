@@ -4,7 +4,7 @@ import { naoEncontrado } from "../erros.js";
 import { exigirPerfil, exigirSessao } from "../seguranca/sessoes.js";
 
 /**
- * Avisos, indicadores do painel e saude do servico (RF27, RF29).
+ * Avisos, indicadores do painel e saude do servico.
  */
 export function rotasDeAcompanhamento() {
   const r = Router();
@@ -44,7 +44,7 @@ export function rotasDeAcompanhamento() {
   // --------------------------------------------------------- relatorios
 
   /**
-   * Indicadores do painel da seguradora (RF29). A latencia so conta publicacoes
+   * Indicadores do painel da seguradora. A latencia so conta publicacoes
    * confirmadas na rede.
    */
   r.get("/relatorios/carteira", exigirSessao, exigirPerfil("seguradora"), async (req, res) => {

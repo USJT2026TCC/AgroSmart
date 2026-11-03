@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 
 /**
- * Termos da apolice e o resumo criptografico deles (RF08).
+ * Termos da apolice e o resumo criptografico deles.
  *
  * O contrato guarda `hashTermos`, o keccak256 de um texto que descreve tudo o que
  * foi acordado. Para esse resumo servir de prova, tres coisas precisam valer:

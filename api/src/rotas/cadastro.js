@@ -104,7 +104,7 @@ export function rotasDeCadastro() {
   });
 
   /**
-   * Cadastro de talhao (UC02, HU09). Restrito a seguradora, como no caso de uso.
+   * Cadastro de talhao. Restrito a seguradora, como no caso de uso.
    */
   r.post("/talhoes", exigirSessao, exigirPerfil("seguradora"), async (req, res) => {
     const { banco } = req.app.locals;

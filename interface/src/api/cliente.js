@@ -23,8 +23,7 @@ export class ErroDaApi extends Error {
 }
 
 /**
- * O token vive no sessionStorage: fechar a aba encerra a sessao, como pede o
- * criterio de aceite 3 da HU13. No servidor, o token so existe como resumo.
+ * O token fica no sessionStorage da aba. No servidor, somente seu resumo é armazenado.
  */
 export const token = {
   ler: () => sessionStorage.getItem(CHAVE_DO_TOKEN),
@@ -69,7 +68,7 @@ export async function api(caminho, { metodo = "GET", corpo } = {}) {
 
   if (!resposta.ok) {
     // Sessao expirada ou revogada: avisa o contexto de sessao, que manda de
-    // volta ao login (HU13, criterio 3).
+    // volta ao login.
     if (resposta.status === 401 && atual) {
       window.dispatchEvent(new CustomEvent("agrosmart:sessao-expirada"));
     }

@@ -183,7 +183,7 @@ class ServicoOraculo {
 
   /**
    * Publica tudo o que estiver pendente na fila, com espera crescente entre as
-   * tentativas (RF21).
+   * tentativas.
    *
    * A espera dobra a cada tentativa. Em rede congestionada, repetir de imediato
    * so multiplica transacoes que vao falhar pelo mesmo motivo.

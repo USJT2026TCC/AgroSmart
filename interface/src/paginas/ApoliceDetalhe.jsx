@@ -39,7 +39,7 @@ const TITULOS = {
   CondicaoAvaliada: "Contrato avaliou a condicao contratada",
   PagamentoExecutado: "Indenizacao transferida ao produtor",
   GarantiaResgatada: "Garantia devolvida a seguradora",
-  ApoliceCancelada: "Apolice cancelada antes da vigencia",
+  ApoliceCancelada: "Apolice cancelada antes da primeira publicação histórica",
 };
 
 /** Descricao de cada evento, com os argumentos que importam. */
@@ -89,7 +89,7 @@ function ConferenciaDosTermos({ descricao, hashNoContrato }) {
 
   return (
     <div className="cartao">
-      <h2>Conferencia dos termos (RF08)</h2>
+      <h2>Conferencia dos termos</h2>
       <p className={confere ? "conferencia-ok" : "conferencia-falha"}>
         {confere
           ? "O texto dos termos guardado corresponde exatamente ao que foi gravado no contrato."
@@ -262,7 +262,7 @@ export default function ApoliceDetalhe() {
   }
 
   /**
-   * Cancelamento antes da vigencia (RF10). O produtor titular ou a seguradora
+   * Cancelamento antes da primeira publicação histórica. O produtor titular ou a seguradora
    * assinam com a propria carteira; a garantia, se houver, volta a seguradora.
    */
   async function cancelar() {
@@ -374,7 +374,7 @@ export default function ApoliceDetalhe() {
           <h2>Cancelamento antes da reprodução</h2>
           <p className="silencioso">
             A reproducao ainda nao iniciou. Ate a primeira publicacao, o produtor ou a seguradora
-            podem cancelar; a garantia depositada volta para a seguradora (RF10).
+            podem cancelar; a garantia depositada volta para a seguradora.
           </p>
           <button className="secundario" onClick={cancelar} disabled={operando || !podeAssinar}>
             {operando ? "Aguardando a carteira…" : "Cancelar apolice"}
@@ -473,7 +473,7 @@ export default function ApoliceDetalhe() {
 
           <Campo
             rotulo="Resumo criptografico dos termos"
-            ajuda="Gravado na implantacao. Qualquer alteracao no documento contratual produz um resumo diferente, e portanto detectavel (RF08)."
+            ajuda="Gravado na implantacao. Qualquer alteracao no documento contratual produz um resumo diferente, e portanto detectavel."
           >
             <div className="mono" title={t.hashTermos}>
               {hashCurto(t.hashTermos)}
@@ -482,7 +482,7 @@ export default function ApoliceDetalhe() {
 
           <Campo
             rotulo="Registro de oraculos"
-            ajuda="Contrato consultado a cada publicacao para conferir se a origem do dado esta autorizada (RF18)."
+            ajuda="Contrato consultado a cada publicacao para conferir se a origem do dado esta autorizada."
           >
             <LinkDaCadeia valor={t.registry} tipo="address" />
           </Campo>
@@ -528,7 +528,7 @@ export default function ApoliceDetalhe() {
             O contrato nao verifica se o indice esta correto, so se quem publicou estava autorizado.
             A proveniencia de cada publicacao — a estacao e o intervalo historico consultados, o gas
             consumido e a latencia — fica registrada no backend do oraculo, ao lado de cada periodo,
-            para que qualquer pessoa possa conferir a leitura (RNF18, RNF19).
+            para que qualquer pessoa possa conferir a leitura.
           </RodapeDaFronteira>
         </div>
       </div>
@@ -542,7 +542,7 @@ export default function ApoliceDetalhe() {
         <h2>Linha do tempo</h2>
         <p className="silencioso">
           Reconstruida a partir dos eventos registrados na rede, e nao de um banco de dados. E o que
-          permite a qualquer parte auditar a decisao de pagamento (RF09, RNF18).
+          permite a qualquer parte auditar a decisao de pagamento.
         </p>
 
         {linhaDoTempo.length === 0 ? (

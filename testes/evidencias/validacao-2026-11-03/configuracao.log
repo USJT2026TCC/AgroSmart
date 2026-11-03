@@ -1,0 +1,14 @@
+✔ preço de gás inválido é recusado antes de qualquer implantação (6624.2568ms)
+✔ Hardhat disponibiliza somente a seguradora como signatária da implantação (1165.6253ms)
+✔ padrao usa PostgreSQL local com credenciais codificadas (1.6363ms)
+✔ Docker aguarda saude e nunca remove volumes (1.5747ms)
+✔ sem Docker, falha claramente sem criar banco alternativo (0.6627ms)
+✔ backend sem URL recusa banco persistente alternativo (83.5608ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7908.1731

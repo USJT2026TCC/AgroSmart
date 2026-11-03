@@ -105,7 +105,7 @@ export function rotasDePropostas() {
   const r = Router();
 
   /**
-   * Simulacao de cotacao (RF06). Nao grava nada.
+   * Simulacao de cotacao. Nao grava nada.
    */
   r.post("/cotacoes", exigirSessao, exigirPerfil("produtor"), async (req, res) => {
     const { banco } = req.app.locals;
@@ -129,7 +129,7 @@ export function rotasDePropostas() {
   /**
    * Proposta (UC05, primeira metade). Exige carteira vinculada: e para ela que a
    * indenizacao seria transferida, e ela precisa ter sido comprovada por
-   * assinatura antes (RF02).
+   * assinatura antes.
    */
   r.post("/propostas", exigirSessao, exigirPerfil("produtor"), async (req, res) => {
     const { banco } = req.app.locals;
@@ -205,7 +205,7 @@ export function rotasDePropostas() {
   });
 
   /**
-   * Preparacao da emissao (RF08).
+   * Preparacao da emissao.
    *
    * Pode ser chamada de novo enquanto a proposta nao foi emitida — a seguradora
    * pode ter desistido de assinar e voltado no dia seguinte. As datas historicas e o gatilho sao preservados; o preparo gera o compromisso dos termos.
@@ -268,7 +268,7 @@ export function rotasDePropostas() {
   });
 
   /**
-   * Confirmacao da emissao (RF07, RF08). O backend confere tudo na cadeia.
+   * Confirmacao da emissao. O backend confere tudo na cadeia.
    */
   r.post("/propostas/:id/emissao", exigirSessao, exigirPerfil("seguradora"), async (req, res) => {
     const { banco, cadeia } = req.app.locals;

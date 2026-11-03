@@ -20,7 +20,7 @@ import bcrypt from "bcryptjs";
  */
 const CUSTO_BCRYPT = 12;
 
-/** HU13, criterio 1: senha guardada com hash e sal. O bcrypt gera e embute o sal. */
+/** senha guardada com hash e sal. O bcrypt gera e embute o sal. */
 export function gerarHashDeSenha(senha) {
   return bcrypt.hash(senha, CUSTO_BCRYPT);
 }

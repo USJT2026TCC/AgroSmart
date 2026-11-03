@@ -1,5 +1,5 @@
 /**
- * Perfis de acesso (RF04).
+ * Perfis de acesso.
  *
  * Quem decide o que cada perfil pode fazer e o backend: esta lista so serve para
  * a interface montar o menu certo e mostrar o rotulo legivel.

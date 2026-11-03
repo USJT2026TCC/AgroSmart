@@ -5,7 +5,7 @@ import { exigirSessao } from "../seguranca/sessoes.js";
 import { endereco } from "../validacao.js";
 
 /**
- * Consulta de apolices (UC06, RF09).
+ * Consulta de apolices.
  *
  * O aplicativo continua lendo a apolice direto do contrato, que e a fonte da
  * verdade. O que o backend acrescenta e o que a cadeia nao sabe: a qual talhao e
@@ -100,7 +100,7 @@ export function rotasDeApolices() {
       apolice: {
         ...apolicePublica(a),
       },
-      // RF08: a tela recalcula o resumo deste texto e compara com o do contrato.
+      // A tela recalcula o resumo deste texto e compara com o do contrato.
       descricaoDosTermos: a.descricao_dos_termos ?? null,
       linhaDoTempo: eventos.rows.map((e) => ({
         nome: e.nome,

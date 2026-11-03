@@ -1,0 +1,157 @@
+{
+  "data": "2026-11-03",
+  "baseGit": "a83bad8",
+  "ambiente": "Windows, Node.js v24.19.0, npm 11.17.0, Python 3.12.10, PostgreSQL 16 Docker",
+  "testesDistintosAprovados": 349,
+  "contagem": {
+    "contratos": 89,
+    "configuracaoBlockchain": 2,
+    "api": 75,
+    "integracaoApi": 10,
+    "oraculo": 51,
+    "integracaoOraculo": 4,
+    "interface": 74,
+    "infraestrutura": 18,
+    "etl": 26
+  },
+  "observacaoContagem": "Os quatro testes de banco executados no início reaparecem no grupo infraestrutura; não são somados duas vezes. configuracao.log confirma os dois testes de implantação incluídos no runner.",
+  "cobertura": {
+    "api": {
+      "lines": {
+        "total": 3059,
+        "covered": 2327,
+        "skipped": 0,
+        "pct": 76.07
+      },
+      "statements": {
+        "total": 3059,
+        "covered": 2327,
+        "skipped": 0,
+        "pct": 76.07
+      },
+      "functions": {
+        "total": 77,
+        "covered": 68,
+        "skipped": 0,
+        "pct": 88.31
+      },
+      "branches": {
+        "total": 423,
+        "covered": 330,
+        "skipped": 0,
+        "pct": 78.01
+      },
+      "branchesTrue": {
+        "total": 0,
+        "covered": 0,
+        "skipped": 0,
+        "pct": 100
+      }
+    },
+    "oraculo": {
+      "lines": {
+        "total": 1286,
+        "covered": 1205,
+        "skipped": 0,
+        "pct": 93.7
+      },
+      "statements": {
+        "total": 1286,
+        "covered": 1205,
+        "skipped": 0,
+        "pct": 93.7
+      },
+      "functions": {
+        "total": 60,
+        "covered": 55,
+        "skipped": 0,
+        "pct": 91.66
+      },
+      "branches": {
+        "total": 286,
+        "covered": 243,
+        "skipped": 0,
+        "pct": 84.96
+      },
+      "branchesTrue": {
+        "total": 0,
+        "covered": 0,
+        "skipped": 0,
+        "pct": "Unknown"
+      }
+    },
+    "interface": {
+      "lines": {
+        "total": 837,
+        "covered": 754,
+        "skipped": 0,
+        "pct": 90.08
+      },
+      "statements": {
+        "total": 920,
+        "covered": 803,
+        "skipped": 0,
+        "pct": 87.28
+      },
+      "functions": {
+        "total": 250,
+        "covered": 213,
+        "skipped": 0,
+        "pct": 85.2
+      },
+      "branches": {
+        "total": 740,
+        "covered": 593,
+        "skipped": 0,
+        "pct": 80.13
+      },
+      "branchesTrue": {
+        "total": 0,
+        "covered": 0,
+        "skipped": 0,
+        "pct": 100
+      }
+    },
+    "blockchain": {
+      "statements": {
+        "pct": 100
+      },
+      "branches": {
+        "pct": 92.19
+      },
+      "functions": {
+        "pct": 100
+      },
+      "lines": {
+        "pct": 99.12
+      }
+    },
+    "etl": {
+      "statements": {
+        "pct": 90.69
+      },
+      "nota": "290 instruções; 27 não cobertas; __main__.py incluído"
+    }
+  },
+  "slither": {
+    "versao": "0.11.6",
+    "contratos": 3,
+    "detectores": 102,
+    "achados": 0,
+    "ressalva": "Usa exclusão de dependências e supressões pontuais presentes nos contratos; não é auditoria de segurança."
+  },
+  "recorteConsultadoNoBanco": {
+    "inicio": "2020-01-01",
+    "fim": "2024-12-31",
+    "estacao": "A770",
+    "dias": 1827,
+    "diasNaoUtilizaveis": 0
+  },
+  "sepolia": {
+    "fabricaConfigurada": "0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834",
+    "fabricaNaVmObservada": "0xe9ce1a3ac2685ec7eb54205e6e72eee4bfafb386",
+    "fluxoRealDaVersaoAtual": "pendente de atualização da VM e confirmações MetaMask",
+    "nenhumaNovaTransacaoEnviadaNestaExecucao": true
+  },
+  "capturasLocais": ["01-cadastro-periodo.jpg", "02-talhao-na-lista.jpg"]
+}

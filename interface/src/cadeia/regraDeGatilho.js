@@ -4,7 +4,7 @@
 export const SITUACAO = ["AGUARDANDO_GARANTIA", "ATIVA", "LIQUIDADA", "ENCERRADA", "CANCELADA"];
 
 /**
- * A condicao contratada em uma frase, sem jargao (RNF04), mostrada na cotacao.
+ * A condicao contratada em uma frase, sem jargao, mostrada na cotacao.
  *
  * @param {object} t Termos, com o gatilho em `limiarClimatico`.
  */

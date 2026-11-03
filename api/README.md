@@ -22,23 +22,21 @@ A API não guarda chaves privadas, não assina transações e não paga indeniza
 
 ## Organização
 
-| Pasta | Conteúdo |
-|---|---|
+| Pasta                  | Conteúdo                                                                                                                                            |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `recursos/inmet/A770/` | Arquivos oficiais e chuva diária consolidada da estação A770 (2020 a dezembro de 2024), com hash de cada arquivo; a API carrega no banco ao iniciar |
-| `src/rotas/` | Rotas HTTP: autenticação, carteira, cadastro, propostas, apólices, oráculo e acompanhamento |
-| `src/dominio/` | Regras: termos e seu hash, cotação histórica, conferência da emissão |
-| `src/cadeia/` | Leitura dos contratos e indexador de eventos |
-| `src/banco/` | Conexão, esquema (`esquema.sql`), importação do INMET e dados iniciais |
-| `src/seguranca/` | Senhas (bcrypt) e sessões |
+| `src/rotas/`           | Rotas HTTP: autenticação, carteira, cadastro, propostas, apólices, oráculo e acompanhamento                                                         |
+| `src/dominio/`         | Regras: termos e seu hash, cotação histórica, conferência da emissão                                                                                |
+| `src/cadeia/`          | Leitura dos contratos e indexador de eventos                                                                                                        |
+| `src/banco/`           | Conexão, esquema (`esquema.sql`), importação do INMET e dados iniciais                                                                              |
+| `src/seguranca/`       | Senhas (bcrypt) e sessões                                                                                                                           |
 
 O banco começa com o produtor João, a seguradora Marina, a Fazenda Santa Clara com
 dois talhões de soja e o produto "Estiagem — soja" (0,006 ETH, gatilho sugerido de 30 dias).
 O `npm start` da raiz fornece a configuração dos serviços. A cultura é soja, o
 município é São Simão/SP e o período disponível vai de 01/01/2020 a 31/12/2024.
 A duração da cobertura vem das datas escolhidas pelo produtor, não do produto.
-Ao iniciar uma base existente, as restrições passam a bloquear novas gravações
-climáticas fora de 2020–2024. Registros anteriores são preservados; a validação
-integral das restrições ocorre quando não há registros fora desse recorte.
+A API aceita novas coberturas e dados climáticos somente no período configurado.
 
 ## Integração
 

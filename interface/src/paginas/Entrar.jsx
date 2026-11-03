@@ -6,7 +6,7 @@ import { destinoAposEntrar } from "../sessao/perfis";
 import { Aviso, Campo } from "../componentes/ui";
 import { enderecosDaRede, redeAtiva } from "../cadeia/rede";
 
-/** Login (HU13) dos dois perfis fixos da demonstracao. */
+/** Login dos dois perfis fixos da demonstracao. */
 export default function Entrar() {
   const { entrar, autenticado, perfil } = useSessao();
   const navegar = useNavigate();

@@ -64,7 +64,7 @@ export function rotasDoOraculo() {
   });
 
   /**
-   * Relato de publicacao (RF22).
+   * Relato de publicacao.
    *
    * Grava o que a cadeia nao guarda: gas usado, latencia entre envio e
    * confirmacao, e a procedencia do indice. A publicacao so e marcada como
@@ -149,7 +149,7 @@ export function rotasDoOraculo() {
   });
 
   /**
-   * Relato de falha de publicacao (RF27: notificar falhas).
+   * Relato de falha de publicacao.
    *
    * Quando o oraculo esgota as tentativas, a seguradora precisa saber: ha um
    * periodo sem indice publicado, e a apolice pode estar deixando de acionar.
