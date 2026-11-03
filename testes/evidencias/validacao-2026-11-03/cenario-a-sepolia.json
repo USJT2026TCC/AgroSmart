@@ -1,0 +1,136 @@
+{
+  "consultadoEmUtc": "2026-11-03T23:18:50.426Z",
+  "rede": "Sepolia",
+  "chainId": 11155111,
+  "rpcPublico": "https://sepolia.gateway.tenderly.co",
+  "blocoConsultado": 12058508,
+  "apolice": "0xbf75c995d3a66b42f333f2a17f1768005a07f297",
+  "talhao": "talhao-alunos",
+  "termos": {
+    "produtor": "0xC8fdFcA3CfEc202D8BaBf4E89bEcaB5E57773071",
+    "registry": "0xb9821B9aA456Ce8Ccc2B489c1C7381Ffff1f5Aa3",
+    "limiarDias": 10,
+    "inicioUtc": "2024-06-01T00:00:00.000Z",
+    "fimUtc": "2024-06-30T23:59:59.000Z",
+    "indenizacaoEth": "0.006",
+    "hashTermos": "0xe50515ed82c8a48c335794c26cd5e80f7acf024fb480df3a0510e7b008a87120"
+  },
+  "estado": {
+    "situacao": 2,
+    "valorPagoEth": "0.006",
+    "periodoAcionador": "20240610",
+    "saldoEth": "0.0"
+  },
+  "pagamentosAteBloco": 1,
+  "recibos": [
+    {
+      "hash": "0x07408fa684da92eb48a795004fea29f791c0e490b5efaaec1688fb877be83e54",
+      "bloco": 12058483,
+      "instanteUtc": "2026-11-03T23:13:36.000Z",
+      "status": 1,
+      "de": "0x95eA48b7BF91446CF12C156aC2FDeA75Af03fD70",
+      "para": "0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834",
+      "gasUsado": "9309562",
+      "taxaEth": "0.00009309613202591",
+      "eventos": [
+        {
+          "contrato": "0xbf75C995d3a66b42F333f2A17f1768005A07f297",
+          "topics": [
+            "0xf0da09b56a2c833b063e5ecd8230b95f7ce795d311fa065ed7c9210bf626b5dc",
+            "0x00000000000000000000000095ea48b7bf91446cf12c156ac2fdea75af03fd70",
+            "0x000000000000000000000000c8fdfca3cfec202d8babf4e89becab5e57773071",
+            "0x74616c68616f2d616c756e6f7300000000000000000000000000000000000000"
+          ],
+          "data": "0x000000000000000000000000000000000000000000000000001550f7dca70000e50515ed82c8a48c335794c26cd5e80f7acf024fb480df3a0510e7b008a87120"
+        },
+        {
+          "contrato": "0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834",
+          "nome": "ApoliceEmitida",
+          "argumentos": {
+            "apolice": "0xbf75C995d3a66b42F333f2A17f1768005A07f297",
+            "produtor": "0xC8fdFcA3CfEc202D8BaBf4E89bEcaB5E57773071",
+            "talhao": "0x74616c68616f2d616c756e6f7300000000000000000000000000000000000000",
+            "valorIndenizacao": "6000000000000000",
+            "hashTermos": "0xe50515ed82c8a48c335794c26cd5e80f7acf024fb480df3a0510e7b008a87120"
+          }
+        }
+      ]
+    },
+    {
+      "hash": "0x384d83d2ee2795f613860289e61b040b190d199e7e4b0d98ffb61aa33eaf7fa2",
+      "bloco": 12058495,
+      "instanteUtc": "2026-11-03T23:16:00.000Z",
+      "status": 1,
+      "de": "0x95eA48b7BF91446CF12C156aC2FDeA75Af03fD70",
+      "para": "0xbf75C995d3a66b42F333f2A17f1768005A07f297",
+      "gasUsado": "135174",
+      "taxaEth": "0.000001351746218004",
+      "eventos": [
+        {
+          "contrato": "0xffffFFFfFFffffffffffffffFfFFFfffFFFfFFfE",
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x00000000000000000000000095ea48b7bf91446cf12c156ac2fdea75af03fd70",
+            "0x000000000000000000000000bf75c995d3a66b42f333f2a17f1768005a07f297"
+          ],
+          "data": "0x000000000000000000000000000000000000000000000000001550f7dca70000"
+        },
+        {
+          "contrato": "0xbf75C995d3a66b42F333f2A17f1768005A07f297",
+          "nome": "GarantiaDepositada",
+          "argumentos": {
+            "seguradora": "0x95eA48b7BF91446CF12C156aC2FDeA75Af03fD70",
+            "valor": "6000000000000000"
+          }
+        }
+      ]
+    },
+    {
+      "hash": "0x7b0dc68351b0a0178746800e0949a56da198df949770ebec92a94d8b10a8dc70",
+      "bloco": 12058498,
+      "instanteUtc": "2026-11-03T23:16:36.000Z",
+      "status": 1,
+      "de": "0xeFCf4d0c3f22ac012896c2D9c6bA35e9fd7D691D",
+      "para": "0xbf75C995d3a66b42F333f2A17f1768005A07f297",
+      "gasUsado": "744451",
+      "taxaEth": "0.000000000032755844",
+      "eventos": [
+        {
+          "contrato": "0xbf75C995d3a66b42F333f2A17f1768005A07f297",
+          "nome": "IndicesPublicados",
+          "argumentos": {
+            "periodo": "20240610",
+            "oraculo": "0xeFCf4d0c3f22ac012896c2D9c6bA35e9fd7D691D",
+            "indiceClimatico": "10"
+          }
+        },
+        {
+          "contrato": "0xbf75C995d3a66b42F333f2A17f1768005A07f297",
+          "nome": "CondicaoAvaliada",
+          "argumentos": {
+            "periodo": "20240610",
+            "atendida": true
+          }
+        },
+        {
+          "contrato": "0xbf75C995d3a66b42F333f2A17f1768005A07f297",
+          "nome": "PagamentoExecutado",
+          "argumentos": {
+            "produtor": "0xC8fdFcA3CfEc202D8BaBf4E89bEcaB5E57773071",
+            "periodo": "20240610",
+            "valor": "6000000000000000"
+          }
+        },
+        {
+          "contrato": "0xffffFFFfFFffffffffffffffFfFFFfffFFFfFFfE",
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x000000000000000000000000bf75c995d3a66b42f333f2a17f1768005a07f297",
+            "0x000000000000000000000000c8fdfca3cfec202d8babf4e89becab5e57773071"
+          ],
+          "data": "0x000000000000000000000000000000000000000000000000001550f7dca70000"
+        }
+      ]
+    }
+  ]
+}

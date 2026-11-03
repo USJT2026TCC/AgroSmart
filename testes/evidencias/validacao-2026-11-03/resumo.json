@@ -150,9 +150,21 @@
   "sepolia": {
     "fabricaConfigurada": "0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834",
     "fabricaNaVmObservada": "0x2a9b6995cf920a70b96f4cfc3ec951bdfec0f834",
-    "fluxoRealDaVersaoAtual": "pendente de execução dos cenários e confirmações MetaMask",
-    "nenhumaNovaTransacaoEnviadaNestaExecucao": true,
-    "saudeVm": "indexador ativo sem erro na resposta; não comprova liquidação nem sincronização até o último bloco"
+    "fluxoRealDaVersaoAtual": "cenário A de pagamento confirmado; cenários B e C pendentes",
+    "saudeVm": "indexador ativo sem erro na resposta; não comprova liquidação nem sincronização até o último bloco",
+    "cenarioA": {
+      "apolice": "0xbf75c995d3a66b42f333f2a17f1768005a07f297",
+      "situacao": "LIQUIDADA",
+      "valorPagoEth": "0.006",
+      "periodoAcionador": 20240610,
+      "pagamentosAteBloco12058508": 1,
+      "apiConfirmadaNaCadeia": true,
+      "evidencias": [
+        "cenario-a-sepolia.json",
+        "cenario-a-api.json"
+      ],
+      "confirmacoesMetaMask": "realizadas pelo usuário"
+    }
   },
   "capturasLocais": [
     "01-cadastro-periodo.jpg",

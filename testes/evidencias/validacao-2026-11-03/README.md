@@ -2,7 +2,7 @@
 
 **Resultado:** 349 testes distintos aprovados e build da interface concluído.
 A validação automatizada foi executada localmente. A demonstração com MetaMask
-na VM ainda depende da execução dos cenários abaixo com confirmação na carteira.
+na VM confirmou o cenário A de pagamento; os cenários B e C ainda estão pendentes.
 
 ## Execução
 
@@ -80,8 +80,36 @@ A consulta de saúde da VM em 03/11/2026 confirmou PostgreSQL ativo, fábrica
 na resposta. O registro está em `saude-vm.json`. Essa observação não comprova
 liquidação, sincronização até o último bloco nem disponibilidade contínua do RPC.
 O roteiro define os cenários de transação ainda pendentes.
-**Nenhuma nova emissão, garantia ou liquidação Sepolia é declarada como realizada
-nesta execução.**
+### Cenário A — pagamento confirmado na Sepolia
+
+Apólice `0xbf75c995d3a66b42f333f2a17f1768005a07f297`, talhão `talhao-alunos`:
+01 a 30/06/2024, gatilho 10 dias, indenização 0,006 ETH. Consulta direta por
+JSON-RPC e conferência na API estão em `cenario-a-sepolia.json` e `cenario-a-api.json`.
+
+| Etapa | Bloco | Transação |
+| --- | ---: | --- |
+| Emissão | 12058483 | [Recibo](https://sepolia.etherscan.io/tx/0x07408fa684da92eb48a795004fea29f791c0e490b5efaaec1688fb877be83e54) |
+| Garantia | 12058495 | [Recibo](https://sepolia.etherscan.io/tx/0x384d83d2ee2795f613860289e61b040b190d199e7e4b0d98ffb61aa33eaf7fa2) |
+| Índice e pagamento | 12058498 | [Recibo](https://sepolia.etherscan.io/tx/0x7b0dc68351b0a0178746800e0949a56da198df949770ebec92a94d8b10a8dc70) |
+
+Os três recibos tiveram status 1. A última transação, enviada pelo oráculo,
+registrou índice 10 no período 20240610, condição atendida e pagamento de
+6.000.000.000.000.000 wei ao produtor. A leitura no bloco 12058508 retornou
+situação 2 (Liquidada), valor pago 0,006 ETH e saldo zero. A varredura dos eventos
+da apólice desde a emissão até esse bloco encontrou um pagamento.
+Os termos lidos do contrato coincidiram com datas, gatilho, valor e hash informados.
+
+A API também retornou Liquidada, mesmo valor pago e `confirmada_na_cadeia: true`.
+O selo anterior de não confirmação já não corresponde ao registro consultado;
+o usuário deve atualizar a tela. Os 9.536 ms são a latência relatada pelo serviço,
+não uma medição independente. Entre os blocos de depósito e pagamento decorreram
+36 segundos pelos timestamps da cadeia; esta é uma observação, sem média ou p95.
+
+As capturas enviadas pelo usuário foram preservadas: `03-emissao-metamask.png`
+mostra a solicitação de assinatura; `04-painel-antes-garantia.png` mostra a apólice
+ainda aguardando garantia. As apólices antigas do painel não são resultados deste
+cenário. Falta a captura da tela final liquidada para complementar os recibos.
+Cenários B (sem acionamento/resgate) e C (cancelamento) permanecem pendentes.
 
 O gatilho é experimental e não mede prejuízo agrícola. O contrato confia no
 índice enviado pelo oráculo autorizado. O pagamento direto reverte se o

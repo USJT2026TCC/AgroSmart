@@ -55,6 +55,5 @@ observado, endereço da apólice, hash da transação e nome do print. Só marca
 aprovado depois de conferir os recibos. Uma tela de cotação não comprova pagamento;
 uma EVM local não comprova execução na Sepolia.
 
-Estado desta execução: cadastro e consultas locais verificados. Cenários de
-transação na VM pendentes de execução e confirmação pelo usuário. A consulta de
-saúde já identifica a fábrica atual e não apresenta erro no indexador.
+Estado desta execução: cenário A confirmado por recibos, estado do contrato e API.
+Captura final liquidada e cenários B e C pendentes.
