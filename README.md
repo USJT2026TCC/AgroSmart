@@ -8,7 +8,7 @@ nesse período e informa ao contrato quantos dias seguidos ficaram secos. Se o n
 atingir o gatilho combinado, o contrato transfere a indenização ao produtor, sem
 vistoria e sem aprovação manual.
 
-- Dados reais do INMET, estação A770 (São Simão/SP), de 01/01/2020 a 30/09/2026.
+- Série tratada do INMET A770 (São Simão/SP), de 01/01/2020 a 31/12/2024, com seis dias preenchidos e documentados no manifesto. Fontes oficiais intactas acompanham o pacote.
 - Contratos na **Sepolia**, a rede pública de testes do Ethereum; os valores são ETH de teste.
 - Dois perfis fixos: a seguradora (Marina Costa) e o produtor (João Ribeiro).
 
@@ -36,7 +36,7 @@ MetaMask da equipe.
 2. Em **Minha carteira**, conecte a MetaMask e vincule a conta: é só uma assinatura,
    sem custo. É nessa conta que a indenização será paga.
 3. Em **Meus talhões e seguros**, escolha um talhão livre e vá para **Simular e contratar**.
-4. Escolha o período (entre 01/01/2020 e 30/09/2026) e o gatilho em dias secos seguidos,
+4. Escolha o período (entre 01/01/2020 e 31/12/2024) e o gatilho em dias secos seguidos,
    confira a simulação com a chuva real do INMET e envie a proposta.
 5. A equipe aprova a proposta: a apólice é criada na Sepolia e a garantia é depositada.
 6. O oráculo publica o resultado sozinho. Se o gatilho foi atingido, o contrato paga a
@@ -63,7 +63,7 @@ A interface acompanha tudo pela API e mostra cada transação com link para o Et
 | Regra | Valor |
 |---|---|
 | Cultura e local | Soja; talhão considerado no mesmo lugar da estação A770 |
-| Cobertura | Datas entre 01/01/2020 e 30/09/2026 (UTC, início e fim inclusos) |
+| Cobertura | Datas entre 01/01/2020 e 31/12/2024 (UTC, início e fim inclusos) |
 | Dia seco | Menos de 1 mm de chuva no dia |
 | Dia utilizável | Pelo menos 20 horas válidas de medição; a contratação exige todos os dias utilizáveis |
 | Contagem | Dias secos seguidos desde o início da cobertura; chuva ou dia inválido zera |

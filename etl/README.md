@@ -1,35 +1,36 @@
 # ETL do INMET
 
-Ferramenta Python que baixa os arquivos históricos do INMET, separa a estação A770
-(São Simão/SP), valida as medições e monta a chuva diária de 01/01/2020 a 30/09/2026.
+Prepara a estação A770 (São Simão/SP), de 01/01/2020 a 31/12/2024, para a demonstração.
+O pacote está em `api/recursos/inmet/A770/`; a API o importa no PostgreSQL ao iniciar.
 
-**Não é preciso rodar para usar o sistema.** O resultado já está no repositório, em
-`api/recursos/inmet/A770/`, e a API importa esses arquivos no banco ao iniciar.
+## Tratamento
 
-## O que fica em `api/recursos/inmet/A770/`
+1. Ler os arquivos anuais e validar estação, datas, horários e precipitação.
+2. Consolidar horas duplicadas, rejeitando valores conflitantes e precipitação fora de 0–500 mm/h.
+3. Considerar observado válido o dia com pelo menos 20 horas válidas.
+4. Em dia incompleto, copiar a precipitação de cada horário do último dia observado válido.
+   Em uma sequência incompleta, manter a mesma origem observada, inclusive entre anos.
+   Sem dia válido anterior, interromper o preparo; não usar dados futuros.
+5. Recalcular os totais diários e registrar todas as substituições no manifesto.
+
+O preenchimento é experimental e pode alterar a sequência seca e o acionamento.
+São estimativas, não novas medições do INMET. Temperatura e outras variáveis do
+dia de destino não são substituídas: apenas a precipitação interessa ao índice.
 
 | Arquivo | Conteúdo |
 |---|---|
-| `AAAA-original.csv` | Registros da estação A770, copiados byte a byte do arquivo do INMET |
-| `AAAA-diario.csv` | Chuva de cada dia e quantas horas foram válidas, inválidas ou ausentes |
-| `manifesto.json` | Origem dos arquivos, período e hash SHA-256 de cada um |
+| `AAAA-fonte.csv` | Arquivo oficial intacto extraído do ZIP do INMET |
+| `AAAA-original.csv` | Série horária tratada; nome mantido para compatibilidade com a importação |
+| `AAAA-diario.csv` | Totais e contagens de horas recalculados da série tratada |
+| `manifesto.json` | Origem, hashes e cada dia preenchido, data de origem, chuva copiada e registro anterior |
 
-O pacote contém 2.465 dias. A fonte é o portal de dados históricos do INMET.
-O hash permite conferir a integridade dos arquivos; não é uma assinatura do INMET.
+O recorte tem 1.827 dias: 1.821 originalmente utilizáveis e seis preenchidos.
+Os originais oficiais permanecem disponíveis nos arquivos `fonte`.
+SHA-256 comprova integridade do arquivo; não é uma assinatura do INMET.
 
-## Regras de limpeza
+## Reconstruir o pacote
 
-- Valores ausentes, códigos de "sem medição" e chuva fora de 0 a 500 mm/h não viram zero:
-  a hora fica marcada como ausente ou inválida.
-- Horas repetidas com o mesmo valor contam uma vez; valores conflitantes invalidam a hora.
-- Cabeçalhos, metadados e horários inválidos impedem o preparo do arquivo.
-- Um dia é utilizável com pelo menos 20 horas válidas. Esse limite vem da configuração compartilhada.
-- O ETL gera totais diários e contagens de qualidade. API e oráculo avaliam a estiagem.
-- Um ZIP inválido ou vazio não é reutilizado como cache.
-
-## Reconstruir os dados (opcional)
-
-Na raiz do projeto, com Python 3.10 ou mais recente:
+Com Python 3.10 ou superior, na raiz:
 
 ```powershell
 python -m venv etl/.venv
@@ -37,20 +38,16 @@ python -m venv etl/.venv
 npm run dados:preparar
 ```
 
-O comando baixa os arquivos anuais do INMET (grandes; ficam em cache em `etl/dados/`),
-prepara a A770 e copia o resultado para `api/recursos/inmet/A770/`. Na próxima
-inicialização, a API reimporta apenas os anos que mudaram.
+Fontes locais de hash conferido e ZIPs válidos são reutilizados. Downloads só
+ocorrem quando a fonte local não está disponível. O empacotador confere os hashes
+antes de publicar os CSVs. A próxima inicialização da API reimporta anos alterados.
 
-| Arquivo em `src/etl/` | Função |
+| Arquivo em `src/etl/` | Responsabilidade |
 |---|---|
-| `inmet.py` | Baixa o arquivo anual e lê as medições |
-| `preparacao.py` | Limpa, monta o diário e grava o manifesto |
-| `limites.py` | Lê o período e a estação de `configuracao/historico.json` |
-| `cli.py`, `__main__.py` | Comando `preparar` |
+| `inmet.py` | Download e leitura da fonte meteorológica |
+| `preparacao.py` | Validação, preenchimento horário, consolidação e auditoria |
+| `limites.py` | Estação, período e parâmetros compartilhados |
+| `cli.py`, `__main__.py` | Comando de preparo |
 
-## Caminho dos dados
-
-INMET → ETL → pacote de CSVs → importação pela API no PostgreSQL → consulta pelo
-oráculo → publicação do índice no contrato. O ETL não se conecta à blockchain.
-Datas e lacunas são preservadas; a API bloqueia coberturas com dias incompletos.
-As coordenadas no manifesto identificam a estação meteorológica de origem.
+Fluxo: INMET → ETL → arquivos tratados e fonte preservada → importação pela API → PostgreSQL.
+O ETL não publica índices nem movimenta valores na blockchain.

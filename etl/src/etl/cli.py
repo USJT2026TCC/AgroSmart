@@ -17,7 +17,7 @@ def construir_parser() -> argparse.ArgumentParser:
         prog="etl", description="ETL historico do INMET para o AgroSmart"
     )
     sub = parser.add_subparsers(dest="comando", required=True)
-    sub.add_parser("preparar", help="extrai, valida e consolida a estacao A770 de 2020 a 2026")
+    sub.add_parser("preparar", help="extrai, valida e consolida a estacao A770 de 2020 a 2024")
     return parser
 
 

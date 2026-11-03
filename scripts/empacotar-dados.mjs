@@ -31,6 +31,7 @@ export function empacotarDados(
       throw new Error(`Ano ${ano} incompleto ou fora do recorte.`);
     for (const [tipo, chave] of [
       ["original", "sha256Original"],
+      ["fonte", "sha256Fonte"],
       ["diario", "sha256Diario"],
     ]) {
       const nome = `${ano}-${tipo}.csv`,

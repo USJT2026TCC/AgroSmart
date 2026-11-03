@@ -1,4 +1,4 @@
-"""Prepara uma unica estacao do INMET, mantendo datas e lacunas originais.
+"""Prepara uma unica estacao do INMET, preservando a fonte e auditando o preenchimento experimental.
 
 Os ZIPs sao cache de download; os CSVs extraidos e seus SHA-256 permitem
 reconstituir a origem. Reexecucoes conferem os arquivos preparados antes de pular.
@@ -8,14 +8,14 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import io
 import json
 import math
-import re
 import zipfile
 from datetime import date, timedelta
 from pathlib import Path
 
-from .inmet import URL_DO_ANO, baixar_ano, ler_csv
+from .inmet import COLUNA_CHUVA, URL_DO_ANO, baixar_ano, ler_csv
 from .limites import CHUVA_DIA_SECO_MM, ESTACAO, FIM, HORAS_MINIMAS, INICIO
 
 COLUNAS = ("data", "chuva_mm", "horas_validas", "horas_ausentes", "horas_invalidas")
@@ -60,124 +60,196 @@ def dias_normalizados(leituras, inicio: date, fim: date):
         dia += timedelta(days=1)
 
 
+def preencher_horario(conteudo, inicio, fim, anterior=None):
+    """Copia somente a precipitação horária; outras variáveis não são inventadas.
+
+    A fonte intacta fica em outro arquivo. Uma sequência incompleta usa sempre
+    o último dia observado válido, inclusive na mudança de ano. Nunca usa futuro.
+    """
+    meta, leituras = ler_csv(conteudo)
+    texto = conteudo.decode("latin-1").splitlines()
+    cabecalho = next(csv.reader([texto[8]], delimiter=";"))
+    coluna = cabecalho.index(COLUNA_CHUVA)
+    registros = list(csv.reader(texto[9:], delimiter=";"))
+    por_dia = {}
+    for registro in registros:
+        if len(registro) > coluna and registro[0].strip() and registro[1].strip():
+            dia = date.fromisoformat(registro[0].strip().replace("/", "-"))
+            por_dia.setdefault(dia.isoformat(), []).append(registro)
+    # Mesma resolução de duplicatas e valores inválidos da consolidação diária.
+    horas = {}
+    for leitura in leituras:
+        valor = leitura.chuva_mm
+        if valor is None or not math.isfinite(valor) or not 0 <= valor <= 500:
+            valor = None
+        if leitura.instante in horas and horas[leitura.instante] != valor:
+            horas[leitura.instante] = None
+        else:
+            horas.setdefault(leitura.instante, valor)
+    preenchimentos = []
+    for dia in dias_normalizados(leituras, inicio, fim):
+        iso = dia["data"]
+        if dia["horas_validas"] >= HORAS_MINIMAS:
+            valores = {
+                instante.hour: valor
+                for instante, valor in horas.items()
+                if instante.date().isoformat() == iso
+            }
+            anterior = {"data": iso, "horas": valores}
+            continue
+        if anterior is None:
+            raise ValueError(f"Sem dia observado válido anterior para preencher {iso}.")
+        anteriores = por_dia.get(iso, [])
+        por_hora = {}
+        for registro in anteriores:
+            por_hora.setdefault(int(registro[1][:2]), []).append(registro)
+        auditoria_horas = []
+        for hora in range(24):
+            valor = anterior["horas"].get(hora)
+            linhas = por_hora.get(hora, [])
+            if not linhas:
+                registro = [""] * len(cabecalho)
+                registro[0] = iso.replace("-", "/")
+                registro[1] = f"{hora:02d}00 UTC"
+                registros.append(registro)
+                linhas = [registro]
+            for registro in linhas:
+                while len(registro) < len(cabecalho):
+                    registro.append("")
+                registro[coluna] = "" if valor is None else str(valor).replace(".", ",")
+            auditoria_horas.append({"horaUTC": hora, "chuvaCopiadaMm": valor})
+        preenchimentos.append(
+            {
+                "data": iso,
+                "origem": anterior["data"],
+                "metodo": "copia-da-precipitacao-horaria-do-ultimo-dia-observado-valido",
+                "registroDiarioAnterior": dia,
+                "horasCopiadas": auditoria_horas,
+            }
+        )
+    if not preenchimentos:
+        return conteudo, preenchimentos, anterior
+    # Conserva todos os dias da fonte anual e insere eventuais horas ausentes em ordem.
+    registros.sort(key=lambda r: (r[0], r[1]))
+    saida = io.StringIO(newline="")
+    quebra = "\r\n" if b"\r\n" in conteudo else "\n"
+    saida.write(quebra.join(texto[:8]) + quebra)
+    escritor = csv.writer(saida, delimiter=";", lineterminator=quebra)
+    escritor.writerow(cabecalho)
+    escritor.writerows(registros)
+    tratado = saida.getvalue().encode("latin-1")
+    _, leituras_tratadas = ler_csv(tratado)
+    diarios = {linha["data"]: linha for linha in dias_normalizados(leituras_tratadas, inicio, fim)}
+    for ajuste in preenchimentos:
+        ajuste["registroDiarioTratado"] = diarios[ajuste["data"]]
+        if diarios[ajuste["data"]]["horas_validas"] < HORAS_MINIMAS:
+            raise ValueError(f"Preenchimento não resolveu o dia {ajuste['data']}.")
+    return tratado, preenchimentos, anterior
+
+
 def preparar(raiz: Path, inicio: date = INICIO, fim: date = FIM, aviso=print):
-    """Prepara a estação no intervalo informado, limitado ao recorte compartilhado."""
+    """Prepara e audita a série, sem modificar o arquivo fonte do INMET."""
     if inicio > fim or inicio < INICIO or fim > FIM:
-        raise ValueError("Use um intervalo entre 2020-01-01 e 2026-09-30.")
+        raise ValueError(f"Use um intervalo entre {INICIO} e {FIM}.")
     estacao = ESTACAO
     saida = raiz / "preparado" / estacao
     saida.mkdir(parents=True, exist_ok=True)
     manifesto_path = saida / "manifesto.json"
-    manifesto = (
-        json.loads(manifesto_path.read_text(encoding="utf-8"))
-        if manifesto_path.exists()
-        else {"versao": 1, "estacao": estacao, "anos": {}}
+    antigo = (
+        json.loads(manifesto_path.read_text(encoding="utf-8")) if manifesto_path.exists() else {}
     )
-    if (
-        not isinstance(manifesto, dict)
-        or manifesto.get("versao") != 1
-        or manifesto.get("estacao") != estacao
-        or not isinstance(manifesto.get("anos"), dict)
-    ):
-        raise ValueError("Manifesto de preparo incompatível com a estação configurada.")
-    # Mantém no manifesto somente os anos do intervalo solicitado.
-    manifesto["anos"] = {
-        ano: meta for ano, meta in manifesto["anos"].items() if inicio.year <= int(ano) <= fim.year
+    if antigo and (antigo.get("versao") != 1 or antigo.get("estacao") != estacao):
+        raise ValueError("Manifesto incompatível com a estação configurada.")
+    manifesto = {
+        "versao": 1,
+        "estacao": estacao,
+        "inicio": inicio.isoformat(),
+        "fim": fim.isoformat(),
+        "fonte": "INMET; série derivada para demonstração",
+        "regra": f"dia observado válido: >={HORAS_MINIMAS} horas; seco: <{CHUVA_DIA_SECO_MM} mm; "
+        "dia incompleto: copiar a precipitação horária do último dia observado válido",
+        "preenchimento": "ultimo-dia-observado-valido",
+        "anos": {},
     }
-    manifesto.update(
-        inicio=inicio.isoformat(),
-        fim=fim.isoformat(),
-        fonte="INMET",
-        regra=(
-            f"dia valido: >={HORAS_MINIMAS} horas validas; seco: <{CHUVA_DIA_SECO_MM} mm; "
-            "lacuna interrompe sequencia"
-        ),
-    )
+    anterior = None
     for ano in range(inicio.year, fim.year + 1):
-        de = max(inicio, date(ano, 1, 1))
-        ate = min(fim, date(ano, 12, 31))
-        anterior = manifesto["anos"].get(str(ano), {})
-        bruto = saida / f"{ano}-original.csv"
+        de, ate = max(inicio, date(ano, 1, 1)), min(fim, date(ano, 12, 31))
+        meta_antiga = antigo.get("anos", {}).get(str(ano), {})
+        fonte = saida / f"{ano}-fonte.csv"
+        horario = saida / f"{ano}-original.csv"
         diario = saida / f"{ano}-diario.csv"
-        if (
-            anterior.get("inicio") == de.isoformat()
-            and anterior.get("fim") == ate.isoformat()
-            and anterior.get("status") == "preparado"
-            and anterior.get("versaoPreparo") == 3
-            and bruto.exists()
-            and diario.exists()
-            and sha256(bruto) == anterior.get("sha256Original")
-            and sha256(diario) == anterior.get("sha256Diario")
-        ):
-            aviso(f"{ano}: preparado anteriormente; reutilizado")
-            continue
         registro = {
             "inicio": de.isoformat(),
             "fim": ate.isoformat(),
             "url": URL_DO_ANO.format(ano=ano),
         }
         try:
-            aviso(f"{ano}: verificando arquivo anual INMET...")
-            caminho = baixar_ano(ano, raiz / f"{ano}.zip")
-            with zipfile.ZipFile(caminho) as z:
-                nomes = [
-                    n
-                    for n in z.namelist()
-                    if n.upper().endswith(".CSV") and f"_{estacao}_" in n.upper()
-                ]
-                # O ZIP de 2026 contem snapshots de agosto e setembro da mesma
-                # estacao. Seleciona a maior data final declarada no nome,
-                # sem concatenar snapshots e duplicar precipitacao.
-                if len(nomes) > 1:
-
-                    def fim_do_snapshot(nome):
-                        partes = re.search(r"_(\d{2})-(\d{2})-(\d{4})\.CSV$", nome.upper())
-                        if not partes:
-                            return date.min
-                        dia, mes, ano_snapshot = map(int, partes.groups())
-                        return date(ano_snapshot, mes, dia)
-
-                    maior_fim = max(map(fim_do_snapshot, nomes))
-                    registro["snapshotsEncontrados"] = sorted(nomes)
-                    nomes = [nome for nome in nomes if fim_do_snapshot(nome) == maior_fim]
-                if len(nomes) != 1:
-                    registro.update(status="estacao_ausente" if not nomes else "estacao_ambigua")
-                else:
+            if fonte.exists() and sha256(fonte) == (
+                meta_antiga.get("sha256Fonte") or meta_antiga.get("sha256Original")
+            ):
+                conteudo = fonte.read_bytes()
+                registro["arquivoNoZip"] = meta_antiga.get("arquivoNoZip")
+            elif (
+                not meta_antiga.get("sha256Fonte")
+                and horario.exists()
+                and sha256(horario) == meta_antiga.get("sha256Original")
+            ):
+                conteudo = horario.read_bytes()
+                registro["arquivoNoZip"] = meta_antiga.get("arquivoNoZip")
+            else:
+                caminho = baixar_ano(ano, raiz / f"{ano}.zip")
+                with zipfile.ZipFile(caminho) as z:
+                    nomes = [
+                        n
+                        for n in z.namelist()
+                        if n.upper().endswith(".CSV") and f"_{estacao}_" in n.upper()
+                    ]
+                    if len(nomes) != 1:
+                        raise ValueError("Estação ausente ou ambígua no ZIP anual.")
                     conteudo = z.read(nomes[0])
-                    meta, leituras = ler_csv(conteudo)
-                    if meta.codigo.upper() != estacao:
-                        raise ValueError("Codigo no cabecalho difere do arquivo.")
-                    bruto.write_bytes(conteudo)
-                    linhas = list(dias_normalizados(leituras, de, ate))
-                    temporario = diario.with_suffix(".tmp")
-                    with temporario.open("w", encoding="utf-8", newline="") as f:
-                        w = csv.DictWriter(f, fieldnames=COLUNAS)
-                        w.writeheader()
-                        w.writerows(linhas)
-                    temporario.replace(diario)
-                    registro.update(
-                        status="preparado",
-                        versaoPreparo=3,
-                        arquivoNoZip=nomes[0],
-                        sha256Original=sha256(bruto),
-                        sha256Diario=sha256(diario),
-                        dias=len(linhas),
-                        diasValidos=sum(
-                            linha["horas_validas"] >= HORAS_MINIMAS for linha in linhas
-                        ),
-                        primeiroRegistro=min(leitura.instante for leitura in leituras).isoformat(),
-                        ultimoRegistro=max(leitura.instante for leitura in leituras).isoformat(),
-                        nome=meta.nome,
-                        latitude=meta.latitude,
-                        longitude=meta.longitude,
-                    )
+                    registro["arquivoNoZip"] = nomes[0]
+            meta, _ = ler_csv(conteudo)
+            if meta.codigo.upper() != estacao:
+                raise ValueError("Código da estação divergente.")
+            tratado, ajustes, anterior = preencher_horario(conteudo, de, ate, anterior)
+            _, leituras = ler_csv(tratado)
+            linhas = list(dias_normalizados(leituras, de, ate))
+            fonte.write_bytes(conteudo)
+            horario.write_bytes(tratado)
+            temporario = diario.with_suffix(".tmp")
+            with temporario.open("w", encoding="utf-8", newline="") as f:
+                w = csv.DictWriter(f, fieldnames=COLUNAS)
+                w.writeheader()
+                w.writerows(linhas)
+            temporario.replace(diario)
+            registro.update(
+                status="preparado",
+                versaoPreparo=4,
+                arquivoFonte=fonte.name,
+                sha256Fonte=sha256(fonte),
+                sha256Original=sha256(horario),
+                sha256Diario=sha256(diario),
+                arquivoHorarioTratado=horario.name,
+                dias=len(linhas),
+                diasValidos=sum(linha["horas_validas"] >= HORAS_MINIMAS for linha in linhas),
+                diasObservadosValidos=len(linhas) - len(ajustes),
+                diasPreenchidos=len(ajustes),
+                preenchimentos=ajustes,
+                primeiroRegistro=min(linha.instante for linha in leituras).isoformat(),
+                ultimoRegistro=max(linha.instante for linha in leituras).isoformat(),
+                nome=meta.nome,
+                latitude=meta.latitude,
+                longitude=meta.longitude,
+            )
         except Exception as erro:
             registro.update(status="falha", motivo=str(erro))
+            anterior = None
         manifesto["anos"][str(ano)] = registro
+        # Um preparo interrompido mantém os anos já concluídos auditáveis.
         temporario = manifesto_path.with_suffix(".tmp")
         temporario.write_text(
             json.dumps(manifesto, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
         )
         temporario.replace(manifesto_path)
-        aviso(f"{ano}: {registro['status']} — {registro.get('diasValidos', 0)} dias validos")
+        aviso(f"{ano}: {registro['status']}; {registro.get('diasPreenchidos', 0)} dias preenchidos")
     return manifesto

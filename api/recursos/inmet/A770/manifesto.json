@@ -1,18 +1,29 @@
 {
   "versao": 1,
   "estacao": "A770",
+  "inicio": "2020-01-01",
+  "fim": "2024-12-31",
+  "fonte": "INMET; série derivada para demonstração",
+  "regra": "dia observado válido: >=20 horas; seco: <1 mm; dia incompleto: copiar a precipitação horária do último dia observado válido",
+  "preenchimento": "ultimo-dia-observado-valido",
   "anos": {
     "2020": {
       "inicio": "2020-01-01",
       "fim": "2020-12-31",
       "url": "https://portal.inmet.gov.br/uploads/dadoshistoricos/2020.zip",
-      "status": "preparado",
-      "versaoPreparo": 2,
       "arquivoNoZip": "INMET_SE_SP_A770_SAO SIMAO_01-01-2020_A_31-12-2020.CSV",
+      "status": "preparado",
+      "versaoPreparo": 4,
+      "arquivoFonte": "2020-fonte.csv",
+      "sha256Fonte": "54a541ee6949e2ce4d8f615d2781b67e9d4f0617b4362e871ff5197d06548a5d",
       "sha256Original": "54a541ee6949e2ce4d8f615d2781b67e9d4f0617b4362e871ff5197d06548a5d",
       "sha256Diario": "a4f9a792fb290aa88c1e2301a8f153ba52a54f267c1ce95ba2ee438dfdaa0dc1",
+      "arquivoHorarioTratado": "2020-original.csv",
       "dias": 366,
       "diasValidos": 366,
+      "diasObservadosValidos": 366,
+      "diasPreenchidos": 0,
+      "preenchimentos": [],
       "primeiroRegistro": "2020-01-01T00:00:00+00:00",
       "ultimoRegistro": "2020-12-31T23:00:00+00:00",
       "nome": "SAO SIMAO",
@@ -23,13 +34,488 @@
       "inicio": "2021-01-01",
       "fim": "2021-12-31",
       "url": "https://portal.inmet.gov.br/uploads/dadoshistoricos/2021.zip",
-      "status": "preparado",
-      "versaoPreparo": 2,
       "arquivoNoZip": "INMET_SE_SP_A770_SAO SIMAO_01-01-2021_A_31-12-2021.CSV",
-      "sha256Original": "fa713a8d0c14fa10a63cfb605aba6ab96b643e12712818c17d39d499e69b1127",
-      "sha256Diario": "0c13a7030769b5bf59a5fcb5ce8ad32c93c3c18543b5fa7627cd8c10a8285aa5",
+      "status": "preparado",
+      "versaoPreparo": 4,
+      "arquivoFonte": "2021-fonte.csv",
+      "sha256Fonte": "fa713a8d0c14fa10a63cfb605aba6ab96b643e12712818c17d39d499e69b1127",
+      "sha256Original": "c7ad022912aa730f0d2458c3d743bdc54f7c1894c61d148f56e949cd3fefd338",
+      "sha256Diario": "6ad443a9aa5fcdb1c61c21038edc78de2832eb6788895abac3fe08bf760625e6",
+      "arquivoHorarioTratado": "2021-original.csv",
       "dias": 365,
-      "diasValidos": 361,
+      "diasValidos": 365,
+      "diasObservadosValidos": 361,
+      "diasPreenchidos": 4,
+      "preenchimentos": [
+        {
+          "data": "2021-01-01",
+          "origem": "2020-12-31",
+          "metodo": "copia-da-precipitacao-horaria-do-ultimo-dia-observado-valido",
+          "registroDiarioAnterior": {
+            "data": "2021-01-01",
+            "chuva_mm": 1.2,
+            "horas_validas": 7,
+            "horas_ausentes": 0,
+            "horas_invalidas": 17
+          },
+          "horasCopiadas": [
+            {
+              "horaUTC": 0,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 1,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 2,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 3,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 4,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 5,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 6,
+              "chuvaCopiadaMm": 2
+            },
+            {
+              "horaUTC": 7,
+              "chuvaCopiadaMm": 0.2
+            },
+            {
+              "horaUTC": 8,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 9,
+              "chuvaCopiadaMm": 0.2
+            },
+            {
+              "horaUTC": 10,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 11,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 12,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 13,
+              "chuvaCopiadaMm": 9
+            },
+            {
+              "horaUTC": 14,
+              "chuvaCopiadaMm": 1
+            },
+            {
+              "horaUTC": 15,
+              "chuvaCopiadaMm": 0.2
+            },
+            {
+              "horaUTC": 16,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 17,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 18,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 19,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 20,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 21,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 22,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 23,
+              "chuvaCopiadaMm": 0
+            }
+          ],
+          "registroDiarioTratado": {
+            "data": "2021-01-01",
+            "chuva_mm": 12.6,
+            "horas_validas": 24,
+            "horas_ausentes": 0,
+            "horas_invalidas": 0
+          }
+        },
+        {
+          "data": "2021-01-02",
+          "origem": "2020-12-31",
+          "metodo": "copia-da-precipitacao-horaria-do-ultimo-dia-observado-valido",
+          "registroDiarioAnterior": {
+            "data": "2021-01-02",
+            "chuva_mm": 0,
+            "horas_validas": 1,
+            "horas_ausentes": 0,
+            "horas_invalidas": 23
+          },
+          "horasCopiadas": [
+            {
+              "horaUTC": 0,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 1,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 2,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 3,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 4,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 5,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 6,
+              "chuvaCopiadaMm": 2
+            },
+            {
+              "horaUTC": 7,
+              "chuvaCopiadaMm": 0.2
+            },
+            {
+              "horaUTC": 8,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 9,
+              "chuvaCopiadaMm": 0.2
+            },
+            {
+              "horaUTC": 10,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 11,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 12,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 13,
+              "chuvaCopiadaMm": 9
+            },
+            {
+              "horaUTC": 14,
+              "chuvaCopiadaMm": 1
+            },
+            {
+              "horaUTC": 15,
+              "chuvaCopiadaMm": 0.2
+            },
+            {
+              "horaUTC": 16,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 17,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 18,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 19,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 20,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 21,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 22,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 23,
+              "chuvaCopiadaMm": 0
+            }
+          ],
+          "registroDiarioTratado": {
+            "data": "2021-01-02",
+            "chuva_mm": 12.6,
+            "horas_validas": 24,
+            "horas_ausentes": 0,
+            "horas_invalidas": 0
+          }
+        },
+        {
+          "data": "2021-01-03",
+          "origem": "2020-12-31",
+          "metodo": "copia-da-precipitacao-horaria-do-ultimo-dia-observado-valido",
+          "registroDiarioAnterior": {
+            "data": "2021-01-03",
+            "chuva_mm": null,
+            "horas_validas": 0,
+            "horas_ausentes": 0,
+            "horas_invalidas": 24
+          },
+          "horasCopiadas": [
+            {
+              "horaUTC": 0,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 1,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 2,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 3,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 4,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 5,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 6,
+              "chuvaCopiadaMm": 2
+            },
+            {
+              "horaUTC": 7,
+              "chuvaCopiadaMm": 0.2
+            },
+            {
+              "horaUTC": 8,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 9,
+              "chuvaCopiadaMm": 0.2
+            },
+            {
+              "horaUTC": 10,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 11,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 12,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 13,
+              "chuvaCopiadaMm": 9
+            },
+            {
+              "horaUTC": 14,
+              "chuvaCopiadaMm": 1
+            },
+            {
+              "horaUTC": 15,
+              "chuvaCopiadaMm": 0.2
+            },
+            {
+              "horaUTC": 16,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 17,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 18,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 19,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 20,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 21,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 22,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 23,
+              "chuvaCopiadaMm": 0
+            }
+          ],
+          "registroDiarioTratado": {
+            "data": "2021-01-03",
+            "chuva_mm": 12.6,
+            "horas_validas": 24,
+            "horas_ausentes": 0,
+            "horas_invalidas": 0
+          }
+        },
+        {
+          "data": "2021-01-04",
+          "origem": "2020-12-31",
+          "metodo": "copia-da-precipitacao-horaria-do-ultimo-dia-observado-valido",
+          "registroDiarioAnterior": {
+            "data": "2021-01-04",
+            "chuva_mm": 0,
+            "horas_validas": 7,
+            "horas_ausentes": 0,
+            "horas_invalidas": 17
+          },
+          "horasCopiadas": [
+            {
+              "horaUTC": 0,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 1,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 2,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 3,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 4,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 5,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 6,
+              "chuvaCopiadaMm": 2
+            },
+            {
+              "horaUTC": 7,
+              "chuvaCopiadaMm": 0.2
+            },
+            {
+              "horaUTC": 8,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 9,
+              "chuvaCopiadaMm": 0.2
+            },
+            {
+              "horaUTC": 10,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 11,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 12,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 13,
+              "chuvaCopiadaMm": 9
+            },
+            {
+              "horaUTC": 14,
+              "chuvaCopiadaMm": 1
+            },
+            {
+              "horaUTC": 15,
+              "chuvaCopiadaMm": 0.2
+            },
+            {
+              "horaUTC": 16,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 17,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 18,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 19,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 20,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 21,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 22,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 23,
+              "chuvaCopiadaMm": 0
+            }
+          ],
+          "registroDiarioTratado": {
+            "data": "2021-01-04",
+            "chuva_mm": 12.6,
+            "horas_validas": 24,
+            "horas_ausentes": 0,
+            "horas_invalidas": 0
+          }
+        }
+      ],
       "primeiroRegistro": "2021-01-01T00:00:00+00:00",
       "ultimoRegistro": "2021-12-31T23:00:00+00:00",
       "nome": "SAO SIMAO",
@@ -40,13 +526,137 @@
       "inicio": "2022-01-01",
       "fim": "2022-12-31",
       "url": "https://portal.inmet.gov.br/uploads/dadoshistoricos/2022.zip",
-      "status": "preparado",
-      "versaoPreparo": 2,
       "arquivoNoZip": "INMET_SE_SP_A770_SAO SIMAO_01-01-2022_A_31-12-2022.CSV",
-      "sha256Original": "df9720110b3d6882bbd5fb1b18da11c9ee35ff4df37986996fd5103799c50494",
-      "sha256Diario": "50cb34baaa69cd3a6c8f9ae9674e797daf696b2f95c6ef2ee9753624ff98c38a",
+      "status": "preparado",
+      "versaoPreparo": 4,
+      "arquivoFonte": "2022-fonte.csv",
+      "sha256Fonte": "df9720110b3d6882bbd5fb1b18da11c9ee35ff4df37986996fd5103799c50494",
+      "sha256Original": "3abd9197586ef472eb5d266ecfb70311b5081a2c0f7fdb1b45587425979d0228",
+      "sha256Diario": "51c5f181b7e6c85354e9be4b8562caa58e216574611d2105df9db048d878a08b",
+      "arquivoHorarioTratado": "2022-original.csv",
       "dias": 365,
-      "diasValidos": 364,
+      "diasValidos": 365,
+      "diasObservadosValidos": 364,
+      "diasPreenchidos": 1,
+      "preenchimentos": [
+        {
+          "data": "2022-12-13",
+          "origem": "2022-12-12",
+          "metodo": "copia-da-precipitacao-horaria-do-ultimo-dia-observado-valido",
+          "registroDiarioAnterior": {
+            "data": "2022-12-13",
+            "chuva_mm": 72.6,
+            "horas_validas": 11,
+            "horas_ausentes": 0,
+            "horas_invalidas": 13
+          },
+          "horasCopiadas": [
+            {
+              "horaUTC": 0,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 1,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 2,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 3,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 4,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 5,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 6,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 7,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 8,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 9,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 10,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 11,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 12,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 13,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 14,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 15,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 16,
+              "chuvaCopiadaMm": 3.6
+            },
+            {
+              "horaUTC": 17,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 18,
+              "chuvaCopiadaMm": 0.6
+            },
+            {
+              "horaUTC": 19,
+              "chuvaCopiadaMm": 20
+            },
+            {
+              "horaUTC": 20,
+              "chuvaCopiadaMm": 27
+            },
+            {
+              "horaUTC": 21,
+              "chuvaCopiadaMm": null
+            },
+            {
+              "horaUTC": 22,
+              "chuvaCopiadaMm": null
+            },
+            {
+              "horaUTC": 23,
+              "chuvaCopiadaMm": null
+            }
+          ],
+          "registroDiarioTratado": {
+            "data": "2022-12-13",
+            "chuva_mm": 51.2,
+            "horas_validas": 21,
+            "horas_ausentes": 0,
+            "horas_invalidas": 3
+          }
+        }
+      ],
       "primeiroRegistro": "2022-01-01T00:00:00+00:00",
       "ultimoRegistro": "2022-12-31T23:00:00+00:00",
       "nome": "SAO SIMAO",
@@ -57,13 +667,137 @@
       "inicio": "2023-01-01",
       "fim": "2023-12-31",
       "url": "https://portal.inmet.gov.br/uploads/dadoshistoricos/2023.zip",
-      "status": "preparado",
-      "versaoPreparo": 2,
       "arquivoNoZip": "INMET_SE_SP_A770_SAO SIMAO_01-01-2023_A_31-12-2023.CSV",
-      "sha256Original": "60b67bebddb137a2261664d5bef5d413868f724c214a4e06d0dca10a086dd151",
-      "sha256Diario": "773437fc3ace0606b09291ccf71423ee7fdb6c0172a7151bea6c2bcf77643be1",
+      "status": "preparado",
+      "versaoPreparo": 4,
+      "arquivoFonte": "2023-fonte.csv",
+      "sha256Fonte": "60b67bebddb137a2261664d5bef5d413868f724c214a4e06d0dca10a086dd151",
+      "sha256Original": "f7251d55e9ef22bcfab65101a19f6c87e5ff672be48df18485343e14e113e01f",
+      "sha256Diario": "fd9c3949a734fbac71ec620500f01e888ccea1c03b28223d3eabc46151c62dd9",
+      "arquivoHorarioTratado": "2023-original.csv",
       "dias": 365,
-      "diasValidos": 364,
+      "diasValidos": 365,
+      "diasObservadosValidos": 364,
+      "diasPreenchidos": 1,
+      "preenchimentos": [
+        {
+          "data": "2023-05-03",
+          "origem": "2023-05-02",
+          "metodo": "copia-da-precipitacao-horaria-do-ultimo-dia-observado-valido",
+          "registroDiarioAnterior": {
+            "data": "2023-05-03",
+            "chuva_mm": 0,
+            "horas_validas": 18,
+            "horas_ausentes": 0,
+            "horas_invalidas": 6
+          },
+          "horasCopiadas": [
+            {
+              "horaUTC": 0,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 1,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 2,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 3,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 4,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 5,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 6,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 7,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 8,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 9,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 10,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 11,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 12,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 13,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 14,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 15,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 16,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 17,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 18,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 19,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 20,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 21,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 22,
+              "chuvaCopiadaMm": 0
+            },
+            {
+              "horaUTC": 23,
+              "chuvaCopiadaMm": 0
+            }
+          ],
+          "registroDiarioTratado": {
+            "data": "2023-05-03",
+            "chuva_mm": 0,
+            "horas_validas": 24,
+            "horas_ausentes": 0,
+            "horas_invalidas": 0
+          }
+        }
+      ],
       "primeiroRegistro": "2023-01-01T00:00:00+00:00",
       "ultimoRegistro": "2023-12-31T23:00:00+00:00",
       "nome": "SAO SIMAO",
@@ -74,60 +808,24 @@
       "inicio": "2024-01-01",
       "fim": "2024-12-31",
       "url": "https://portal.inmet.gov.br/uploads/dadoshistoricos/2024.zip",
-      "status": "preparado",
-      "versaoPreparo": 2,
       "arquivoNoZip": "INMET_SE_SP_A770_SAO SIMAO_01-01-2024_A_31-12-2024.CSV",
+      "status": "preparado",
+      "versaoPreparo": 4,
+      "arquivoFonte": "2024-fonte.csv",
+      "sha256Fonte": "9287fb2e74b27291e20786c064fb57c321eba3e08c8ab9443dbd257ecf4d3611",
       "sha256Original": "9287fb2e74b27291e20786c064fb57c321eba3e08c8ab9443dbd257ecf4d3611",
       "sha256Diario": "0b34a48b7d61b34debdf41c60d10719650914d47a7cfc92837210cbcb7af512e",
+      "arquivoHorarioTratado": "2024-original.csv",
       "dias": 366,
       "diasValidos": 366,
+      "diasObservadosValidos": 366,
+      "diasPreenchidos": 0,
+      "preenchimentos": [],
       "primeiroRegistro": "2024-01-01T00:00:00+00:00",
       "ultimoRegistro": "2024-12-31T23:00:00+00:00",
       "nome": "SAO SIMAO",
       "latitude": -21.46111111,
       "longitude": -47.57944443
-    },
-    "2025": {
-      "inicio": "2025-01-01",
-      "fim": "2025-12-31",
-      "url": "https://portal.inmet.gov.br/uploads/dadoshistoricos/2025.zip",
-      "status": "preparado",
-      "versaoPreparo": 2,
-      "arquivoNoZip": "2025/INMET_SE_SP_A770_SAO SIMAO_01-01-2025_A_31-12-2025.CSV",
-      "sha256Original": "f1661f68ed5b5f1564edbaac848d653bb25a0b77191f49229ea8fb00dffb7bed",
-      "sha256Diario": "49ba3a20b2087763e587fee04f3e9a0452e89709a4ff6a166c48a35a700e4d53",
-      "dias": 365,
-      "diasValidos": 198,
-      "primeiroRegistro": "2025-01-01T00:00:00+00:00",
-      "ultimoRegistro": "2025-12-31T23:00:00+00:00",
-      "nome": "SAO SIMAO",
-      "latitude": -21.46111111,
-      "longitude": -47.57944443
-    },
-    "2026": {
-      "inicio": "2026-01-01",
-      "fim": "2026-09-30",
-      "url": "https://portal.inmet.gov.br/uploads/dadoshistoricos/2026.zip",
-      "snapshotsEncontrados": [
-        "INMET_SE_SP_A770_SAO SIMAO_01-01-2026_A_30-09-2026.CSV",
-        "INMET_SE_SP_A770_SAO SIMAO_01-01-2026_A_31-08-2026.CSV"
-      ],
-      "status": "preparado",
-      "versaoPreparo": 2,
-      "arquivoNoZip": "INMET_SE_SP_A770_SAO SIMAO_01-01-2026_A_30-09-2026.CSV",
-      "sha256Original": "8234bf1ecec47d32280c27370ba81f96599d7dcab18ea3509447774fe9e23261",
-      "sha256Diario": "ac6fcd2fec4926693430dd17581546f8ec6a0ac8deee36bc429d7c6d17f797c9",
-      "dias": 273,
-      "diasValidos": 272,
-      "primeiroRegistro": "2026-01-01T00:00:00+00:00",
-      "ultimoRegistro": "2026-09-30T23:00:00+00:00",
-      "nome": "SAO SIMAO",
-      "latitude": -21.46111111,
-      "longitude": -47.57944443
     }
-  },
-  "inicio": "2020-01-01",
-  "fim": "2026-09-30",
-  "fonte": "INMET",
-  "regra": "dia valido: >=20 horas validas; seco: <1 mm; lacuna interrompe sequencia"
+  }
 }
