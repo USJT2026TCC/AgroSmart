@@ -108,7 +108,12 @@ não uma medição independente. Entre os blocos de depósito e pagamento decorr
 As capturas enviadas pelo usuário foram preservadas: `03-emissao-metamask.png`
 mostra a solicitação de assinatura; `04-painel-antes-garantia.png` mostra a apólice
 ainda aguardando garantia. As apólices antigas do painel não são resultados deste
-cenário. Falta a captura da tela final liquidada para complementar os recibos.
+cenário. `05-apolice-liquidada.png` mostra situação Liquidada, valor pago de
+0,006 ETH, garantia retida zero e um período publicado.
+`06-termos-e-linha-do-tempo.png` mostra a coincidência dos hashes dos termos e
+a sequência de emissão, garantia, publicação, avaliação e pagamento. O cenário A
+está documentado com recibos, estado do contrato, API e capturas da interface.
+A MetaMask aberta nos prints é a da seguradora; ela não é prova do saldo do produtor.
 Cenários B (sem acionamento/resgate) e C (cancelamento) permanecem pendentes.
 
 O gatilho é experimental e não mede prejuízo agrícola. O contrato confia no
