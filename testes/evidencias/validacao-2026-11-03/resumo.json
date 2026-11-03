@@ -169,9 +169,14 @@
         "04-painel-antes-garantia.png",
         "05-apolice-liquidada.png",
         "06-termos-e-linha-do-tempo.png",
-        "07-etherscan-pagamento.png"
+        "07-etherscan-pagamento.png",
+        "08-etherscan-eventos.png",
+        "09-apolice-sem-verificacao-fonte.png",
+        "10-fabrica-read-contract.png",
+        "11-carteira-produtor-interface.png"
       ],
-      "registro": "recibos, estado do contrato, API e capturas da interface conferidos"
+      "registro": "recibos, estado do contrato, API e capturas da interface conferidos",
+      "verificacaoFonteApoliceIndividual": "não verificada na captura fornecida; fábrica aparece verificada"
     }
   },
   "capturasLocais": [

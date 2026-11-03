@@ -65,9 +65,10 @@ Captura final liquidada registrada; cenários B e C pendentes.
 | Interface e MetaMask da seguradora | Termos e solicitação de emissão na Sepolia | Registrado em 03 |
 | Interface da apólice | Liquidada, valor pago, termos e linha do tempo | Registrado em 05 e 06 |
 | Etherscan — Overview | Success, hash, bloco, oráculo e transferência ao produtor | Registrado em 07 |
-| Etherscan — Logs | IndicesPublicados, CondicaoAvaliada e PagamentoExecutado | Captura pendente; eventos já conferidos via RPC |
-| Etherscan — contrato da apólice | Aba Contract com verificação e Read Contract: situacao, valorPago e periodoAcionador | Captura pendente |
-| MetaMask do produtor | Conta beneficiária e rede Sepolia; detalhes do recebimento, se exibidos | Complementar; saldo isolado não prova este pagamento |
+| Etherscan — Logs | IndicesPublicados, CondicaoAvaliada e PagamentoExecutado | Registrado em 08; pagamento decodificado, dois eventos em hexadecimal |
+| Etherscan — contrato da apólice | Estado da publicação do código-fonte | Registrado em 09: fonte individual ainda não verificada; estado consultado via RPC |
+| Etherscan — fábrica | Contrato verificado, registro e seguradora | Registrado em 10; não é a apólice individual |
+| Interface — carteira do produtor | Conta vinculada, saldo e total acumulado | Registrado em 11; não é captura da extensão MetaMask nem prova isolada deste pagamento |
 
 A carteira da seguradora aberta ao lado da apólice não representa o recebimento
 pelo produtor. Transferências internas podem não aparecer como uma operação

@@ -118,6 +118,21 @@ A MetaMask aberta nos prints é a da seguradora; ela não é prova do saldo do p
 transferência interna de 0,006 ETH da apólice ao produtor. O campo Value de
 0 ETH corresponde ao valor enviado pelo oráculo na chamada; não é o valor
 da indenização transferida pelo contrato.
+As capturas adicionais completam a documentação visual do pagamento:
+`08-etherscan-eventos.png` mostra PagamentoExecutado decodificado e os demais
+logs; os dois primeiros eventos aparecem em hexadecimal e foram decodificados
+na consulta RPC registrada. `09-apolice-sem-verificacao-fonte.png` mostra que o
+código-fonte da apólice individual ainda não está verificado no explorador.
+`10-fabrica-read-contract.png` mostra a fábrica verificada, seu registro e sua
+seguradora; essa verificação não comprova a verificação individual da apólice.
+`11-carteira-produtor-interface.png` mostra a conta vinculada, saldo de 0,038 ETH
+e 0,018 ETH acumulados em três apólices. Esses totais incluem outros pagamentos;
+a evidência específica de 0,006 ETH deste cenário permanece o recibo e seus eventos.
+A captura é da interface do AgroSmart, não da extensão MetaMask.
+
+Não faltam capturas obrigatórias para comprovar o pagamento deste cenário.
+A verificação individual do código-fonte é uma pendência distinta da execução
+confirmada; não foi realizada nesta etapa.
 Cenários B (sem acionamento/resgate) e C (cancelamento) permanecem pendentes.
 
 O gatilho é experimental e não mede prejuízo agrícola. O contrato confia no
