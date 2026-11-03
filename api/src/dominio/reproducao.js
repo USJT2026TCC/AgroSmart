@@ -25,7 +25,7 @@ export async function termosHistoricos(banco, corpo, base) {
   const dias = (Date.parse(fim) - Date.parse(inicio)) / 86400000 + 1;
   if (inicio < limites.inicio || fim > limites.fim || dias < 1 || dias > 3660)
     throw pedidoInvalido(
-      "Cobertura historica deve estar entre 2020 e setembro de 2026, com ate 3660 dias.",
+      "Cobertura historica deve estar entre 2020 e dezembro de 2024, com ate 3660 dias.",
     );
   const gatilho = corpo.gatilhoDias;
   if (

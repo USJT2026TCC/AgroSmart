@@ -53,7 +53,7 @@ contract ApoliceHistorica {
 
     // Mesmo recorte de configuracao/historico.json: dias UTC inclusivos.
     uint64 public constant INICIO_DADOS = 1577836800;
-    uint64 public constant FIM_DADOS = 1790812799;
+    uint64 public constant FIM_DADOS = 1735689599;
     bool public constant modoHistorico = true;
     uint64 public instanteHistorico;
     error PeriodoHistoricoInvalido();

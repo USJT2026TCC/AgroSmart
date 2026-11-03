@@ -11,7 +11,7 @@ Contratos em Solidity, publicados na Sepolia, e o script que os publica.
 | `contracts/OracleRegistry.sol` | Lista de oráculos autorizados a publicar; a seguradora autoriza e revoga |
 
 Regras gravadas nos contratos: pagamento integral e único, gatilho de 1 a 366 dias,
-cobertura dentro de 2020 a setembro de 2026, produtor diferente da seguradora e
+cobertura dentro de 01/01/2020 a 31/12/2024, produtor diferente da seguradora e
 publicações só de oráculo autorizado, em ordem de data.
 
 ## Implantação em uso
@@ -27,8 +27,10 @@ publicações só de oráculo autorizado, em ordem de data.
 
 Publicados em 28/10/2026 e verificados no Etherscan (Solidity 0.8.24, otimizador com
 200 execuções). As fontes verificadas são as da tag `sepolia-2026-10-28`.
-Para reproduzir o bytecode verificado, use essa tag: os comentários revisados na
-branch principal também entram nos metadados da compilação.
+Para reproduzir o bytecode verificado, use essa tag. O código atual restringe o
+fim da cobertura a 31/12/2024; a fábrica publicada ainda usa o limite técnico de
+30/09/2026. Aplicar a nova restrição on chain exige publicar e verificar outra
+fábrica. API e oráculo já restringem as novas coberturas a 2020–2024.
 
 ## Publicar contratos próprios
 

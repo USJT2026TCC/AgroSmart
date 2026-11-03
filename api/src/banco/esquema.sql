@@ -1,4 +1,4 @@
--- Esquema vigente: PostgreSQL, INMET A770 de 2020 a 30/09/2026.
+-- Esquema vigente: PostgreSQL, INMET A770 de 01/01/2020 a 31/12/2024.
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -76,7 +76,7 @@ CREATE TABLE public.inmet_arquivos (
     sha256_diario text NOT NULL,
     procedencia jsonb NOT NULL,
     importado_em timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT inmet_anos_historicos CHECK (((estacao = 'A770'::text) AND ((ano >= 2020) AND (ano <= 2026))))
+    CONSTRAINT inmet_anos_historicos CHECK (((estacao = 'A770'::text) AND ((ano >= 2020) AND (ano <= 2024))))
 );
 
 CREATE TABLE public.inmet_dias (
@@ -92,7 +92,7 @@ CREATE TABLE public.inmet_dias (
     CONSTRAINT inmet_dias_horas_ausentes_check CHECK (((horas_ausentes >= 0) AND (horas_ausentes <= 24))),
     CONSTRAINT inmet_dias_horas_invalidas_check CHECK (((horas_invalidas >= 0) AND (horas_invalidas <= 24))),
     CONSTRAINT inmet_dias_horas_validas_check CHECK (((horas_validas >= 0) AND (horas_validas <= 24))),
-    CONSTRAINT inmet_recorte_historico CHECK (((estacao = 'A770'::text) AND ((data >= '2020-01-01'::date) AND (data <= '2026-09-30'::date))))
+    CONSTRAINT inmet_recorte_historico CHECK (((estacao = 'A770'::text) AND ((data >= '2020-01-01'::date) AND (data <= '2024-12-31'::date))))
 );
 
 CREATE TABLE public.notificacoes (
