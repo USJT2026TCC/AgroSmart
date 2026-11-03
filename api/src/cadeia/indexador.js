@@ -195,21 +195,37 @@ export function criarIndexador(banco, opcoes = {}) {
   /** Processa um trecho de blocos. */
   async function processarTrecho(implantacao, de, ate) {
     const fabrica = implantacao.contratos.ApoliceFactory.toLowerCase();
+    const fabricas = new Map([
+      ...(implantacao.fabricasAnteriores ?? []).map((f) => [
+        f.endereco.toLowerCase(),
+        Number(f.blocoInicial ?? implantacao.blocoInicial ?? 0),
+      ]),
+      [fabrica, Number(implantacao.blocoImplantacaoFabrica ?? implantacao.blocoInicial ?? 0)],
+    ]);
 
-    // 1. Primeiro as emissoes. Uma apolice emitida neste trecho pode ter, no
-    //    mesmo trecho, o deposito da garantia; ela precisa entrar na lista de
-    //    enderecos observados antes da consulta dos eventos dela.
-    const logsDaFabrica = await provedor().getLogs({
-      address: fabrica,
-      fromBlock: de,
-      toBlock: ate,
-    });
+    // Consulta cada fábrica a partir de sua implantação. Alguns RPCs recusam
+    // consultas que incluem uma fábrica em blocos anteriores à sua existência.
+    const logsDaFabrica = [];
+    for (const [endereco, primeiroBloco] of fabricas) {
+      const inicio = Math.max(de, primeiroBloco);
+      if (inicio > ate) continue;
+      logsDaFabrica.push(
+        ...(await provedor().getLogs({
+          address: endereco,
+          fromBlock: inicio,
+          toBlock: ate,
+        })),
+      );
+    }
+    logsDaFabrica.sort((a, b) => a.blockNumber - b.blockNumber || a.index - b.index);
 
     for (const log of logsDaFabrica) {
       const parseado = interfaceFactory.parseLog(log);
       if (parseado?.name !== "ApoliceEmitida") continue;
 
-      const evento = await banco.transacao((tx) => gravarEvento(tx, fabrica, log, parseado));
+      const evento = await banco.transacao((tx) =>
+        gravarEvento(tx, log.address.toLowerCase(), log, parseado),
+      );
       const enderecoApolice = parseado.args.apolice.toLowerCase();
 
       const termos = await criarLeitorDaCadeia().termosDaApolice(enderecoApolice);
@@ -247,7 +263,11 @@ export function criarIndexador(banco, opcoes = {}) {
 
     const observados = [...porEndereco.keys()];
     const logs = observados.length
-      ? await provedor().getLogs({ address: observados, fromBlock: de, toBlock: ate })
+      ? await provedor().getLogs({
+          address: observados,
+          fromBlock: de,
+          toBlock: ate,
+        })
       : [];
 
     const afetadas = new Set();
@@ -302,7 +322,10 @@ export function criarIndexador(banco, opcoes = {}) {
       );
     }
 
-    return { eventos: logsDaFabrica.length + logs.length, apolicesAtualizadas: afetadas.size };
+    return {
+      eventos: logsDaFabrica.length + logs.length,
+      apolicesAtualizadas: afetadas.size,
+    };
   }
 
   /**
@@ -358,7 +381,10 @@ export function criarIndexador(banco, opcoes = {}) {
       // No fora do ar nao derruba o backend: a proxima varredura tenta de novo, a
       // partir do mesmo bloco, porque o progresso so e gravado depois de cada
       // trecho concluido.
-      ultimoErro = { mensagem: erro.shortMessage || erro.message, em: new Date().toISOString() };
+      ultimoErro = {
+        mensagem: erro.shortMessage || erro.message,
+        em: new Date().toISOString(),
+      };
       return { eventos: 0, erro: ultimoErro.mensagem };
     } finally {
       varrendo = false;

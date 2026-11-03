@@ -20,17 +20,17 @@ publicações só de oráculo autorizado, em ordem de data.
 
 | Contrato | Endereço |
 |---|---|
-| Fábrica de apólices | `0xE9CE1a3AC2685ec7Eb54205E6E72eeE4bfaFB386` |
+| Fábrica de apólices | `0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834` |
 | Registro de oráculos | `0xb9821B9aA456Ce8Ccc2B489c1C7381Ffff1f5Aa3` |
 | Seguradora | `0x95eA48b7BF91446CF12C156aC2FDeA75Af03fD70` |
 | Oráculo autorizado | `0xeFCf4d0c3f22ac012896c2D9c6bA35e9fd7D691D` |
 
-Publicados em 28/10/2026 e verificados no Etherscan (Solidity 0.8.24, otimizador com
-200 execuções). As fontes verificadas são as da tag `sepolia-2026-10-28`.
-Para reproduzir o bytecode verificado, use essa tag. O código atual restringe o
-fim da cobertura a 31/12/2024; a fábrica publicada ainda usa o limite técnico de
-30/09/2026. Aplicar a nova restrição on chain exige publicar e verificar outra
-fábrica. API e oráculo já restringem as novas coberturas a 2020–2024.
+A fábrica foi publicada e verificada em 03/11/2026; as fontes correspondem à tag
+`sepolia-2026-11-03`. O registro foi mantido e suas fontes verificadas estão na tag
+`sepolia-2026-10-28`. Compilação: Solidity 0.8.24, otimizador com 200 execuções.
+
+O manifesto também lista as fábricas anteriores. O indexador acompanha seus eventos
+e as apólices existentes; novas emissões usam a fábrica atual.
 
 ## Publicar contratos próprios
 
@@ -42,7 +42,18 @@ $env:NOVA_IMPLANTACAO=1; npm run implantar:sepolia --workspace blockchain
 
 `scripts/implantar.js` publica o registro, autoriza o oráculo, publica a fábrica e
 reescreve `implantacoes/sepolia.json`. Usa ETH de teste da conta da seguradora.
-Apólices da implantação anterior continuam na rede, mas a aplicação deixa de acompanhá-las.
+Para atualizar somente a fábrica, mantendo o registro e o acompanhamento das
+apólices existentes:
+
+```powershell
+$env:ATUALIZAR_FABRICA=1
+npm run implantar:sepolia --workspace blockchain
+Remove-Item Env:ATUALIZAR_FABRICA
+```
+
+O endereço anterior entra em `fabricasAnteriores` no manifesto. Depois da publicação,
+execute `npm start` na raiz para atualizar os serviços. Se a conexão cair durante
+a publicação, confira a transação impressa antes de repetir o comando.
 
 Para verificar o código no Etherscan, com `ETHERSCAN_API_KEY` preenchida:
 

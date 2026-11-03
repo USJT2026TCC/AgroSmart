@@ -100,11 +100,12 @@ oráculo e interface (porta 5173). A Sepolia e a MetaMask ficam fora do Docker.
 
 | Contrato | Endereço na Sepolia |
 |---|---|
-| Fábrica de apólices | [0xE9CE1a3AC2685ec7Eb54205E6E72eeE4bfaFB386](https://sepolia.etherscan.io/address/0xE9CE1a3AC2685ec7Eb54205E6E72eeE4bfaFB386#code) |
+| Fábrica de apólices | [0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834](https://sepolia.etherscan.io/address/0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834#code) |
 | Registro de oráculos | [0xb9821B9aA456Ce8Ccc2B489c1C7381Ffff1f5Aa3](https://sepolia.etherscan.io/address/0xb9821B9aA456Ce8Ccc2B489c1C7381Ffff1f5Aa3#code) |
 
-O código implantado está verificado no Etherscan e corresponde à tag `sepolia-2026-10-28`.
-A restrição a 31/12/2024 no código Solidity atual ainda exige nova publicação da
-fábrica para valer on chain; a aplicação já usa o recorte 2020–2024.
+A fábrica está verificada no Etherscan e corresponde à tag `sepolia-2026-11-03`;
+ela limita a cobertura a 01/01/2020–31/12/2024. O registro de oráculos foi mantido,
+com fontes verificadas na tag `sepolia-2026-10-28`. O indexador acompanha as fábricas
+listadas no manifesto e preserva a consulta às apólices existentes.
 
 Os testes automatizados ficam na máquina da equipe e não acompanham o repositório.
