@@ -2,7 +2,7 @@
 
 **Resultado:** 349 testes distintos aprovados e build da interface concluído.
 A validação automatizada foi executada localmente. A demonstração com MetaMask
-na VM ainda depende de atualização da instalação e execução dos cenários abaixo.
+na VM ainda depende da execução dos cenários abaixo com confirmação na carteira.
 
 ## Execução
 
@@ -75,10 +75,11 @@ As capturas locais documentam a tela e o cadastro do talhão
 
 ## Pendências e limites
 
-A VM respondeu com PostgreSQL e indexador ativos, mas apontou para a fábrica
-`0xe9ce1a3ac2685ec7eb54205e6e72eee4bfafb386`. A versão atual configura
-`0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834`. É necessário alinhar a VM antes de
-emitir a apólice de demonstração. O [roteiro](ROTEIRO.md) define o que registrar.
+A consulta de saúde da VM em 03/11/2026 confirmou PostgreSQL ativo, fábrica
+`0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834` e indexador ativo sem erro
+na resposta. O registro está em `saude-vm.json`. Essa observação não comprova
+liquidação, sincronização até o último bloco nem disponibilidade contínua do RPC.
+O roteiro define os cenários de transação ainda pendentes.
 **Nenhuma nova emissão, garantia ou liquidação Sepolia é declarada como realizada
 nesta execução.**
 

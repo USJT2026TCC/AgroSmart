@@ -1,0 +1,20 @@
+{
+  "consultadoEmUtc": "2026-11-03T22:59:12.6958788Z",
+  "origem": "https://35-199-108-185.sslip.io/api/saude",
+  "resposta": {
+    "situacao": "ok",
+    "banco": {
+      "motor": "postgres",
+      "latenciaMs": 1
+    },
+    "cadeia": {
+      "contratosImplantados": true,
+      "fabrica": "0x2a9b6995cf920a70b96f4cfc3ec951bdfec0f834"
+    },
+    "indexador": {
+      "ativo": true,
+      "ultimoErro": null
+    }
+  },
+  "limite": "Resposta pontual de saúde; não comprova liquidação nem sincronização até o último bloco."
+}

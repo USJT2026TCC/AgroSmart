@@ -149,9 +149,13 @@
   },
   "sepolia": {
     "fabricaConfigurada": "0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834",
-    "fabricaNaVmObservada": "0xe9ce1a3ac2685ec7eb54205e6e72eee4bfafb386",
-    "fluxoRealDaVersaoAtual": "pendente de atualização da VM e confirmações MetaMask",
-    "nenhumaNovaTransacaoEnviadaNestaExecucao": true
+    "fabricaNaVmObservada": "0x2a9b6995cf920a70b96f4cfc3ec951bdfec0f834",
+    "fluxoRealDaVersaoAtual": "pendente de execução dos cenários e confirmações MetaMask",
+    "nenhumaNovaTransacaoEnviadaNestaExecucao": true,
+    "saudeVm": "indexador ativo sem erro na resposta; não comprova liquidação nem sincronização até o último bloco"
   },
-  "capturasLocais": ["01-cadastro-periodo.jpg", "02-talhao-na-lista.jpg"]
+  "capturasLocais": [
+    "01-cadastro-periodo.jpg",
+    "02-talhao-na-lista.jpg"
+  ]
 }
