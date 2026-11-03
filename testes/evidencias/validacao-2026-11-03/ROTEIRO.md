@@ -57,3 +57,19 @@ uma EVM local não comprova execução na Sepolia.
 
 Estado desta execução: cenário A confirmado por recibos, estado do contrato e API.
 Captura final liquidada registrada; cenários B e C pendentes.
+
+## Capturas complementares do cenário A
+
+| Local | O que registrar | Situação |
+| --- | --- | --- |
+| Interface e MetaMask da seguradora | Termos e solicitação de emissão na Sepolia | Registrado em 03 |
+| Interface da apólice | Liquidada, valor pago, termos e linha do tempo | Registrado em 05 e 06 |
+| Etherscan — Overview | Success, hash, bloco, oráculo e transferência ao produtor | Registrado em 07 |
+| Etherscan — Logs | IndicesPublicados, CondicaoAvaliada e PagamentoExecutado | Captura pendente; eventos já conferidos via RPC |
+| Etherscan — contrato da apólice | Aba Contract com verificação e Read Contract: situacao, valorPago e periodoAcionador | Captura pendente |
+| MetaMask do produtor | Conta beneficiária e rede Sepolia; detalhes do recebimento, se exibidos | Complementar; saldo isolado não prova este pagamento |
+
+A carteira da seguradora aberta ao lado da apólice não representa o recebimento
+pelo produtor. Transferências internas podem não aparecer como uma operação
+separada na atividade da MetaMask; nesse caso, usar o recibo do Etherscan.
+Não registrar chaves privadas, recuperação da carteira, tokens ou configuração secreta.

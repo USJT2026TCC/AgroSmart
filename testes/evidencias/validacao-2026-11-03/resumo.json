@@ -168,7 +168,8 @@
         "03-emissao-metamask.png",
         "04-painel-antes-garantia.png",
         "05-apolice-liquidada.png",
-        "06-termos-e-linha-do-tempo.png"
+        "06-termos-e-linha-do-tempo.png",
+        "07-etherscan-pagamento.png"
       ],
       "registro": "recibos, estado do contrato, API e capturas da interface conferidos"
     }

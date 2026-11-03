@@ -114,6 +114,10 @@ cenário. `05-apolice-liquidada.png` mostra situação Liquidada, valor pago de
 a sequência de emissão, garantia, publicação, avaliação e pagamento. O cenário A
 está documentado com recibos, estado do contrato, API e capturas da interface.
 A MetaMask aberta nos prints é a da seguradora; ela não é prova do saldo do produtor.
+`07-etherscan-pagamento.png` mostra Success, hash, bloco, remetente oráculo e
+transferência interna de 0,006 ETH da apólice ao produtor. O campo Value de
+0 ETH corresponde ao valor enviado pelo oráculo na chamada; não é o valor
+da indenização transferida pelo contrato.
 Cenários B (sem acionamento/resgate) e C (cancelamento) permanecem pendentes.
 
 O gatilho é experimental e não mede prejuízo agrícola. O contrato confia no
