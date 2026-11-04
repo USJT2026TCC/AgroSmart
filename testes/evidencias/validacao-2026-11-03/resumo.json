@@ -150,7 +150,7 @@
   "sepolia": {
     "fabricaConfigurada": "0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834",
     "fabricaNaVmObservada": "0x2a9b6995cf920a70b96f4cfc3ec951bdfec0f834",
-    "fluxoRealDaVersaoAtual": "cenário A de pagamento confirmado; cenários B e C pendentes",
+    "fluxoRealDaVersaoAtual": "cenário A confirmado; B sem acionamento confirmado com resgate pendente; C pendente",
     "saudeVm": "indexador ativo sem erro na resposta; não comprova liquidação nem sincronização até o último bloco",
     "cenarioA": {
       "apolice": "0xbf75c995d3a66b42f333f2a17f1768005a07f297",
@@ -177,6 +177,25 @@
       ],
       "registro": "recibos, estado do contrato, API e capturas da interface conferidos",
       "verificacaoFonteApoliceIndividual": "não verificada na captura fornecida; fábrica aparece verificada"
+    },
+    "cenarioB": {
+      "apolice": "0x8f0e008604d8e119613f318c6ed7f365a12f83d7",
+      "inicio": "2024-02-20",
+      "fim": "2024-02-21",
+      "gatilhoDias": 10,
+      "indicePublicado": 0,
+      "periodoPublicado": 20240221,
+      "situacao": "ATIVA",
+      "valorPagoEth": "0",
+      "saldoEth": "0.006",
+      "pagamentosAteBloco12058729": 0,
+      "simulacaoResgate": "eth_call sem reversão; não envia transação",
+      "resgateReal": "pendente",
+      "capturas": [
+        "12-cenario-b-proposta.png",
+        "13-cenario-b-garantia.png",
+        "14-cenario-b-condicao-nao-atendida.png"
+      ]
     }
   },
   "capturasLocais": [

@@ -133,7 +133,34 @@ A captura é da interface do AgroSmart, não da extensão MetaMask.
 Não faltam capturas obrigatórias para comprovar o pagamento deste cenário.
 A verificação individual do código-fonte é uma pendência distinta da execução
 confirmada; não foi realizada nesta etapa.
-Cenários B (sem acionamento/resgate) e C (cancelamento) permanecem pendentes.
+### Cenário B — sem acionamento, resgate pendente
+
+O ensaio executado usou **20 a 21/02/2024**, com gatilho 10 dias, no lugar
+do período de janeiro inicialmente proposto. A apólice é
+`0x8f0e008604d8e119613f318c6ed7f365a12f83d7`, do talhão `talhao-alunos`.
+As evidências estão em `cenario-b-sepolia.json`, `cenario-b-api.json` e nas
+capturas 12 a 14. Foram selecionadas três capturas com termos, garantia e
+resultado; as demais capturas fornecidas repetiam etapas ou painéis gerais.
+
+| Etapa | Bloco | Hash |
+| --- | ---: | --- |
+| Emissão | 12058709 | `0x49915e39ef3e84bce17bb5f8b7e56f5c90b52c6fa79226414c66f12a3981d62d` |
+| Garantia | 12058715 | `0xc026f2e7d260e6b45d6592b7c329aff280c6e377b2f653adbf677e73fd027a6a` |
+| Índice sem acionamento | 12058718 | `0xa983a9406886ad6a1da69bba8d544e070a8b64af23bffc2006f54628d319347a` |
+
+Os três recibos tiveram status 1. O oráculo publicou período 20240221, índice
+zero e condição não atendida. No bloco 12058729, a apólice estava Ativa, com
+saldo 0,006 ETH, valor pago zero e nenhum evento PagamentoExecutado desde a
+emissão. A API confirmou os mesmos eventos e a publicação na cadeia.
+Uma chamada `eth_call` de resgatarGarantia, com remetente seguradora, concluiu
+sem reversão naquele bloco; ela não envia transação nem movimenta fundos.
+O resgate real e o encerramento ainda não foram realizados nesta etapa.
+
+Este período tem dois dias e gatilho dez; portanto não poderia atingir o
+limiar, mesmo se os dois dias fossem secos. Ele exercita o caminho sem pagamento
+e a liberação para resgate; não mede discriminação entre episódios longos com
+chuva e seca. O resultado de índice zero é o observado no contrato.
+Cenário C (cancelamento) permanece pendente.
 
 O gatilho é experimental e não mede prejuízo agrícola. O contrato confia no
 índice enviado pelo oráculo autorizado. O pagamento direto reverte se o

@@ -1,0 +1,124 @@
+{
+  "consultadoEmUtc": "2026-11-04T00:03:07.848Z",
+  "rede": "Sepolia",
+  "chainId": 11155111,
+  "rpcPublico": "https://sepolia.gateway.tenderly.co",
+  "blocoConsultado": 12058729,
+  "apolice": "0x8f0e008604d8e119613f318c6ed7f365a12f83d7",
+  "talhao": "talhao-alunos",
+  "termos": {
+    "produtor": "0xC8fdFcA3CfEc202D8BaBf4E89bEcaB5E57773071",
+    "registry": "0xb9821B9aA456Ce8Ccc2B489c1C7381Ffff1f5Aa3",
+    "limiarDias": 10,
+    "inicioUtc": "2024-02-20T00:00:00.000Z",
+    "fimUtc": "2024-02-21T23:59:59.000Z",
+    "indenizacaoEth": "0.006",
+    "hashTermos": "0x4ca417f5e63d8364b619ba306de3d4116480951a20a184be45135983ff71fb5c"
+  },
+  "estado": {
+    "situacao": 1,
+    "valorPagoEth": "0.0",
+    "periodoAcionador": "0",
+    "saldoEth": "0.006"
+  },
+  "resgateSimulado": {
+    "metodo": "eth_call",
+    "from": "0x95eA48b7BF91446CF12C156aC2FDeA75Af03fD70",
+    "retorno": "0x",
+    "semTransacaoEnviada": true
+  },
+  "pagamentosAteBloco": 0,
+  "recibos": [
+    {
+      "hash": "0x49915e39ef3e84bce17bb5f8b7e56f5c90b52c6fa79226414c66f12a3981d62d",
+      "bloco": 12058709,
+      "instanteUtc": "2026-11-03T23:58:48.000Z",
+      "status": 1,
+      "de": "0x95eA48b7BF91446CF12C156aC2FDeA75Af03fD70",
+      "para": "0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834",
+      "gasUsado": "9309562",
+      "taxaEth": "0.00009309575964343",
+      "eventos": [
+        {
+          "contrato": "0x8f0e008604D8E119613F318C6eD7F365A12F83d7",
+          "topics": [
+            "0xf0da09b56a2c833b063e5ecd8230b95f7ce795d311fa065ed7c9210bf626b5dc",
+            "0x00000000000000000000000095ea48b7bf91446cf12c156ac2fdea75af03fd70",
+            "0x000000000000000000000000c8fdfca3cfec202d8babf4e89becab5e57773071",
+            "0x74616c68616f2d616c756e6f7300000000000000000000000000000000000000"
+          ],
+          "data": "0x000000000000000000000000000000000000000000000000001550f7dca700004ca417f5e63d8364b619ba306de3d4116480951a20a184be45135983ff71fb5c"
+        },
+        {
+          "contrato": "0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834",
+          "nome": "ApoliceEmitida",
+          "argumentos": {
+            "apolice": "0x8f0e008604D8E119613F318C6eD7F365A12F83d7",
+            "produtor": "0xC8fdFcA3CfEc202D8BaBf4E89bEcaB5E57773071",
+            "talhao": "0x74616c68616f2d616c756e6f7300000000000000000000000000000000000000",
+            "valorIndenizacao": "6000000000000000",
+            "hashTermos": "0x4ca417f5e63d8364b619ba306de3d4116480951a20a184be45135983ff71fb5c"
+          }
+        }
+      ]
+    },
+    {
+      "hash": "0xc026f2e7d260e6b45d6592b7c329aff280c6e377b2f653adbf677e73fd027a6a",
+      "bloco": 12058715,
+      "instanteUtc": "2026-11-04T00:00:00.000Z",
+      "status": 1,
+      "de": "0x95eA48b7BF91446CF12C156aC2FDeA75Af03fD70",
+      "para": "0x8f0e008604D8E119613F318C6eD7F365A12F83d7",
+      "gasUsado": "135174",
+      "taxaEth": "0.00000135174202761",
+      "eventos": [
+        {
+          "contrato": "0xffffFFFfFFffffffffffffffFfFFFfffFFFfFFfE",
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x00000000000000000000000095ea48b7bf91446cf12c156ac2fdea75af03fd70",
+            "0x0000000000000000000000008f0e008604d8e119613f318c6ed7f365a12f83d7"
+          ],
+          "data": "0x000000000000000000000000000000000000000000000000001550f7dca70000"
+        },
+        {
+          "contrato": "0x8f0e008604D8E119613F318C6eD7F365A12F83d7",
+          "nome": "GarantiaDepositada",
+          "argumentos": {
+            "seguradora": "0x95eA48b7BF91446CF12C156aC2FDeA75Af03fD70",
+            "valor": "6000000000000000"
+          }
+        }
+      ]
+    },
+    {
+      "hash": "0xa983a9406886ad6a1da69bba8d544e070a8b64af23bffc2006f54628d319347a",
+      "bloco": 12058718,
+      "instanteUtc": "2026-11-04T00:00:36.000Z",
+      "status": 1,
+      "de": "0xeFCf4d0c3f22ac012896c2D9c6bA35e9fd7D691D",
+      "para": "0x8f0e008604D8E119613F318C6eD7F365A12F83d7",
+      "gasUsado": "495163",
+      "taxaEth": "0.000000000008417771",
+      "eventos": [
+        {
+          "contrato": "0x8f0e008604D8E119613F318C6eD7F365A12F83d7",
+          "nome": "IndicesPublicados",
+          "argumentos": {
+            "periodo": "20240221",
+            "oraculo": "0xeFCf4d0c3f22ac012896c2D9c6bA35e9fd7D691D",
+            "indiceClimatico": "0"
+          }
+        },
+        {
+          "contrato": "0x8f0e008604D8E119613F318C6eD7F365A12F83d7",
+          "nome": "CondicaoAvaliada",
+          "argumentos": {
+            "periodo": "20240221",
+            "atendida": false
+          }
+        }
+      ]
+    }
+  ]
+}
