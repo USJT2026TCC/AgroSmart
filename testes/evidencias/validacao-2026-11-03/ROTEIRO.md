@@ -58,9 +58,9 @@ uma EVM local não comprova execução na Sepolia.
 Estado desta execução: cenário A confirmado por recibos, estado do contrato e API.
 Captura final liquidada registrada. Cenário B executado em 20–21/02/2024:
 sem acionamento e resgate real confirmados. C1 cancelado sem depósito na cadeia,
-com reconciliação validada localmente e atualização da VM pendente; C2 com
-devolução confirmado na cadeia e na API.
-Oráculo ainda pausado pelo usuário; é necessário retomá-lo após os ensaios.
+com situação Cancelada confirmada na API após a atualização da VM; C2 com
+devolução confirmado na cadeia e na API. Oráculo retomado pelo operador, conforme
+saída do Docker. Interface atual publicada e conferida nos arquivos servidos.
 
 ## Capturas complementares do cenário A
 

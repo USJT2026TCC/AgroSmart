@@ -1,0 +1,47 @@
+{
+  "consultadoEmUtc": "2026-11-04T01:34:31.5418059Z",
+  "versaoInformadaPeloOperador": "f92edfd",
+  "apolices": [
+    {
+      "endereco": "0x4e1fd4fd422b02cfbc064c3dda2b9633bedc8b6a",
+      "situacao": 4,
+      "valorPagoWei": "0",
+      "eventos": [
+        "ApoliceEmitida",
+        "ApoliceCancelada"
+      ]
+    },
+    {
+      "endereco": "0x879c268e2f937cb6f86e941312d5c9b58e7a0239",
+      "situacao": 4,
+      "valorPagoWei": "0",
+      "eventos": [
+        "ApoliceEmitida",
+        "GarantiaDepositada",
+        "ApoliceCancelada"
+      ]
+    }
+  ],
+  "saude": {
+    "situacao": "ok",
+    "banco": {
+      "motor": "postgres",
+      "latenciaMs": 0
+    },
+    "cadeia": {
+      "contratosImplantados": true,
+      "fabrica": "0x2a9b6995cf920a70b96f4cfc3ec951bdfec0f834"
+    },
+    "indexador": {
+      "ativo": true,
+      "ultimoErro": null
+    }
+  },
+  "oraculo": "container em execução conforme saída do operador; não observado pelo endpoint HTTP",
+  "interfacePublicada": {
+    "arquivo": "/assets/index-DxmrShJa.js",
+    "textoCancelamentoCondicionalPresente": true,
+    "orientacaoAtualizarPresente": true,
+    "metodo": "leitura do JavaScript público servido pela VM; renderização não reinspecionada nesta rodada"
+  }
+}

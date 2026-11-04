@@ -150,7 +150,7 @@
   "sepolia": {
     "fabricaConfigurada": "0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834",
     "fabricaNaVmObservada": "0x2a9b6995cf920a70b96f4cfc3ec951bdfec0f834",
-    "fluxoRealDaVersaoAtual": "A, B e C2 confirmados; reconciliação C1 e mensagem corrigidas e testadas localmente; atualização e conferência da VM pendentes",
+    "fluxoRealDaVersaoAtual": "A, B, C1 e C2 confirmados; reconciliação e interface conferidas na VM; oráculo retomado conforme saída do operador",
     "saudeVm": "indexador ativo sem erro na resposta; não comprova liquidação nem sincronização até o último bloco",
     "cenarioA": {
       "apolice": "0xbf75c995d3a66b42f333f2a17f1768005a07f297",
@@ -209,7 +209,7 @@
     "cenarioC1": {
       "apolice": "0x4e1fd4fd422b02cfbc064c3dda2b9633bedc8b6a",
       "situacaoCadeia": "CANCELADA",
-      "situacaoApiObservada": 0,
+      "situacaoApiObservada": 4,
       "depositos": 0,
       "publicacoes": 0,
       "valorDevolvidoEth": "0",
@@ -221,8 +221,8 @@
         "23-c1-cancelada.png",
         "24-c1-notificacao-produtor.png"
       ],
-      "conclusao": "cancelamento sem depósito confirmado na cadeia; reconciliação e texto corrigidos e testados localmente; implantação na VM pendente",
-      "correcaoLocal": "retomada de leitura e reconciliação a partir do contrato; testes aprovados"
+      "conclusao": "cancelamento sem depósito confirmado na cadeia e na API após atualização da VM",
+      "conferenciaFinal": "conferencia-vm-apos-ajustes.json"
     },
     "cenarioC2": {
       "apolice": "0x879c268e2f937cb6f86e941312d5c9b58e7a0239",

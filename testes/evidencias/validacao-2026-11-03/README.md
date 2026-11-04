@@ -3,8 +3,8 @@
 **Resultado:** 349 testes distintos aprovados e build da interface concluído.
 A validação automatizada foi executada localmente. A demonstração com MetaMask
 na VM confirmou o cenário A de pagamento e o cenário B sem acionamento com
-resgate da garantia e C2 de cancelamento com devolução. Permanecem os ajustes
-de integração e mensagem descritos em C1 e a retomada do oráculo.
+resgate da garantia e C2 de cancelamento com devolução. A conferência após a
+atualização da VM confirmou a reconciliação de C1 e a publicação da interface atual.
 
 ## Execução
 
@@ -81,7 +81,7 @@ A consulta de saúde da VM em 03/11/2026 confirmou PostgreSQL ativo, fábrica
 `0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834` e indexador ativo sem erro
 na resposta. O registro está em `saude-vm.json`. Essa observação não comprova
 liquidação, sincronização até o último bloco nem disponibilidade contínua do RPC.
-O roteiro define os cenários de transação ainda pendentes.
+O roteiro descreve os cenários executados e a forma de reproduzi-los.
 ### Cenário A — pagamento confirmado na Sepolia
 
 Apólice `0xbf75c995d3a66b42f333f2a17f1768005a07f297`, talhão `talhao-alunos`:
@@ -202,7 +202,8 @@ O indexador reconcilia cancelamentos já registrados com o estado do contrato,
 mesmo sem novos blocos, e repete leituras de estado interrompidas sem duplicar
 eventos ou notificações. A interface informa a devolução de forma condicional
 quando há depósito e oferece Atualizar após a confirmação na Sepolia.
-A correção passou nos testes locais; sua aplicação e conferência na VM estão pendentes.
+A conferência após a atualização da VM confirmou situação 4 (Cancelada) na API
+para C1 e C2, com os eventos preservados e nenhum pagamento ao produtor.
 
 ### Cenário C2 — cancelamento com devolução da garantia
 
@@ -237,10 +238,17 @@ o problema antes da correção e passaram com o ajuste. As medições de cobertu
 acima pertencem à execução inicial; não foram recalculadas nesta rodada.
 O resumo desta rodada está em `ajustes-integracao.json`.
 
-**Próxima verificação:** atualizar a VM, confirmar que C1 retorna situação 4 na
-API, conferir o texto e o botão Atualizar no site e confirmar o oráculo em execução.
-A verificação individual do código-fonte das apólices segue distinta da verificação
-da fábrica. Os contratos e as transações dos ensaios não foram alterados.
+**Conferência final na VM:** o operador atualizou para `f92edfd` e reconstruiu
+os serviços. A consulta direta da API confirmou C1 e C2 Canceladas e saúde do
+PostgreSQL e indexador sem erro. O JavaScript público do site contém o texto
+condicional de devolução e a orientação do botão Atualizar. A saída Docker
+fornecida pelo operador confirma o container do oráculo em execução; o endpoint
+HTTP de saúde não verifica esse container. O registro é `conferencia-vm-apos-ajustes.json`.
+As pendências de reconciliação, mensagem e retomada estão encerradas nesta
+verificação. Não houve nova transação nesta conferência.
+
+A verificação individual do código-fonte das apólices continua distinta da
+verificação da fábrica. Os contratos e as transações dos ensaios não foram alterados.
 
 O gatilho é experimental e não mede prejuízo agrícola. O contrato confia no
 índice enviado pelo oráculo autorizado. O pagamento direto reverte se o

@@ -23,6 +23,7 @@
   "contratosAlterados": false,
   "transacoesEnviadas": false,
   "bancoVmAlteradoNestaRodada": false,
-  "deployVm": "pendente de atualização pelo operador e reconsulta",
-  "cobertura": "não recalculada nesta rodada; medições da execução inicial preservadas"
+  "deployVm": "operador atualizou para f92edfd; API retorna situação 4 para C1 e C2; interface atual publicada; oráculo retomado conforme saída Docker",
+  "cobertura": "não recalculada nesta rodada; medições da execução inicial preservadas",
+  "conferenciaVm": "conferencia-vm-apos-ajustes.json"
 }
