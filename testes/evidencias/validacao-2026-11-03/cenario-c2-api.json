@@ -1,0 +1,59 @@
+{
+  "consultadoEmUtc": "2026-11-04T00:40:45.9387870Z",
+  "apolice": {
+    "endereco": "0x879c268e2f937cb6f86e941312d5c9b58e7a0239",
+    "situacao": 4,
+    "talhao": "talhao-alunos",
+    "cultura": "soja",
+    "produtor": {
+      "carteira": "0xc8fdfca3cfec202d8babf4e89becab5e57773071",
+      "nome": "João Ribeiro"
+    },
+    "seguradora": "0x95ea48b7bf91446cf12c156ac2fdea75af03fd70",
+    "valorIndenizacaoWei": "6000000000000000",
+    "valorPagoWei": "0",
+    "periodoAcionador": null,
+    "hashTermos": "0x3066fda79480c8a1e96a31c5080dad0afb34645dab440fef12357fd60d69a922",
+    "txEmissao": "0x0284d78632ef1abfc346eafafaf21cb86b6656c92382c04939fd0743516390d2",
+    "emitidaEm": "2026-11-04T00:34:28.025Z"
+  },
+  "publicacoes": [],
+  "linhaDoTempo": [
+    {
+      "nome": "ApoliceEmitida",
+      "bloco": 12058884,
+      "indiceNoBloco": 84,
+      "txHash": "0x0284d78632ef1abfc346eafafaf21cb86b6656c92382c04939fd0743516390d2",
+      "argumentos": {
+        "talhao": "0x74616c68616f2d616c756e6f7300000000000000000000000000000000000000",
+        "apolice": "0x879c268e2F937Cb6f86e941312D5C9b58E7a0239",
+        "produtor": "0xC8fdFcA3CfEc202D8BaBf4E89bEcaB5E57773071",
+        "hashTermos": "0x3066fda79480c8a1e96a31c5080dad0afb34645dab440fef12357fd60d69a922",
+        "valorIndenizacao": "6000000000000000"
+      },
+      "em": "2026-11-04T00:34:24Z"
+    },
+    {
+      "nome": "GarantiaDepositada",
+      "bloco": 12058889,
+      "indiceNoBloco": 241,
+      "txHash": "0x1c14d9e8a22d06b300c1fb9815df7084ee26ad63b8affc9970dec83ca0f44e0f",
+      "argumentos": {
+        "valor": "6000000000000000",
+        "seguradora": "0x95eA48b7BF91446CF12C156aC2FDeA75Af03fD70"
+      },
+      "em": "2026-11-04T00:35:24Z"
+    },
+    {
+      "nome": "ApoliceCancelada",
+      "bloco": 12058894,
+      "indiceNoBloco": 921,
+      "txHash": "0xe82f1ffff54ed2f4db0a5fef9459954cd3ecf27f782d75f6aa86c861a22249ee",
+      "argumentos": {
+        "solicitante": "0x95eA48b7BF91446CF12C156aC2FDeA75Af03fD70",
+        "garantiaDevolvida": "6000000000000000"
+      },
+      "em": "2026-11-04T00:36:24Z"
+    }
+  ]
+}

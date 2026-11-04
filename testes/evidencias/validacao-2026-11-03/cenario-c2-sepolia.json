@@ -1,0 +1,123 @@
+{
+  "consultadoEmUtc": "2026-11-04T00:39:51.624Z",
+  "rede": "Sepolia",
+  "chainId": 11155111,
+  "rpcPublico": "https://sepolia.gateway.tenderly.co",
+  "blocoConsultado": 12058911,
+  "apolice": "0x879c268e2f937cb6f86e941312d5c9b58e7a0239",
+  "talhao": "talhao-alunos",
+  "termos": {
+    "produtor": "0xC8fdFcA3CfEc202D8BaBf4E89bEcaB5E57773071",
+    "registry": "0xb9821B9aA456Ce8Ccc2B489c1C7381Ffff1f5Aa3",
+    "limiarDias": 10,
+    "inicioUtc": "2024-06-01T00:00:00.000Z",
+    "fimUtc": "2024-06-30T23:59:59.000Z",
+    "indenizacaoEth": "0.006",
+    "hashTermos": "0x3066fda79480c8a1e96a31c5080dad0afb34645dab440fef12357fd60d69a922"
+  },
+  "estado": {
+    "situacao": 4,
+    "valorPagoEth": "0.0",
+    "periodoAcionador": "0",
+    "saldoEth": "0.0"
+  },
+  "contagem": {
+    "depositos": 1,
+    "publicacoes": 0,
+    "cancelamentos": 1
+  },
+  "pagamentosAteBloco": 0,
+  "recibos": [
+    {
+      "hash": "0x0284d78632ef1abfc346eafafaf21cb86b6656c92382c04939fd0743516390d2",
+      "bloco": 12058884,
+      "instanteUtc": "2026-11-04T00:34:24.000Z",
+      "status": 1,
+      "de": "0x95eA48b7BF91446CF12C156aC2FDeA75Af03fD70",
+      "para": "0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834",
+      "gasUsado": "9309562",
+      "taxaEth": "0.000093095843429488",
+      "eventos": [
+        {
+          "contrato": "0x879c268e2F937Cb6f86e941312D5C9b58E7a0239",
+          "topics": [
+            "0xf0da09b56a2c833b063e5ecd8230b95f7ce795d311fa065ed7c9210bf626b5dc",
+            "0x00000000000000000000000095ea48b7bf91446cf12c156ac2fdea75af03fd70",
+            "0x000000000000000000000000c8fdfca3cfec202d8babf4e89becab5e57773071",
+            "0x74616c68616f2d616c756e6f7300000000000000000000000000000000000000"
+          ],
+          "data": "0x000000000000000000000000000000000000000000000000001550f7dca700003066fda79480c8a1e96a31c5080dad0afb34645dab440fef12357fd60d69a922"
+        },
+        {
+          "contrato": "0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834",
+          "nome": "ApoliceEmitida",
+          "argumentos": {
+            "apolice": "0x879c268e2F937Cb6f86e941312D5C9b58E7a0239",
+            "produtor": "0xC8fdFcA3CfEc202D8BaBf4E89bEcaB5E57773071",
+            "talhao": "0x74616c68616f2d616c756e6f7300000000000000000000000000000000000000",
+            "valorIndenizacao": "6000000000000000",
+            "hashTermos": "0x3066fda79480c8a1e96a31c5080dad0afb34645dab440fef12357fd60d69a922"
+          }
+        }
+      ]
+    },
+    {
+      "hash": "0x1c14d9e8a22d06b300c1fb9815df7084ee26ad63b8affc9970dec83ca0f44e0f",
+      "bloco": 12058889,
+      "instanteUtc": "2026-11-04T00:35:24.000Z",
+      "status": 1,
+      "de": "0x95eA48b7BF91446CF12C156aC2FDeA75Af03fD70",
+      "para": "0x879c268e2F937Cb6f86e941312D5C9b58E7a0239",
+      "gasUsado": "135174",
+      "taxaEth": "0.000001351742838654",
+      "eventos": [
+        {
+          "contrato": "0xffffFFFfFFffffffffffffffFfFFFfffFFFfFFfE",
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x00000000000000000000000095ea48b7bf91446cf12c156ac2fdea75af03fd70",
+            "0x000000000000000000000000879c268e2f937cb6f86e941312d5c9b58e7a0239"
+          ],
+          "data": "0x000000000000000000000000000000000000000000000000001550f7dca70000"
+        },
+        {
+          "contrato": "0x879c268e2F937Cb6f86e941312D5C9b58E7a0239",
+          "nome": "GarantiaDepositada",
+          "argumentos": {
+            "seguradora": "0x95eA48b7BF91446CF12C156aC2FDeA75Af03fD70",
+            "valor": "6000000000000000"
+          }
+        }
+      ]
+    },
+    {
+      "hash": "0xe82f1ffff54ed2f4db0a5fef9459954cd3ecf27f782d75f6aa86c861a22249ee",
+      "bloco": 12058894,
+      "instanteUtc": "2026-11-04T00:36:24.000Z",
+      "status": 1,
+      "de": "0x95eA48b7BF91446CF12C156aC2FDeA75Af03fD70",
+      "para": "0x879c268e2F937Cb6f86e941312D5C9b58E7a0239",
+      "gasUsado": "45250",
+      "taxaEth": "0.00000045250095025",
+      "eventos": [
+        {
+          "contrato": "0x879c268e2F937Cb6f86e941312D5C9b58E7a0239",
+          "nome": "ApoliceCancelada",
+          "argumentos": {
+            "solicitante": "0x95eA48b7BF91446CF12C156aC2FDeA75Af03fD70",
+            "garantiaDevolvida": "6000000000000000"
+          }
+        },
+        {
+          "contrato": "0xffffFFFfFFffffffffffffffFfFFFfffFFFfFFfE",
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x000000000000000000000000879c268e2f937cb6f86e941312d5c9b58e7a0239",
+            "0x00000000000000000000000095ea48b7bf91446cf12c156ac2fdea75af03fd70"
+          ],
+          "data": "0x000000000000000000000000000000000000000000000000001550f7dca70000"
+        }
+      ]
+    }
+  ]
+}

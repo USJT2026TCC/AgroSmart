@@ -3,7 +3,8 @@
 **Resultado:** 349 testes distintos aprovados e build da interface concluído.
 A validação automatizada foi executada localmente. A demonstração com MetaMask
 na VM confirmou o cenário A de pagamento e o cenário B sem acionamento com
-resgate da garantia; o cenário C de cancelamento ainda está pendente.
+resgate da garantia e C2 de cancelamento com devolução. Permanecem os ajustes
+de integração e mensagem descritos em C1 e a retomada do oráculo.
 
 ## Execução
 
@@ -205,9 +206,36 @@ da interface lê a situação diretamente da cadeia e mostra Cancelada.
 A mensagem genérica da interface que afirma devolução precisa distinguir
 cancelamento sem depósito: neste caso nenhum valor foi devolvido.
 
-**Pendências:** investigar a situação desatualizada na API, ajustar a mensagem
-imprecisa da interface, executar C2 com depósito e devolução no cancelamento,
-e retomar o oráculo após os ensaios. Não se declara o cenário C completo.
+### Cenário C2 — cancelamento com devolução da garantia
+
+A apólice `0x879c268e2f937cb6f86e941312d5c9b58e7a0239` manteve cobertura de
+01 a 30/06/2024, gatilho 10 e indenização de 0,006 ETH. O oráculo permaneceu
+pausado pelo operador para permitir o cancelamento antes da primeira publicação.
+
+| Etapa | Bloco | Hash |
+| --- | ---: | --- |
+| Emissão | 12058884 | `0x0284d78632ef1abfc346eafafaf21cb86b6656c92382c04939fd0743516390d2` |
+| Garantia | 12058889 | `0x1c14d9e8a22d06b300c1fb9815df7084ee26ad63b8affc9970dec83ca0f44e0f` |
+| Cancelamento | 12058894 | `0xe82f1ffff54ed2f4db0a5fef9459954cd3ecf27f782d75f6aa86c861a22249ee` |
+
+Os três recibos tiveram status 1. O evento ApoliceCancelada identifica a
+seguradora como solicitante e garantiaDevolvida de 6.000.000.000.000.000 wei.
+No bloco 12058911, a apólice tinha situação 4 (Cancelada), saldo e valor pago
+zero. A varredura desde a emissão encontrou um depósito, um cancelamento,
+zero publicações e zero pagamentos. A API retornou situação 4 e os mesmos eventos.
+Os registros estão em `cenario-c2-sepolia.json` e `cenario-c2-api.json`.
+As capturas 25 a 28 mostram o estado Ativa com garantia, Cancelada, os termos
+conferidos, a devolução na linha do tempo e a notificação ao produtor.
+A captura 28 mostra o perfil produtor com a carteira da seguradora conectada
+e o selo conta errada; demonstra a notificação e o aviso de conta divergente,
+não uma assinatura realizada pelo produtor nem um teste completo de bloqueio.
+
+**Pendências:** a reconsulta C1 após C2 continuou retornando situação 0 na API,
+embora a cadeia esteja Cancelada (`cenario-c1-api-apos-c2.json`). Investigar essa
+inconsistência e corrigir a mensagem genérica que afirma devolução no caso sem
+depósito. Retomar o serviço do oráculo na VM e verificar sua execução após os
+ensaios. A verificação individual do código-fonte das apólices segue distinta
+da verificação da fábrica. Não se declara encerrada a revisão de integração.
 
 O gatilho é experimental e não mede prejuízo agrícola. O contrato confia no
 índice enviado pelo oráculo autorizado. O pagamento direto reverte se o
