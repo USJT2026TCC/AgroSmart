@@ -172,6 +172,8 @@ resgate, o envio da transação, a apólice encerrada e a linha do tempo com dev
 status Success, hash, bloco e transferência interna de 0,006 ETH da apólice à
 seguradora. O cenário B está concluído para o período efetivamente utilizado;
 não são necessárias capturas adicionais para comprovar essa devolução.
+`20-etherscan-eventos-resgate.png` mostra GarantiaResgatada com seguradora e valor
+de 6.000.000.000.000.000 wei, além do registro de transferência da apólice à seguradora.
 
 Este período tem dois dias e gatilho dez; portanto não poderia atingir o
 limiar, mesmo se os dois dias fossem secos. Ele exercita o caminho sem pagamento

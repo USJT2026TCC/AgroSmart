@@ -199,7 +199,8 @@
         "16-cenario-b-resgate-enviado.png",
         "17-cenario-b-encerrada.png",
         "18-cenario-b-linha-do-tempo-resgate.png",
-        "19-etherscan-resgate-garantia.png"
+        "19-etherscan-resgate-garantia.png",
+        "20-etherscan-eventos-resgate.png"
       ],
       "txResgate": "0xd72aa6afbe93272d86a9e0b58f2798265d1830f39da8565fbb8363388da16a84",
       "valorResgatadoEth": "0.006",
