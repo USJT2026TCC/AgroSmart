@@ -168,7 +168,10 @@ A API também retornou Encerrada e o evento de resgate com o mesmo hash e valor.
 Os registros finais estão em `cenario-b-resgate-sepolia.json` e
 `cenario-b-resgate-api.json`. As capturas 15 a 18 mostram a disponibilidade do
 resgate, o envio da transação, a apólice encerrada e a linha do tempo com devolução.
-O cenário B está concluído para o período efetivamente utilizado.
+`19-etherscan-resgate-garantia.png` complementa as capturas da interface com
+status Success, hash, bloco e transferência interna de 0,006 ETH da apólice à
+seguradora. O cenário B está concluído para o período efetivamente utilizado;
+não são necessárias capturas adicionais para comprovar essa devolução.
 
 Este período tem dois dias e gatilho dez; portanto não poderia atingir o
 limiar, mesmo se os dois dias fossem secos. Ele exercita o caminho sem pagamento
