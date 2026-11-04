@@ -69,6 +69,8 @@ try {
     [
       "-m",
       "pytest",
+      "-p",
+      "no:cacheprovider",
       "../testes/etl",
       "-c",
       "../testes/configuracao/pytest.ini",

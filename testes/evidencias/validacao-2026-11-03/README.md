@@ -1,6 +1,6 @@
 # Validação do AgroSmart — 03/11/2026
 
-**Resultado:** 349 testes distintos aprovados e build da interface concluído.
+**Resultado:** 353 testes distintos aprovados e build da interface concluído.
 A validação automatizada foi executada localmente. A demonstração com MetaMask
 na VM confirmou o cenário A de pagamento e o cenário B sem acionamento com
 resgate da garantia e C2 de cancelamento com devolução. A conferência após a
@@ -9,35 +9,36 @@ atualização da VM confirmou a reconciliação de C1 e a publicação da interf
 ## Execução
 
 Ambiente: Node.js 24.19.0, npm 11.17.0, Python 3.12.10 e PostgreSQL 16 no Docker,
-em Windows. Comandos: `npm test` e a verificação da configuração de implantação
-agora incluída no mesmo runner. A suíte também passou sem a instalação auxiliar
-de dependências que existia dentro de `testes/`.
+em Windows. A execução completa de `npm test` inclui a verificação da configuração
+de implantação. O ETL usou pytest 9.1.1 nessa execução. Em um ambiente Python
+separado, instalado com pytest 9.2.0, a configuração anterior reproduziu erro
+interno de cache na coleta (saída 3). Com o cache desativado, os 26 testes do ETL
+passaram também nessa versão, com 90,69% de cobertura das instruções.
 
 | Grupo                                                    | Aprovados |
 | -------------------------------------------------------- | --------: |
 | Contratos Solidity, incluindo integração API–oráculo–EVM |        89 |
 | Configuração de implantação                              |         2 |
 | API                                                      |        75 |
-| Integração da API, banco, pacote INMET e indexador       |        10 |
+| Integração da API, banco, pacote INMET e indexador       |        12 |
 | Oráculo                                                  |        51 |
 | Publicador do oráculo com JSON-RPC em EVM local          |         4 |
-| Interface                                                |        74 |
+| Interface                                                |        76 |
 | Infraestrutura, persistência Docker e proxy              |        18 |
 | ETL                                                      |        26 |
 
 Os quatro testes de banco repetidos pelo runner são contados uma vez no grupo
-infraestrutura. Nos logs, espaços finais foram removidos e linhas separadoras
-receberam um prefixo; resultados e mensagens foram preservados. Os logs completos são [execucao.log](execucao.log) e
-[configuracao.log](configuracao.log); os dados estruturados estão em [resumo.json](resumo.json).
+infraestrutura. As contagens e medições estão em `resumo.json`; logs de execução
+ficam somente em `testes/gerados/`, ignorado pelo Git.
 
 ## Cobertura e análise estática
 
 | Componente | Linhas |  Ramos |
 | ---------- | -----: | -----: |
 | Contratos  | 99,12% | 92,19% |
-| API        | 76,07% | 78,01% |
+| API        | 75,45% | 78,01% |
 | Oráculo    |  93,7% | 84,96% |
-| Interface  | 90,08% | 80,13% |
+| Interface  | 90,08% | 80,08% |
 
 O ETL alcançou **90,69% das instruções**, incluindo `__main__.py`. As medições de
 API e oráculo incluem `src/`; a interface exclui a entrada `main.jsx` e o JSON de
@@ -75,7 +76,7 @@ gatilho não é atingido. Ambas são consultas; não enviaram transação nem in
 As capturas locais documentam a tela e o cadastro do talhão
 `tcc-20261103-liquidacao`, criado para esta verificação. Não são prints de pagamento.
 
-## Pendências e limites
+## Cenários reais na Sepolia
 
 A consulta de saúde da VM em 03/11/2026 confirmou PostgreSQL ativo, fábrica
 `0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834` e indexador ativo sem erro
@@ -137,8 +138,7 @@ A verificação individual do código-fonte é uma pendência distinta da execu�
 confirmada; não foi realizada nesta etapa.
 ### Cenário B — sem acionamento e garantia resgatada
 
-O ensaio executado usou **20 a 21/02/2024**, com gatilho 10 dias, no lugar
-do período de janeiro inicialmente proposto. A apólice é
+O ensaio executado usou **20 a 21/02/2024**, com gatilho 10 dias. A apólice é
 `0x8f0e008604d8e119613f318c6ed7f365a12f83d7`, do talhão `talhao-alunos`.
 As evidências estão em `cenario-b-sepolia.json`, `cenario-b-api.json` e nas
 capturas 12 a 14. Foram selecionadas três capturas com termos, garantia e
@@ -205,6 +205,13 @@ quando há depósito e oferece Atualizar após a confirmação na Sepolia.
 A conferência após a atualização da VM confirmou situação 4 (Cancelada) na API
 para C1 e C2, com os eventos preservados e nenhum pagamento ao produtor.
 
+Os arquivos `cenario-c1-api.json`, `cenario-c1-api-reconsulta.json` e
+`cenario-c1-api-apos-c2.json` são registros intermediários, anteriores ao ajuste
+do indexador: mostram situação 0 apesar do cancelamento na cadeia. A divergência
+foi corrigida. O estado final é situação 4, confirmado em
+`conferencia-vm-apos-ajustes.json`; os registros intermediários não descrevem o
+estado atual da instalação.
+
 ### Cenário C2 — cancelamento com devolução da garantia
 
 A apólice `0x879c268e2f937cb6f86e941312d5c9b58e7a0239` manteve cobertura de
@@ -229,13 +236,17 @@ A captura 28 mostra o perfil produtor com a carteira da seguradora conectada
 e o selo conta errada; demonstra a notificação e o aviso de conta divergente,
 não uma assinatura realizada pelo produtor nem um teste completo de bloqueio.
 
-**Validação complementar do ajuste:** 75 testes da API, 10 de integração do
+## Validações complementares
+
+**Ajuste do indexador e interface:** 75 testes da API, 10 de integração do
 indexador com PostgreSQL e EVM locais e 76 da interface passaram (161 nesta rodada).
 O build da interface concluiu. São quatro novos testes de regressão: retomada da
 atualização do estado, reconciliação sem novos blocos, texto condicional de
 cancelamento e atualização manual sem transação. Os dois primeiros reproduziram
-o problema antes da correção e passaram com o ajuste. As medições de cobertura
-acima pertencem à execução inicial; não foram recalculadas nesta rodada.
+o problema antes da correção e passaram com o ajuste. A execução completa
+registrada no início deste relatório inclui esses quatro testes e os outros dois
+testes de integração da API, totalizando 12 nesse grupo. As coberturas acima
+foram recalculadas na execução completa de 353 testes.
 O resumo desta rodada está em `ajustes-integracao.json`.
 
 **Conferência final na VM:** o operador atualizou para `f92edfd` e reconstruiu
@@ -249,6 +260,8 @@ verificação. Não houve nova transação nesta conferência.
 
 A verificação individual do código-fonte das apólices continua distinta da
 verificação da fábrica. Os contratos e as transações dos ensaios não foram alterados.
+
+## Limites e pontos em aberto
 
 O gatilho é experimental e não mede prejuízo agrícola. O contrato confia no
 índice enviado pelo oráculo autorizado. O pagamento direto reverte se o

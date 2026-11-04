@@ -29,6 +29,11 @@ python -m pip install slither-analyzer
 npm test
 ```
 
+O cache do pytest fica desativado pela configuração e pelo runner. As saídas de
+cobertura e os temporários ficam em `gerados/`; uma execução separada confirmou os
+26 testes do ETL com pytest 9.2.0. Essa verificação está registrada no relatório
+de evidências de 03/11/2026.
+
 No Linux, o executável Python do ambiente é `etl/.venv/bin/python`. O runner usa
 esse caminho automaticamente. O usuário PostgreSQL precisa poder criar bancos;
 a fixture inicia o servidor Docker e cria somente bancos descartáveis

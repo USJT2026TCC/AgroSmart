@@ -7,11 +7,13 @@ Primeiro confirme a atualização da VM e o endereço da fábrica atual no paine
 | Cenário             | Período e gatilho                   | Resultado esperado                                                               |
 | ------------------- | ----------------------------------- | -------------------------------------------------------------------------------- |
 | A — pagamento       | 01/06/2024 a 30/06/2024; 10 dias    | Primeira publicação em 10/06/2024, índice 10 e indenização de 0,006 ETH uma vez  |
-| B — sem acionamento | 20/01/2024 a 25/01/2024; 10 dias    | Sem indenização; publicação do último dia com índice 2 e resgate pela seguradora |
-| C — cancelamento    | Mesmo período de A, em outro talhão | Cancelar antes da primeira publicação e devolver a garantia à seguradora         |
+| B — sem acionamento | 20/02/2024 a 21/02/2024; 10 dias    | Sem indenização; publicação do último dia com índice 0 e resgate pela seguradora |
+| C — cancelamento    | Mesmo período de A, em nova apólice | Cancelar antes da primeira publicação e devolver a garantia à seguradora         |
 
-Os resultados esperados de A e B foram conferidos na série preparada e na API.
-A confirmação blockchain deve ser registrada durante o ensaio real.
+A e B foram executados na Sepolia conforme os períodos da tabela. Os recibos e
+estados finais estão registrados nas evidências. B exercita o caminho sem
+acionamento e o resgate: dois dias de cobertura não podem atingir um gatilho de
+dez dias. Ele não substitui um ensaio de período longo com alternância de chuva e seca.
 
 ## Cenário A: cadastro até recebimento
 
@@ -34,7 +36,7 @@ A confirmação blockchain deve ser registrada durante o ensaio real.
 
 ## Cenários B e C
 
-B usa outro talhão e o mesmo processo de emissão/garantia. Após a publicação do
+B usa uma nova apólice e o mesmo processo de emissão/garantia. Após a publicação do
 último dia, a seguradora executa o resgate pela MetaMask. Conferir a ausência de
 pagamento ao produtor e a devolução de 0,006 ETH, separando as taxas de gás.
 

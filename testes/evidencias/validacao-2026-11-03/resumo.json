@@ -1,33 +1,33 @@
 {
   "data": "2026-11-03",
-  "baseGit": "a83bad8",
+  "baseGit": "d831ce1831a9286a19520833366abe9cc6ed8348",
   "ambiente": "Windows, Node.js v24.19.0, npm 11.17.0, Python 3.12.10, PostgreSQL 16 Docker",
-  "testesDistintosAprovados": 349,
+  "testesDistintosAprovados": 353,
   "contagem": {
     "contratos": 89,
     "configuracaoBlockchain": 2,
     "api": 75,
-    "integracaoApi": 10,
+    "integracaoApi": 12,
     "oraculo": 51,
     "integracaoOraculo": 4,
-    "interface": 74,
+    "interface": 76,
     "infraestrutura": 18,
     "etl": 26
   },
-  "observacaoContagem": "Os quatro testes de banco executados no início reaparecem no grupo infraestrutura; não são somados duas vezes. configuracao.log confirma os dois testes de implantação incluídos no runner.",
+  "observacaoContagem": "Os quatro testes de banco executados no início reaparecem no grupo infraestrutura; são contados uma vez. Os dois testes de configuração de implantação estão incluídos no runner.",
   "cobertura": {
     "api": {
       "lines": {
-        "total": 3059,
+        "total": 3084,
         "covered": 2327,
         "skipped": 0,
-        "pct": 76.07
+        "pct": 75.45
       },
       "statements": {
-        "total": 3059,
+        "total": 3084,
         "covered": 2327,
         "skipped": 0,
-        "pct": 76.07
+        "pct": 75.45
       },
       "functions": {
         "total": 77,
@@ -100,10 +100,10 @@
         "pct": 85.2
       },
       "branches": {
-        "total": 740,
-        "covered": 593,
+        "total": 743,
+        "covered": 595,
         "skipped": 0,
-        "pct": 80.13
+        "pct": 80.08
       },
       "branchesTrue": {
         "total": 0,
@@ -246,5 +246,13 @@
   "capturasLocais": [
     "01-cadastro-periodo.jpg",
     "02-talhao-na-lista.jpg"
-  ]
+  ],
+  "notaBaseGit": "Execução na árvore de trabalho desta revisão, com o cache do pytest desativado; base anterior ao commit das correções.",
+  "compatibilidadePytest": {
+    "suiteCompleta": "9.1.1",
+    "ambientePythonSeparado": "9.2.0",
+    "configuracaoAnterior": "Erro interno reproduzido na coleta, saída 3, com cache relativo habilitado.",
+    "configuracaoAtual": "Cache desativado; 26 testes aprovados no ambiente separado com pytest 9.2.0.",
+    "coberturaInstrucoesPct": 90.69
+  }
 }
