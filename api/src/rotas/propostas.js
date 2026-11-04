@@ -127,7 +127,7 @@ export function rotasDePropostas() {
   });
 
   /**
-   * Proposta (UC05, primeira metade). Exige carteira vinculada: e para ela que a
+   * Proposta (UC03). Exige carteira vinculada: e para ela que a
    * indenizacao seria transferida, e ela precisa ter sido comprovada por
    * assinatura antes.
    */

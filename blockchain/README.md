@@ -75,3 +75,22 @@ Ele não consulta o INMET nem recalcula a chuva; essa conferência pertence ao o
 O resgate sem indenização depende da publicação do último dia da cobertura.
 O beneficiário precisa aceitar ETH: se o recebimento for recusado, a publicação
 inteira reverte e a garantia pode permanecer retida. Não há saque alternativo.
+
+## Numeração dos requisitos nos comentários
+
+Os comentários dos contratos usam uma numeração de requisitos anterior à documentação
+de software final, e os mesmos números hoje têm outro significado. O código não é
+editado porque precisa continuar igual ao verificado no Etherscan.
+
+| Citado no código | Onde | Na documentação final |
+|---|---|---|
+| RF07 | `ApoliceFactory`: emissão da apólice | RF09 |
+| RF08 | `ApoliceHistorica`: `hashTermos` e `verTermos()` | RF09 (resumo dos termos) e RF16 (consulta) |
+| RF10 | `ApoliceHistorica`: cancelamento | RF14 |
+| RF18 | `OracleRegistry` e `ApoliceHistorica`: lista de oráculos e recusa de outros endereços | RF11 |
+| RF20 | `ApoliceHistorica`: período já publicado | RF12 |
+| RF23, RF24 | `ApoliceHistorica`: avaliação e pagamento na mesma transação | RF13 |
+| RNF09 | `ApoliceHistorica`: proteção contra reentrância | RNF04 |
+| RNF10 | `OracleRegistry`: controle de acesso | RNF02 |
+| RNF18 | `ApoliceHistorica`: `publicacao()` | RF16 |
+| HU02, critério 3 | `OracleRegistry`: autorizar e revogar | HU11 |

@@ -91,7 +91,7 @@ do oráculo autorizado.
 | `configuracao/`                               | Limites compartilhados: período, estação, perfis, cultura e município                  |
 | `scripts/`                                    | Inicialização pelo Docker, preparo dos dados e o passo a passo para executar o sistema |
 | `docker-compose.yml`, `docker-compose.vm.yml` | Serviços do Docker; o segundo acrescenta o HTTPS na VM                                 |
-| `docs/`                                       | Diagrama do fluxo                                                                      |
+| `docs/`                                       | Documentação de software, formato dos termos, execução e diagrama do fluxo             |
 
 O `npm start` sobe quatro serviços no Docker: banco (PostgreSQL), API (porta 3001),
 oráculo e interface (porta 5173). A Sepolia e a MetaMask ficam fora do Docker.
