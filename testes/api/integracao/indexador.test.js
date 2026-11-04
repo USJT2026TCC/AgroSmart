@@ -339,6 +339,62 @@ describe("indexador contra um no real", { timeout: 180_000 }, () => {
     assert.equal(avisos[0].n, 2, "produtor e seguradora deveriam ser avisados");
   });
 
+  test("retoma a situacao depois de falha entre gravar evento e atualizar apolice", async () => {
+    const contrato = await emitir({});
+    assert.equal((await indexador.varrer()).erro, undefined);
+    await (await contrato.connect(contas[0]).cancelar()).wait();
+    const endereco = (await contrato.getAddress()).toLowerCase();
+    const query = banco.query;
+    let falhou = false;
+    banco.query = async (...args) => {
+      if (!falhou && String(args[0]).includes("UPDATE apolices SET situacao")) {
+        falhou = true;
+        throw new Error("falha controlada na atualizacao da situacao");
+      }
+      return query.apply(banco, args);
+    };
+    try {
+      assert.ok((await indexador.varrer()).erro);
+    } finally {
+      banco.query = query;
+    }
+    const antes = await banco.query(
+      "SELECT count(*)::int n FROM notificacoes WHERE apolice_endereco=$1",
+      [endereco],
+    );
+    assert.equal((await indexador.varrer()).erro, undefined);
+    const estado = await banco.query("SELECT situacao FROM apolices WHERE endereco=$1", [endereco]);
+    assert.equal(estado.rows[0].situacao, 4);
+    const depois = await banco.query(
+      "SELECT count(*)::int n FROM notificacoes WHERE apolice_endereco=$1",
+      [endereco],
+    );
+    assert.equal(depois.rows[0].n, antes.rows[0].n, "a retomada nao duplica notificacoes");
+  });
+
+  test("reconcilia cancelamento ja indexado com situacao desatualizada sem novos blocos", async () => {
+    const contrato = await emitir({});
+    await (await contrato.connect(contas[0]).cancelar()).wait();
+    assert.equal((await indexador.varrer()).erro, undefined);
+    const endereco = (await contrato.getAddress()).toLowerCase();
+    await banco.query("UPDATE apolices SET situacao=0 WHERE endereco=$1", [endereco]);
+    const ponteiro = await banco.query(
+      "SELECT chave,ultimo_bloco FROM estado_indexador ORDER BY chave",
+    );
+    const antes = await banco.query("SELECT count(*)::int n FROM notificacoes");
+    assert.equal((await indexador.varrer()).erro, undefined);
+    const estado = await banco.query("SELECT situacao FROM apolices WHERE endereco=$1", [endereco]);
+    assert.equal(estado.rows[0].situacao, 4);
+    assert.deepEqual(
+      (await banco.query("SELECT chave,ultimo_bloco FROM estado_indexador ORDER BY chave")).rows,
+      ponteiro.rows,
+    );
+    assert.equal(
+      (await banco.query("SELECT count(*)::int n FROM notificacoes")).rows[0].n,
+      antes.rows[0].n,
+    );
+  });
+
   test("com o no fora do ar, a varredura falha sem derrubar nada e retoma depois", async () => {
     const { encerrarProvedor } = await import("../../../api/src/cadeia/rede.js");
     const original = process.env.RPC_URL;

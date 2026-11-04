@@ -290,3 +290,25 @@ test("publicacao final sem gatilho libera resgate mesmo com datas historicas", a
   expect(await achar(/Garantia devolvida/)).toBeTruthy();
   expect(cadeia.chamadas[0][0]).toBe("resgatarGarantia");
 });
+
+test("cancelada sem deposito usa texto condicional e nao afirma devolucao realizada", async () => {
+  cadeia.apolice = apolice({ situacao: 4, garantiaRetida: 0n, totalPeriodos: 0 });
+  await abrir(`/apolice/${ENDERECO}`, { perfil: "seguradora", rotas: rotasDaApolice() });
+  expect(await achar(/Se houve depósito, a garantia foi devolvida/)).toBeTruthy();
+  expect(screen.queryByText(/a garantia voltou a seguradora/)).toBeNull();
+  expect(screen.queryByRole("button", { name: /Depositar/ })).toBeNull();
+});
+
+test("atualizacao manual rele o estado sem solicitar transacao", async () => {
+  cadeia.apolice = apolice({ situacao: 0, garantiaRetida: 0n, totalPeriodos: 0 });
+  await abrir(`/apolice/${ENDERECO}`, { perfil: "seguradora", rotas: rotasDaApolice() });
+  expect(await achar(/Aguardando a seguradora depositar/)).toBeTruthy();
+  expect(screen.queryByText("Nao ha acoes pendentes nesta apolice.")).toBeNull();
+  const atualizar = await screen.findByRole("button", { name: "Atualizar" });
+  await waitFor(() => expect(atualizar.disabled).toBe(false));
+  cadeia.apolice = apolice({ situacao: 4, garantiaRetida: 0n, totalPeriodos: 0 });
+  fireEvent.click(atualizar);
+  expect(await achar(/Cancelada antes da primeira publicação histórica/)).toBeTruthy();
+  expect(screen.queryByRole("button", { name: /Depositar/ })).toBeNull();
+  expect(cadeia.chamadas).toEqual([]);
+});

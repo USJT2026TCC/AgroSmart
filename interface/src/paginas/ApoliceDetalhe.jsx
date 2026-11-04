@@ -352,10 +352,17 @@ export default function ApoliceDetalhe() {
           <p className="silencioso mono">{endereco}</p>
         </div>
         <div className="linha-de-botoes">
+          <button onClick={carregar} disabled={carregando || operando}>
+            Atualizar
+          </button>
           <SeloSituacao situacao={apolice.situacao} />
         </div>
       </div>
 
+      <p className="silencioso">
+        Após confirmar uma transação na MetaMask, aguarde a confirmação na Sepolia. Se a situação
+        ainda não mudou, clique em Atualizar.
+      </p>
       {erro ? <Aviso tipo="erro">{erro}</Aviso> : null}
       {aviso ? <Aviso tipo="sucesso">{aviso}</Aviso> : null}
 
@@ -440,7 +447,9 @@ export default function ApoliceDetalhe() {
               </span>
             ) : null}
 
-            {!podeResgatar && !(apolice.situacao === 1 && !vigenciaVencida) ? (
+            {apolice.situacao !== 0 &&
+            !podeResgatar &&
+            !(apolice.situacao === 1 && !vigenciaVencida) ? (
               <span className="silencioso">Nao ha acoes pendentes nesta apolice.</span>
             ) : null}
           </div>

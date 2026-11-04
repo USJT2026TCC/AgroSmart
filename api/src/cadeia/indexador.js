@@ -192,7 +192,7 @@ export function criarIndexador(banco, opcoes = {}) {
   }
 
   /** Processa um trecho de blocos. */
-  async function processarTrecho(implantacao, de, ate) {
+  async function processarTrecho(implantacao, de, ate, blocoEstado) {
     const fabrica = implantacao.contratos.ApoliceFactory.toLowerCase();
     const fabricas = new Map([
       ...(implantacao.fabricasAnteriores ?? []).map((f) => [
@@ -280,9 +280,10 @@ export function criarIndexador(banco, opcoes = {}) {
       await banco.transacao(async (tx) => {
         const evento = await gravarEvento(tx, origem, log, parseado);
 
-        if (!evento.novo) return;
-
+        // A gravacao do evento pode ter concluido antes de uma falha na leitura
+        // do estado. A retomada precisa repetir a leitura, mesmo com evento salvo.
         afetadas.add(origem);
+        if (!evento.novo) return;
 
         // O relato do oraculo so vira fato confirmado quando o evento aparece na
         // cadeia. Ate la, e so a palavra do oraculo.
@@ -307,24 +308,44 @@ export function criarIndexador(banco, opcoes = {}) {
     //    da verdade. Deduzi-la dos eventos funcionaria, mas duplicaria no backend
     //    a maquina de estados que ja existe, testada, no contrato.
     for (const endereco of afetadas) {
-      const c = contratoApolice(endereco);
-      const [situacao, valorPago, periodoAcionador] = await Promise.all([
-        c.situacao(),
-        c.valorPago(),
-        c.periodoAcionador(),
-      ]);
-
-      await banco.query(
-        `UPDATE apolices SET situacao = $2, valor_pago_wei = $3, periodo_acionador = $4
-          WHERE endereco = $1`,
-        [endereco, Number(situacao), valorPago.toString(), Number(periodoAcionador) || null],
-      );
+      await atualizarSituacao(endereco, blocoEstado);
     }
 
     return {
       eventos: logsDaFabrica.length + logs.length,
       apolicesAtualizadas: afetadas.size,
     };
+  }
+
+  async function atualizarSituacao(endereco, bloco, exigirCancelada = false) {
+    const c = contratoApolice(endereco);
+    const opcoes = { blockTag: bloco };
+    const [situacao, valorPago, periodoAcionador] = await Promise.all([
+      c.situacao(opcoes),
+      c.valorPago(opcoes),
+      c.periodoAcionador(opcoes),
+    ]);
+    if (exigirCancelada && Number(situacao) !== 4)
+      throw new Error(
+        "Estado do contrato diverge do cancelamento indexado; a consulta sera repetida.",
+      );
+    await banco.query(
+      `UPDATE apolices SET situacao = $2, valor_pago_wei = $3, periodo_acionador = $4
+        WHERE endereco = $1`,
+      [endereco, Number(situacao), valorPago.toString(), Number(periodoAcionador) || null],
+    );
+  }
+
+  /** Recupera cancelamentos gravados cujo estado nao foi atualizado, sem apagar o progresso. */
+  async function reconciliarCancelamentos(bloco) {
+    const { rows } = await banco.query(
+      `SELECT a.endereco FROM apolices a WHERE a.situacao <> 4 AND EXISTS (
+         SELECT 1 FROM eventos_cadeia e WHERE e.contrato = a.endereco
+           AND e.nome = 'ApoliceCancelada' AND e.bloco <= $1
+       )`,
+      [bloco],
+    );
+    for (const { endereco } of rows) await atualizarSituacao(endereco, bloco, true);
   }
 
   /**
@@ -352,7 +373,11 @@ export function criarIndexador(banco, opcoes = {}) {
         : Number(implantacao.blocoInicial ?? 0) - 1;
       const topo = (await provedor().getBlockNumber()) - confirmacoes;
 
-      if (topo <= ultimo) return { eventos: 0 };
+      await reconciliarCancelamentos(topo);
+      if (topo <= ultimo) {
+        ultimoErro = null;
+        return { eventos: 0 };
+      }
 
       let totalDeEventos = 0;
       const inicio = ultimo + 1;
@@ -361,7 +386,7 @@ export function criarIndexador(banco, opcoes = {}) {
         const de = ultimo + 1;
         const ate = Math.min(topo, de + BLOCOS_POR_CONSULTA - 1);
 
-        const { eventos } = await processarTrecho(implantacao, de, ate);
+        const { eventos } = await processarTrecho(implantacao, de, ate, topo);
         totalDeEventos += eventos;
 
         await banco.query(

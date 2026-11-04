@@ -198,13 +198,11 @@ cancelamento com restituição de 0,006 ETH. As evidências estão em
 `cenario-c1-sepolia.json` e nas capturas 21 a 24. A notificação do produtor
 foi registrada na captura 24.
 
-Duas consultas da API retornaram situação 0 (Aguardando garantia), embora a
-linha do tempo já incluísse ApoliceCancelada. Os registros são `cenario-c1-api.json`
-e `cenario-c1-api-reconsulta.json`. A saúde da API informou indexador ativo e
-sem erro na reconsulta. Esta inconsistência permanece em investigação; a captura
-da interface lê a situação diretamente da cadeia e mostra Cancelada.
-A mensagem genérica da interface que afirma devolução precisa distinguir
-cancelamento sem depósito: neste caso nenhum valor foi devolvido.
+O indexador reconcilia cancelamentos já registrados com o estado do contrato,
+mesmo sem novos blocos, e repete leituras de estado interrompidas sem duplicar
+eventos ou notificações. A interface informa a devolução de forma condicional
+quando há depósito e oferece Atualizar após a confirmação na Sepolia.
+A correção passou nos testes locais; sua aplicação e conferência na VM estão pendentes.
 
 ### Cenário C2 — cancelamento com devolução da garantia
 
@@ -230,12 +228,19 @@ A captura 28 mostra o perfil produtor com a carteira da seguradora conectada
 e o selo conta errada; demonstra a notificação e o aviso de conta divergente,
 não uma assinatura realizada pelo produtor nem um teste completo de bloqueio.
 
-**Pendências:** a reconsulta C1 após C2 continuou retornando situação 0 na API,
-embora a cadeia esteja Cancelada (`cenario-c1-api-apos-c2.json`). Investigar essa
-inconsistência e corrigir a mensagem genérica que afirma devolução no caso sem
-depósito. Retomar o serviço do oráculo na VM e verificar sua execução após os
-ensaios. A verificação individual do código-fonte das apólices segue distinta
-da verificação da fábrica. Não se declara encerrada a revisão de integração.
+**Validação complementar do ajuste:** 75 testes da API, 10 de integração do
+indexador com PostgreSQL e EVM locais e 76 da interface passaram (161 nesta rodada).
+O build da interface concluiu. São quatro novos testes de regressão: retomada da
+atualização do estado, reconciliação sem novos blocos, texto condicional de
+cancelamento e atualização manual sem transação. Os dois primeiros reproduziram
+o problema antes da correção e passaram com o ajuste. As medições de cobertura
+acima pertencem à execução inicial; não foram recalculadas nesta rodada.
+O resumo desta rodada está em `ajustes-integracao.json`.
+
+**Próxima verificação:** atualizar a VM, confirmar que C1 retorna situação 4 na
+API, conferir o texto e o botão Atualizar no site e confirmar o oráculo em execução.
+A verificação individual do código-fonte das apólices segue distinta da verificação
+da fábrica. Os contratos e as transações dos ensaios não foram alterados.
 
 O gatilho é experimental e não mede prejuízo agrícola. O contrato confia no
 índice enviado pelo oráculo autorizado. O pagamento direto reverte se o

@@ -1,0 +1,28 @@
+{
+  "dataLocal": "2026-11-03",
+  "escopo": "reconciliação do cancelamento no indexador e atualização da interface",
+  "reproducaoAntesDoAjuste": {
+    "testesExecutados": 2,
+    "reproduziramProblema": 2,
+    "ambiente": "PostgreSQL Docker e EVM local isolados"
+  },
+  "aposAjuste": {
+    "api": 75,
+    "integracaoIndexador": 10,
+    "interface": 76,
+    "totalNestaRodada": 161,
+    "falhas": 0,
+    "buildInterface": "aprovado"
+  },
+  "comandos": [
+    "node --test testes/api/integracao/indexador.test.js",
+    "npm run testar --workspace api",
+    "npm run testar --workspace interface",
+    "npm run build --workspace interface"
+  ],
+  "contratosAlterados": false,
+  "transacoesEnviadas": false,
+  "bancoVmAlteradoNestaRodada": false,
+  "deployVm": "pendente de atualização pelo operador e reconsulta",
+  "cobertura": "não recalculada nesta rodada; medições da execução inicial preservadas"
+}

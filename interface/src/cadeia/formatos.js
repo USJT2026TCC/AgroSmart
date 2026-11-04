@@ -71,7 +71,7 @@ export function explicacaoSituacao(codigo) {
       1: "Cobertura ativa. O oraculo pode publicar indices.",
       2: "Indenizacao paga. A apolice cumpriu seu proposito.",
       3: "Vigencia encerrada sem acionamento. Garantia devolvida.",
-      4: "Cancelada antes do inicio da vigencia. Nao ha cobertura, e a garantia voltou a seguradora.",
+      4: "Cancelada antes da primeira publicação histórica. Não há cobertura. Se houve depósito, a garantia foi devolvida à seguradora.",
     }[Number(codigo)] ?? ""
   );
 }
