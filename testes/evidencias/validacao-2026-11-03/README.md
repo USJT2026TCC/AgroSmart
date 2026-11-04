@@ -1,80 +1,44 @@
-# Validação do AgroSmart — 03/11/2026
+# Validação funcional do AgroSmart — 03/11/2026
 
-**Resultado:** 353 testes distintos aprovados e build da interface concluído.
-A validação automatizada foi executada localmente. A demonstração com MetaMask
-na VM confirmou o cenário A de pagamento e o cenário B sem acionamento com
-resgate da garantia e C2 de cancelamento com devolução. A conferência após a
-atualização da VM confirmou a reconciliação de C1 e a publicação da interface atual.
+O fluxo avaliado reuniu cadastro integrado de talhões e quatro desfechos de
+apólices: pagamento ao produtor, encerramento sem acionamento e cancelamentos
+com e sem garantia. Os quatro desfechos foram confirmados na Sepolia com recibos,
+eventos, leitura do contrato e conferência da API. As capturas mostram a interação.
 
-## Execução
+## Cadastro e passagem entre os perfis
 
-Ambiente: Node.js 24.19.0, npm 11.17.0, Python 3.12.10 e PostgreSQL 16 no Docker,
-em Windows. A execução completa de `npm test` inclui a verificação da configuração
-de implantação. O ETL usou pytest 9.1.1 nessa execução. Em um ambiente Python
-separado, instalado com pytest 9.2.0, a configuração anterior reproduziu erro
-interno de cache na coleta (saída 3). Com o cache desativado, os 26 testes do ETL
-passaram também nessa versão, com 90,69% de cobertura das instruções.
+No ensaio automatizado de cadastro integrado, a seguradora cadastrou dois talhões
+para o produtor fixo. Depois de encerrar a sessão e entrar como produtor, o teste
+conferiu a opção de solicitar proposta para cada um. Interface, API e PostgreSQL
+participaram desse ensaio; o transporte HTTP foi adaptado pelo teste e o indexador
+foi desligado. Não houve MetaMask nem transação nessa verificação.
 
-| Grupo                                                    | Aprovados |
-| -------------------------------------------------------- | --------: |
-| Contratos Solidity, incluindo integração API–oráculo–EVM |        89 |
-| Configuração de implantação                              |         2 |
-| API                                                      |        75 |
-| Integração da API, banco, pacote INMET e indexador       |        12 |
-| Oráculo                                                  |        51 |
-| Publicador do oráculo com JSON-RPC em EVM local          |         4 |
-| Interface                                                |        76 |
-| Infraestrutura, persistência Docker e proxy              |        18 |
-| ETL                                                      |        26 |
+As capturas locais 01 e 02 mostram o cadastro e a listagem do talhão
+`tcc-20261103-liquidacao`. O nome desse talhão não comprova liquidação. Os ensaios
+na VM utilizaram `talhao-alunos`, já cadastrado; não se atribui às capturas locais
+a emissão da apólice do cenário A.
 
-Os quatro testes de banco repetidos pelo runner são contados uma vez no grupo
-infraestrutura. As contagens e medições estão em `resumo.json`; logs de execução
-ficam somente em `testes/gerados/`, ignorado pelo Git.
+## Leitura do fluxo e dos resultados
 
-## Cobertura e análise estática
+| Etapa | Ação e passagem de responsabilidade | Evidência |
+| --- | --- | --- |
+| Cadastro | Seguradora cadastra; produtor encontra os talhões | Teste de cadastro integrado; capturas locais 01 e 02 |
+| Proposta e emissão | Produtor solicita; seguradora confere e assina a emissão | Termos e emissão do cenário A; captura 03 e recibo |
+| Garantia | Seguradora deposita exatamente 0,006 ETH | Recibo do depósito e linha do tempo, capturas 04 e 06 |
+| Avaliação | Oráculo consulta o período histórico e publica | Índice, procedência e recibo em `cenario-a-sepolia.json` |
+| Pagamento | Contrato avalia e transfere na mesma transação | Liquidada, 0,006 ETH pagos e saldo zero; capturas 05, 07 e 08 |
+| Outros desfechos | Seguradora resgata ou cancela antes da publicação | Cenários B, C1 e C2, descritos a seguir |
 
-| Componente | Linhas |  Ramos |
-| ---------- | -----: | -----: |
-| Contratos  | 99,12% | 92,19% |
-| API        | 75,45% | 78,01% |
-| Oráculo    |  93,7% | 84,96% |
-| Interface  | 90,08% | 80,08% |
+![Apólice liquidada na interface após a publicação do oráculo](05-apolice-liquidada.png)
 
-O ETL alcançou **90,69% das instruções**, incluindo `__main__.py`. As medições de
-API e oráculo incluem `src/`; a interface exclui a entrada `main.jsx` e o JSON de
-endereços, conforme sua configuração. Não há afirmação de cobertura total.
+*Cenário A: a interface exibe Liquidada, valor pago de 0,006 ETH e garantia zero.
+A extensão aberta é a da seguradora; a transferência ao produtor é conferida
+no recibo e no evento de pagamento.*
 
-O Slither 0.11.6 analisou três contratos com 102 detectores: **zero achados** na
-configuração executada. Dependências são filtradas e as fontes têm supressões
-pontuais (`timestamp`, `incorrect-equality`, `low-level-calls` e
-`arbitrary-send-eth`). Esse resultado não substitui auditoria de segurança.
-As fontes Solidity permanecem iguais às da tag `sepolia-2026-11-03`.
+![Pagamento confirmado no explorador da Sepolia](07-etherscan-pagamento.png)
 
-## Resultados funcionais
-
-- ETL e carga: os 1.827 dias de 2020–2024 estão utilizáveis no recorte consultado;
-  nova importação não duplica registros. A origem e os seis dias preenchidos
-  continuam identificados no manifesto da série derivada.
-- API: perfis e carteira são validados; emissão com termos divergentes é recusada;
-  a indenização usa o valor exato configurado, sem aceitar substituição pelo cliente.
-- Contratos: depósito, autorização, pagamento integral único, cancelamento,
-  devolução, resgate e tentativas de reentrância foram exercitados em EVM local.
-- Oráculo: divergência entre série, hash e termos é recusada; filas, retomada,
-  falhas de rede e recuperação de recibo foram verificadas sem pagamento duplicado.
-- Interface: cadastro da seguradora aparece para o produtor; datas iniciais e
-  cartão do produto respeitam 2020–2024. As duas referências a 2025/2026 encontradas
-  nessas telas foram corrigidas. Testes de interface identificam as fronteiras
-  simuladas; o teste de cadastro integrado usa API e PostgreSQL reais.
-- Docker: os quatro serviços locais iniciaram e responderam; o ensaio de
-  persistência usa volume isolado e preserva identidades e cadastros.
-
-Duas consultas à API operacional, registradas em [consultas-reais.json](consultas-reais.json),
-confirmaram: de 01 a 30/06/2024, gatilho 10 atinge em **10/06/2024**, com sequência
-máxima de 30 dias; de 20 a 25/01/2024, a sequência máxima é de dois dias e o mesmo
-gatilho não é atingido. Ambas são consultas; não enviaram transação nem indenização.
-
-As capturas locais documentam a tela e o cadastro do talhão
-`tcc-20261103-liquidacao`, criado para esta verificação. Não são prints de pagamento.
+*Conferência fora da interface: sucesso da transação e transferência interna
+de 0,006 ETH da apólice para o produtor.*
 
 ## Cenários reais na Sepolia
 
@@ -235,6 +199,86 @@ conferidos, a devolução na linha do tempo e a notificação ao produtor.
 A captura 28 mostra o perfil produtor com a carteira da seguradora conectada
 e o selo conta errada; demonstra a notificação e o aviso de conta divergente,
 não uma assinatura realizada pelo produtor nem um teste completo de bloqueio.
+
+## O que as verificações automatizadas acrescentam
+
+Os cenários públicos verificam os caminhos de uso nas operações registradas.
+As suítes complementam esses caminhos com entradas inválidas, papéis indevidos,
+retomadas, reprocessamento e recebedores hostis que não foram provocados em todas
+as apólices públicas. O cadastro verifica a passagem seguradora–produtor; a API
+confere se a emissão coincide com a proposta; oráculo e contratos verificam a
+publicação e seus efeitos; o indexador e a interface conferem o acompanhamento.
+Os resultados abaixo detalham essas verificações, sem substituir os cenários.
+
+## Resultados funcionais
+
+- ETL e carga: os 1.827 dias de 2020–2024 estão utilizáveis no recorte consultado;
+  nova importação não duplica registros. A origem e os seis dias preenchidos
+  continuam identificados no manifesto da série derivada.
+- API: perfis e carteira são validados; emissão com termos divergentes é recusada;
+  a indenização usa o valor exato configurado, sem aceitar substituição pelo cliente.
+- Contratos: depósito, autorização, pagamento integral único, cancelamento,
+  devolução, resgate e tentativas de reentrância foram exercitados em EVM local.
+- Oráculo: divergência entre série, hash e termos é recusada; filas, retomada,
+  falhas de rede e recuperação de recibo foram verificadas sem pagamento duplicado.
+- Interface: cadastro da seguradora aparece para o produtor; datas iniciais e
+  cartão do produto respeitam 2020–2024. As duas referências a 2025/2026 encontradas
+  nessas telas foram corrigidas. Testes de interface identificam as fronteiras
+  simuladas; o teste de cadastro integrado usa API e PostgreSQL reais.
+- Docker: os quatro serviços locais iniciaram e responderam; o ensaio de
+  persistência usa volume isolado e preserva identidades e cadastros.
+
+Duas consultas à API operacional, registradas em [consultas-reais.json](consultas-reais.json),
+confirmaram: de 01 a 30/06/2024, gatilho 10 atinge em **10/06/2024**, com sequência
+máxima de 30 dias; de 20 a 25/01/2024, a sequência máxima é de dois dias e o mesmo
+gatilho não é atingido. Ambas são consultas; não enviaram transação nem indenização.
+
+As capturas locais documentam a tela e o cadastro do talhão
+`tcc-20261103-liquidacao`, criado para esta verificação. Não são prints de pagamento.
+
+## Execução
+
+Ambiente: Node.js 24.19.0, npm 11.17.0, Python 3.12.10 e PostgreSQL 16 no Docker,
+em Windows. A execução completa de `npm test` inclui a verificação da configuração
+de implantação. O ETL usou pytest 9.1.1 nessa execução. Em um ambiente Python
+separado, instalado com pytest 9.2.0, a configuração anterior reproduziu erro
+interno de cache na coleta (saída 3). Com o cache desativado, os 26 testes do ETL
+passaram também nessa versão, com 90,69% de cobertura das instruções.
+
+| Grupo                                                    | Aprovados |
+| -------------------------------------------------------- | --------: |
+| Contratos Solidity, incluindo integração API–oráculo–EVM |        89 |
+| Configuração de implantação                              |         2 |
+| API                                                      |        75 |
+| Integração da API, banco, pacote INMET e indexador       |        12 |
+| Oráculo                                                  |        51 |
+| Publicador do oráculo com JSON-RPC em EVM local          |         4 |
+| Interface                                                |        76 |
+| Infraestrutura, persistência Docker e proxy              |        18 |
+| ETL                                                      |        26 |
+
+Os quatro testes de banco repetidos pelo runner são contados uma vez no grupo
+infraestrutura. As contagens e medições estão em `resumo.json`; logs de execução
+ficam somente em `testes/gerados/`, ignorado pelo Git.
+
+## Cobertura e análise estática
+
+| Componente | Linhas |  Ramos |
+| ---------- | -----: | -----: |
+| Contratos  | 99,12% | 92,19% |
+| API        | 75,45% | 78,01% |
+| Oráculo    |  93,7% | 84,96% |
+| Interface  | 90,08% | 80,08% |
+
+O ETL alcançou **90,69% das instruções**, incluindo `__main__.py`. As medições de
+API e oráculo incluem `src/`; a interface exclui a entrada `main.jsx` e o JSON de
+endereços, conforme sua configuração. Não há afirmação de cobertura total.
+
+O Slither 0.11.6 analisou três contratos com 102 detectores: **zero achados** na
+configuração executada. Dependências são filtradas e as fontes têm supressões
+pontuais (`timestamp`, `incorrect-equality`, `low-level-calls` e
+`arbitrary-send-eth`). Esse resultado não substitui auditoria de segurança.
+As fontes Solidity permanecem iguais às da tag `sepolia-2026-11-03`.
 
 ## Validações complementares
 

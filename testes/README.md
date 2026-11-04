@@ -1,21 +1,65 @@
 # Testes do AgroSmart
 
-`npm test`, na raiz, executa a suíte completa. As configurações, fixtures e
-contratos de ataque ficam nesta pasta; saídas locais ficam em `gerados/`, ignorado
-pelo Git. Evidências selecionadas e o relatório ficam em `evidencias/`.
+A validação acompanha o uso do seguro: cadastrar um talhão, disponibilizá-lo ao
+produtor, solicitar uma cobertura, emitir a apólice, depositar a garantia e
+conferir o desfecho na interface e na Sepolia. Os testes automatizados verificam
+as regras e as falhas que podem interromper essas etapas.
 
-## O que é verificado e por quê
+## Fluxo avaliado
 
-| Grupo            | Verificação                                                                       | Motivo                                                              |
-| ---------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| ETL              | Extração, validação, cache, limites e cópia auditável do dia anterior             | Evitar chuva inventada sem rastreio ou processamento inconsistente  |
-| API e PostgreSQL | Perfis, carteira, talhões, cotação, termos e emissão                              | Impedir acesso indevido e registro de apólice divergente            |
-| Regra histórica  | Contagem desde o início, chuva abaixo de 1 mm, reinício e gatilho                 | Confirmar quando o seguro deve ou não acionar                       |
-| Contratos        | Autorização, depósito exato, pagamento único, cancelamento, resgate e reentrância | Conferir movimentação e proteção dos fundos                         |
-| Oráculo          | Hash da série, termos, fila persistente, retomada e recibos                       | Recusar divergências e evitar publicação ou pagamento duplicados    |
-| Interface        | Formulários, perfis, carteira e atualização das telas                             | Conferir o fluxo percebido pelo usuário                             |
-| Infraestrutura   | Importação idempotente, persistência Docker e proxy HTTP                          | Confirmar instalação e integração dos serviços                      |
-| Slither          | Análise estática dos três contratos operacionais                                  | Complementar os testes de execução com detecção de padrões de risco |
+```mermaid
+flowchart TD
+  A[Seguradora cadastra o talhão] --> B[Produtor consulta o talhão e solicita cobertura]
+  B --> C[Seguradora emite pela MetaMask]
+  C --> D[Seguradora deposita a garantia]
+  D --> E[Oráculo consulta a série histórica e publica o índice]
+  E --> F{Gatilho atingido?}
+  F -->|Sim| G[Contrato paga ao produtor e apólice fica liquidada]
+  F -->|Não até o fim| H[Seguradora resgata a garantia e encerra a apólice]
+  C --> I[Cancelamento antes da primeira publicação]
+  D --> I
+  I --> J[Devolve a garantia quando depositada]
+```
+
+O cadastro integrado foi testado com interface, API e PostgreSQL reais em ambiente
+automatizado; o transporte HTTP foi adaptado ao teste. As capturas locais de
+cadastro registram um talhão próprio desse ensaio. Os cenários da VM utilizam o
+talhão `talhao-alunos`, já cadastrado: não são apresentados como uma única execução
+contínua iniciada naquele cadastro local.
+
+## Cenários e evidências do sistema
+
+| Caminho | O que foi feito | Como conferir o resultado |
+| --- | --- | --- |
+| Cadastro e acesso do produtor | A seguradora cadastrou dois talhões; após sair e entrar como produtor, ambos ofereceram solicitação de proposta | Asserções da interface integrada com API e PostgreSQL; capturas locais 01 e 02 documentam outro cadastro, sem pagamento |
+| A — pagamento | Proposta de 01–30/06/2024, gatilho 10; emissão e garantia pela MetaMask; publicação automática | Liquidada; 0,006 ETH ao produtor; recibo, evento de pagamento, estado da apólice e API; capturas 03–08 e 11 |
+| B — encerramento sem acionamento | Cobertura de 20–21/02/2024, gatilho 10; índice final 0; resgate pela seguradora | Encerrada; nenhum pagamento ao produtor e 0,006 ETH devolvidos; capturas 12–20 e recibos |
+| C1 — cancelamento sem garantia | Emissão seguida de cancelamento antes do depósito e da publicação | Cancelada; nenhum depósito, publicação ou pagamento; capturas 21–24 e recibos |
+| C2 — cancelamento com garantia | Emissão, depósito de 0,006 ETH e cancelamento antes da publicação | Cancelada; garantia devolvida e nenhum pagamento ao produtor; capturas 25–28 e recibos |
+
+Os quatro caminhos de apólice foram executados com ETH de teste na Sepolia. Nos
+cancelamentos, o oráculo foi pausado para controlar a ordem das operações. B tem
+dois dias de cobertura e gatilho dez: verifica o encerramento e o resgate, sem
+avaliar uma estiagem em período longo. O relatório em `evidencias/` reúne os
+resultados, os prints selecionados e os identificadores públicos das operações.
+
+## Como os testes automatizados sustentam o fluxo
+
+| Etapa do uso | Regra ou falha verificada | Por que isso importa |
+| --- | --- | --- |
+| Cadastrar e consultar o talhão | Persistência, associação ao produtor fixo e acesso por perfil | O produtor precisa encontrar o talhão correto para contratar |
+| Escolher cobertura e enviar proposta | Datas de 2020–2024, gatilho válido, carteira vinculada e uma proposta pendente por talhão | Impedir uma solicitação que o sistema não possa processar |
+| Emitir e ativar a apólice | Conferência de termos, produtor, valor, gatilho e datas; depósito exato e autorização | O contrato emitido deve representar a proposta e ter garantia suficiente |
+| Avaliar a estiagem | Integridade do pacote, tratamento auditável, contagem desde o início e reinício com chuva | O índice deve seguir a regra contratada e a série identificada |
+| Publicar e pagar | Oráculo autorizado, pagamento único, retomada da fila e recuperação de recibo | Uma falha de comunicação não deve gerar um segundo pagamento |
+| Cancelar ou resgatar | Momento permitido, papel autorizado e destino dos fundos | Conferir devolução à seguradora e bloquear operações indevidas |
+| Acompanhar o resultado | Indexação, reconciliação, notificações e atualização da tela | A interface deve refletir o estado confirmado na rede |
+| Reiniciar a instalação | Importação sem duplicatas e persistência Docker | Preservar dados e permitir continuidade do uso |
+
+A execução registrada contabiliza 353 testes distintos aprovados. Essa quantidade
+e a cobertura descrevem os casos automatizados; a comprovação dos desfechos do
+seguro está nos cenários acima. Análise estática com Slither complementa as
+verificações dos contratos e não constitui auditoria de segurança.
 
 ## Preparar e executar
 
@@ -53,14 +97,14 @@ A suíte completa também compila os contratos, mede sua cobertura, executa o
 Slither, gera o build da interface e verifica o ETL. Não exige a chave privada
 do produtor nem movimenta ETH da Sepolia.
 
-## Como interpretar as evidências
+## Alcance da execução
 
-As integrações automatizadas usam PostgreSQL real e EVM local isolada, com contas
-públicas de teste. Nas telas, as fronteiras simuladas são identificadas nas
-fixtures; o cadastro integrado também usa a API e PostgreSQL reais. Isso não
-substitui o ensaio com extensão MetaMask e Sepolia.
+`npm test` executa as suítes, o build e a análise estática; não abre a MetaMask
+nem realiza os cenários públicos automaticamente. As integrações usam PostgreSQL
+e EVM local isolados; testes de tela podem usar respostas controladas de carteira
+e API. Essas fronteiras estão identificadas nas fixtures.
 
-O roteiro e o relatório distinguem resultados automatizados, observação de
-apólices existentes e novas transações confirmadas. Prints devem ser acompanhados
-do cenário e, quando houver transação, do endereço e hash verificáveis. Cobertura
-não demonstra ausência de defeitos; Slither sem achados não é auditoria de segurança.
+Testes, fixtures e configurações ficam em `testes/`; saídas locais ficam em
+`gerados/`, ignorado pelo Git. Somente evidências selecionadas são versionadas.
+Uma captura de saldo não identifica, sozinha, a origem de um pagamento. Para
+cada operação na Sepolia, conferir também endereço, hash, recibo e eventos.
