@@ -150,7 +150,7 @@
   "sepolia": {
     "fabricaConfigurada": "0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834",
     "fabricaNaVmObservada": "0x2a9b6995cf920a70b96f4cfc3ec951bdfec0f834",
-    "fluxoRealDaVersaoAtual": "cenários A e B confirmados; C pendente",
+    "fluxoRealDaVersaoAtual": "A e B confirmados; C1 cancelamento sem depósito confirmado na cadeia; situação da API divergente; C2 com devolução pendente",
     "saudeVm": "indexador ativo sem erro na resposta; não comprova liquidação nem sincronização até o último bloco",
     "cenarioA": {
       "apolice": "0xbf75c995d3a66b42f333f2a17f1768005a07f297",
@@ -205,6 +205,23 @@
       "txResgate": "0xd72aa6afbe93272d86a9e0b58f2798265d1830f39da8565fbb8363388da16a84",
       "valorResgatadoEth": "0.006",
       "pagamentosAteBloco12058759": 0
+    },
+    "cenarioC1": {
+      "apolice": "0x4e1fd4fd422b02cfbc064c3dda2b9633bedc8b6a",
+      "situacaoCadeia": "CANCELADA",
+      "situacaoApiObservada": 0,
+      "depositos": 0,
+      "publicacoes": 0,
+      "valorDevolvidoEth": "0",
+      "txCancelamento": "0x2e1b62f4a5270378acf64a18e5747fe7ac7405272be1db9aed5dcbe29f96050a",
+      "blocoConsultado": 12058880,
+      "capturas": [
+        "21-c1-antes-deposito.png",
+        "22-c1-confirmacao-cancelamento.png",
+        "23-c1-cancelada.png",
+        "24-c1-notificacao-produtor.png"
+      ],
+      "conclusao": "cancelamento sem depósito; não comprova devolução de garantia; divergência API em investigação"
     }
   },
   "capturasLocais": [

@@ -57,7 +57,8 @@ uma EVM local não comprova execução na Sepolia.
 
 Estado desta execução: cenário A confirmado por recibos, estado do contrato e API.
 Captura final liquidada registrada. Cenário B executado em 20–21/02/2024:
-sem acionamento e resgate real confirmados. Cenário C pendente.
+sem acionamento e resgate real confirmados. C1 cancelado sem depósito na cadeia,
+com situação divergente na API; C2 com devolução pendente. Oráculo pausado pelo usuário.
 
 ## Capturas complementares do cenário A
 

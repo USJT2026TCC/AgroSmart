@@ -179,7 +179,35 @@ Este período tem dois dias e gatilho dez; portanto não poderia atingir o
 limiar, mesmo se os dois dias fossem secos. Ele exercita o caminho sem pagamento
 e a liberação para resgate; não mede discriminação entre episódios longos com
 chuva e seca. O resultado de índice zero é o observado no contrato.
-Cenário C (cancelamento) permanece pendente.
+### Cenário C1 — cancelamento sem depósito
+
+A apólice `0x4e1fd4fd422b02cfbc064c3dda2b9633bedc8b6a` foi emitida com
+cobertura 01–30/06/2024, gatilho 10 e limite 0,006 ETH. O usuário informou a
+pausa do container do oráculo antes do ensaio. A emissão foi confirmada no bloco
+12058827, transação `0x352cce35d83ea84db462ff2cf75dc16d45936a51da69167375ec2035033acf96`.
+O cancelamento pela seguradora foi confirmado no bloco 12058835, transação
+`0x2e1b62f4a5270378acf64a18e5747fe7ac7405272be1db9aed5dcbe29f96050a`.
+Ambos os recibos tiveram status 1.
+
+A consulta no bloco 12058880 retornou situação 4 (Cancelada), saldo e valor
+pago zero. A busca de eventos desde a emissão encontrou zero depósitos, zero
+publicações, zero pagamentos e um cancelamento, com garantiaDevolvida igual
+a zero. Portanto este ensaio comprova cancelamento antes do depósito, não
+cancelamento com restituição de 0,006 ETH. As evidências estão em
+`cenario-c1-sepolia.json` e nas capturas 21 a 24. A notificação do produtor
+foi registrada na captura 24.
+
+Duas consultas da API retornaram situação 0 (Aguardando garantia), embora a
+linha do tempo já incluísse ApoliceCancelada. Os registros são `cenario-c1-api.json`
+e `cenario-c1-api-reconsulta.json`. A saúde da API informou indexador ativo e
+sem erro na reconsulta. Esta inconsistência permanece em investigação; a captura
+da interface lê a situação diretamente da cadeia e mostra Cancelada.
+A mensagem genérica da interface que afirma devolução precisa distinguir
+cancelamento sem depósito: neste caso nenhum valor foi devolvido.
+
+**Pendências:** investigar a situação desatualizada na API, ajustar a mensagem
+imprecisa da interface, executar C2 com depósito e devolução no cancelamento,
+e retomar o oráculo após os ensaios. Não se declara o cenário C completo.
 
 O gatilho é experimental e não mede prejuízo agrícola. O contrato confia no
 índice enviado pelo oráculo autorizado. O pagamento direto reverte se o
