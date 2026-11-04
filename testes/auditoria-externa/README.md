@@ -1,8 +1,8 @@
 # Auditoria externa das apólices A e B
 
 Verificações feitas de fora do sistema, sem usar a API nem o código do oráculo. Elas
-sustentam o Quadro 5 (procedimento de auditoria) e a explicação do custo do
-cancelamento C1 na seção 4.3 do artigo.
+sustentam o Quadro 5 (procedimento de auditoria) e a comparação das gravações dos
+cancelamentos C1 e C2 na seção 4.3 do artigo.
 
 Estes arquivos **não fazem parte de `npm test`**: a contagem da suíte automatizada
 (353 testes) continua a mesma.
@@ -50,5 +50,7 @@ npx hardhat --config ../testes/blockchain/hardhat.config.cjs test ../testes/audi
 
 Resultado esperado: no C1, a posição da situação da apólice passa de 0 para 4 (primeira
 gravação não nula); no C2, passa de 1 para 4, porque o depósito já a havia preenchido.
-É a única gravação que difere entre os dois cancelamentos, o que explica a diferença
-de *gas* observada na Sepolia (133.798 no C1 e 45.250 no C2).
+É a única gravação que difere entre os dois cancelamentos. Ela explica por que o C1 custa
+mais, com diferença de 10.028 de *gas* na rede local (51.778 no C1 e 41.750 no C2), mas
+não o valor observado na Sepolia, de 88.548 (133.798 no C1 e 45.250 no C2). Explicar esse
+valor exige rastrear as próprias transações na Sepolia.
