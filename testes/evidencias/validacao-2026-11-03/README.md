@@ -2,7 +2,8 @@
 
 **Resultado:** 349 testes distintos aprovados e build da interface concluído.
 A validação automatizada foi executada localmente. A demonstração com MetaMask
-na VM confirmou o cenário A de pagamento; os cenários B e C ainda estão pendentes.
+na VM confirmou o cenário A de pagamento e o cenário B sem acionamento com
+resgate da garantia; o cenário C de cancelamento ainda está pendente.
 
 ## Execução
 
@@ -133,7 +134,7 @@ A captura é da interface do AgroSmart, não da extensão MetaMask.
 Não faltam capturas obrigatórias para comprovar o pagamento deste cenário.
 A verificação individual do código-fonte é uma pendência distinta da execução
 confirmada; não foi realizada nesta etapa.
-### Cenário B — sem acionamento, resgate pendente
+### Cenário B — sem acionamento e garantia resgatada
 
 O ensaio executado usou **20 a 21/02/2024**, com gatilho 10 dias, no lugar
 do período de janeiro inicialmente proposto. A apólice é
@@ -154,7 +155,20 @@ saldo 0,006 ETH, valor pago zero e nenhum evento PagamentoExecutado desde a
 emissão. A API confirmou os mesmos eventos e a publicação na cadeia.
 Uma chamada `eth_call` de resgatarGarantia, com remetente seguradora, concluiu
 sem reversão naquele bloco; ela não envia transação nem movimenta fundos.
-O resgate real e o encerramento ainda não foram realizados nesta etapa.
+O resgate real foi confirmado depois pela transação
+[`0xd72aa6afbe93272d86a9e0b58f2798265d1830f39da8565fbb8363388da16a84`](https://sepolia.etherscan.io/tx/0xd72aa6afbe93272d86a9e0b58f2798265d1830f39da8565fbb8363388da16a84),
+status 1, bloco 12058746, em 03/11/2026 às 21:06:12 (UTC−3).
+O evento GarantiaResgatada identifica a seguradora e o valor de
+6.000.000.000.000.000 wei. A taxa dessa transação foi 0,00000045232067848 ETH,
+paga separadamente pela seguradora.
+
+A leitura no bloco 12058759 retornou situação 3 (Encerrada), saldo zero,
+valor pago ao produtor zero e nenhum evento PagamentoExecutado desde a emissão.
+A API também retornou Encerrada e o evento de resgate com o mesmo hash e valor.
+Os registros finais estão em `cenario-b-resgate-sepolia.json` e
+`cenario-b-resgate-api.json`. As capturas 15 a 18 mostram a disponibilidade do
+resgate, o envio da transação, a apólice encerrada e a linha do tempo com devolução.
+O cenário B está concluído para o período efetivamente utilizado.
 
 Este período tem dois dias e gatilho dez; portanto não poderia atingir o
 limiar, mesmo se os dois dias fossem secos. Ele exercita o caminho sem pagamento

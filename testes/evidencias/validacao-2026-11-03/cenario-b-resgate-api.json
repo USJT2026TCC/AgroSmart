@@ -1,0 +1,102 @@
+{
+  "consultadoEmUtc": "2026-11-04T00:09:05.5949376Z",
+  "apolice": {
+    "endereco": "0x8f0e008604d8e119613f318c6ed7f365a12f83d7",
+    "situacao": 3,
+    "talhao": "talhao-alunos",
+    "cultura": "soja",
+    "produtor": {
+      "carteira": "0xc8fdfca3cfec202d8babf4e89becab5e57773071",
+      "nome": "João Ribeiro"
+    },
+    "seguradora": "0x95ea48b7bf91446cf12c156ac2fdea75af03fd70",
+    "valorIndenizacaoWei": "6000000000000000",
+    "valorPagoWei": "0",
+    "periodoAcionador": null,
+    "hashTermos": "0x4ca417f5e63d8364b619ba306de3d4116480951a20a184be45135983ff71fb5c",
+    "txEmissao": "0x49915e39ef3e84bce17bb5f8b7e56f5c90b52c6fa79226414c66f12a3981d62d",
+    "emitidaEm": "2026-11-03T23:58:52.914Z"
+  },
+  "publicacoes": [
+    {
+      "periodo": 20240221,
+      "tx_hash": "0xa983a9406886ad6a1da69bba8d544e070a8b64af23bffc2006f54628d319347a",
+      "indice_climatico": 0,
+      "gas_usado": "495163",
+      "latencia_ms": 5356,
+      "procedencia": {
+        "fim": "2024-02-21",
+        "modo": "reproducao-historica",
+        "inicio": "2024-02-20",
+        "estacao": "A770",
+        "contagem": "inicio-da-cobertura",
+        "hashSerie": "63e43cb2a0834fe508619012a04cdf88dd586a44c12ca142292eb6d342c9d663",
+        "diasValidos": 2,
+        "diasIncompletos": 0,
+        "parametroExperimental": true
+      },
+      "confirmada_na_cadeia": true
+    }
+  ],
+  "linhaDoTempo": [
+    {
+      "nome": "ApoliceEmitida",
+      "bloco": 12058709,
+      "indiceNoBloco": 74,
+      "txHash": "0x49915e39ef3e84bce17bb5f8b7e56f5c90b52c6fa79226414c66f12a3981d62d",
+      "argumentos": {
+        "talhao": "0x74616c68616f2d616c756e6f7300000000000000000000000000000000000000",
+        "apolice": "0x8f0e008604D8E119613F318C6eD7F365A12F83d7",
+        "produtor": "0xC8fdFcA3CfEc202D8BaBf4E89bEcaB5E57773071",
+        "hashTermos": "0x4ca417f5e63d8364b619ba306de3d4116480951a20a184be45135983ff71fb5c",
+        "valorIndenizacao": "6000000000000000"
+      },
+      "em": "2026-11-03T23:58:48Z"
+    },
+    {
+      "nome": "GarantiaDepositada",
+      "bloco": 12058715,
+      "indiceNoBloco": 124,
+      "txHash": "0xc026f2e7d260e6b45d6592b7c329aff280c6e377b2f653adbf677e73fd027a6a",
+      "argumentos": {
+        "valor": "6000000000000000",
+        "seguradora": "0x95eA48b7BF91446CF12C156aC2FDeA75Af03fD70"
+      },
+      "em": "2026-11-04T00:00:00Z"
+    },
+    {
+      "nome": "IndicesPublicados",
+      "bloco": 12058718,
+      "indiceNoBloco": 292,
+      "txHash": "0xa983a9406886ad6a1da69bba8d544e070a8b64af23bffc2006f54628d319347a",
+      "argumentos": {
+        "oraculo": "0xeFCf4d0c3f22ac012896c2D9c6bA35e9fd7D691D",
+        "periodo": "20240221",
+        "indiceClimatico": "0"
+      },
+      "em": "2026-11-04T00:00:36Z"
+    },
+    {
+      "nome": "CondicaoAvaliada",
+      "bloco": 12058718,
+      "indiceNoBloco": 293,
+      "txHash": "0xa983a9406886ad6a1da69bba8d544e070a8b64af23bffc2006f54628d319347a",
+      "argumentos": {
+        "periodo": "20240221",
+        "atendida": false
+      },
+      "em": "2026-11-04T00:00:36Z"
+    },
+    {
+      "nome": "GarantiaResgatada",
+      "bloco": 12058746,
+      "indiceNoBloco": 115,
+      "txHash": "0xd72aa6afbe93272d86a9e0b58f2798265d1830f39da8565fbb8363388da16a84",
+      "argumentos": {
+        "valor": "6000000000000000",
+        "seguradora": "0x95eA48b7BF91446CF12C156aC2FDeA75Af03fD70"
+      },
+      "em": "2026-11-04T00:06:12Z"
+    }
+  ]
+}

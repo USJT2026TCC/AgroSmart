@@ -150,7 +150,7 @@
   "sepolia": {
     "fabricaConfigurada": "0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834",
     "fabricaNaVmObservada": "0x2a9b6995cf920a70b96f4cfc3ec951bdfec0f834",
-    "fluxoRealDaVersaoAtual": "cenário A confirmado; B sem acionamento confirmado com resgate pendente; C pendente",
+    "fluxoRealDaVersaoAtual": "cenários A e B confirmados; C pendente",
     "saudeVm": "indexador ativo sem erro na resposta; não comprova liquidação nem sincronização até o último bloco",
     "cenarioA": {
       "apolice": "0xbf75c995d3a66b42f333f2a17f1768005a07f297",
@@ -185,17 +185,24 @@
       "gatilhoDias": 10,
       "indicePublicado": 0,
       "periodoPublicado": 20240221,
-      "situacao": "ATIVA",
+      "situacao": "ENCERRADA",
       "valorPagoEth": "0",
-      "saldoEth": "0.006",
+      "saldoEth": "0",
       "pagamentosAteBloco12058729": 0,
       "simulacaoResgate": "eth_call sem reversão; não envia transação",
-      "resgateReal": "pendente",
+      "resgateReal": "confirmado",
       "capturas": [
         "12-cenario-b-proposta.png",
         "13-cenario-b-garantia.png",
-        "14-cenario-b-condicao-nao-atendida.png"
-      ]
+        "14-cenario-b-condicao-nao-atendida.png",
+        "15-cenario-b-resgate-disponivel.png",
+        "16-cenario-b-resgate-enviado.png",
+        "17-cenario-b-encerrada.png",
+        "18-cenario-b-linha-do-tempo-resgate.png"
+      ],
+      "txResgate": "0xd72aa6afbe93272d86a9e0b58f2798265d1830f39da8565fbb8363388da16a84",
+      "valorResgatadoEth": "0.006",
+      "pagamentosAteBloco12058759": 0
     }
   },
   "capturasLocais": [
