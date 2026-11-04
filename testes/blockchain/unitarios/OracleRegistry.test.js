@@ -3,7 +3,7 @@ const { ethers } = require("hardhat");
 /**
  * Testes do registro de oraculos autorizados.
  *
- * Cobre o RF18 e o criterio de aceite 3 da HU02: incluir e remover enderecos
+ * Cobre o RF11 e a HU11: incluir e remover enderecos
  * autorizados e restrito ao papel de seguradora.
  */
 describe("OracleRegistry", function () {

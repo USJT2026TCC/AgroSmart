@@ -7,9 +7,9 @@ const { Situacao, VALOR_INDENIZACAO, montarTermos, publicar } = require("./helpe
 /**
  * Testes de seguranca da apolice.
  *
- * Sao os testes que sustentam o RNF09 (imunidade a reentrancia) e o RNF13
- * (atomicidade: nenhuma falha pode resultar em pagamento parcial ou estado
- * inconsistente), alem do criterio de aceite 5 da HU03.
+ * Sao os testes que sustentam o RNF04 (imunidade a reentrancia e atomicidade:
+ * nenhuma falha pode resultar em pagamento parcial ou estado inconsistente),
+ * alem da HU13.
  *
  * A diferenca entre estes testes e os demais e que aqui o comportamento esperado
  * e a falha. Um teste que passa porque o ataque funcionou seria um contrato
@@ -17,7 +17,7 @@ const { Situacao, VALOR_INDENIZACAO, montarTermos, publicar } = require("./helpe
  */
 describe("Seguranca da apolice", function () {
   // -------------------------------------------------------------------------
-  // RNF09 - Reentrancia
+  // RNF04 - Reentrancia
   // -------------------------------------------------------------------------
   describe("reentrancia", function () {
     /**
@@ -85,7 +85,7 @@ describe("Seguranca da apolice", function () {
   });
 
   // -------------------------------------------------------------------------
-  // RNF13 - Atomicidade
+  // RNF04 - Atomicidade
   // -------------------------------------------------------------------------
   describe("atomicidade da liquidacao", function () {
     /**

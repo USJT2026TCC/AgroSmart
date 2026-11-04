@@ -5,7 +5,7 @@ import {ApoliceHistorica} from "../../../blockchain/contracts/ApoliceHistorica.s
 
 /**
  * @title AtacanteReentrancia
- * @notice Contrato malicioso usado apenas em teste (HU03, criterio de aceite 5).
+ * @notice Contrato malicioso usado apenas em teste (RNF04, HU13).
  *
  * Encena o pior cenario possivel: o atacante e, ao mesmo tempo, o produtor
  * beneficiario da apolice e um endereco autorizado no OracleRegistry. Assim, no

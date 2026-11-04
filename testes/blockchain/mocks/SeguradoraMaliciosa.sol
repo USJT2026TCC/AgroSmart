@@ -52,7 +52,7 @@ contract SeguradoraMaliciosa {
         apolice.resgatarGarantia();
     }
 
-    /// @notice Cancela a apolice: a devolucao da garantia passa pelo mesmo receive (RF10).
+    /// @notice Cancela a apolice: a devolucao da garantia passa pelo mesmo receive (RF14).
     function cancelar() external {
         _cancelando = true;
         apolice.cancelar();

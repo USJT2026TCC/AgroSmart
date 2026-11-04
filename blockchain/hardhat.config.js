@@ -8,7 +8,7 @@ require("dotenv").config({ path: path.join(__dirname, ".env"), quiet: true });
  * Sepolia é a rede de uso. Redes locais ficam em testes/.
  *
  * Nenhuma chave privada aparece aqui. Elas sao lidas de variaveis de ambiente
- * definidas no arquivo .env, que esta no .gitignore (RNF14).
+ * definidas no arquivo .env, que esta no .gitignore (RNF07).
  */
 
 const CHAVE_SEGURADORA = process.env.CHAVE_PRIVADA_SEGURADORA;

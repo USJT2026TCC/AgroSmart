@@ -1,7 +1,7 @@
 /**
  * Telas da seguradora: propostas e emissao, oraculos,
- * fontes, carteira e relatorio, talhoes e produtos (RF03,
- * RF05, HU09).
+ * fontes, carteira e relatorio, talhoes e produtos (RF04,
+ * RF08 a RF11, RF17).
  */
 import { cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";

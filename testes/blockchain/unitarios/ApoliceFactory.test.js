@@ -5,9 +5,8 @@ const { Situacao, VALOR_INDENIZACAO, b32, montarTermos, publicar } = require("./
 /**
  * Testes da fabrica de apolices.
  *
- * Cobre o RF07 (implantar na rede, na contratacao, o contrato da apolice
- * parametrizado) e o criterio de aceite 3 da HU10 (a contratacao dispara a
- * implantacao do contrato e exibe o endereco gerado).
+ * Cobre o RF09 (implantar na rede, na emissao, o contrato da apolice
+ * parametrizado) e a HU09 (a emissao cria o contrato com os termos da proposta).
  */
 describe("ApoliceFactory", function () {
   async function implantarFabrica() {

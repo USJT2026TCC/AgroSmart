@@ -218,7 +218,7 @@ test("recusa explicita do contrato e falha definitiva, sem novas tentativas", ()
   assert.equal(entrada.ultimoErro.recusaDoContrato, true);
 });
 
-test("erro de rede continua pendente para a retomada do RF21", () => {
+test("erro de rede continua pendente para a retomada do RNF05", () => {
   const fila = novaFila({ maxTentativas: 5 });
   const { entrada } = fila.enfileirar({
     apolice: "0xabc",

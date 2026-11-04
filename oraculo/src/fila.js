@@ -59,8 +59,8 @@ class FilaDePublicacoes {
 
   /**
    * Coloca uma publicacao na fila. Repetir a mesma apolice e periodo nao cria
-   * uma segunda entrada: o contrato rejeitaria a duplicata de qualquer forma
-   *, e gastar gas para descobrir isso seria desperdicio.
+   * uma segunda entrada: o contrato rejeitaria a duplicata de qualquer forma,
+   * e gastar gas para descobrir isso seria desperdicio.
    *
    * @returns {{entrada: object, novo: boolean}}
    */

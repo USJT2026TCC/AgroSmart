@@ -1,5 +1,5 @@
 /**
- * Detalhe da apolice (UC06, RF08, RF09, RF10, RF16).
+ * Detalhe da apolice (UC05 a UC08; RF10, RF14, RF15, RF16).
  */
 import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { ethers } from "ethers";

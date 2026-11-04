@@ -17,12 +17,11 @@ const {
  *
  * A organizacao acompanha o ciclo de vida do contrato: implantacao, deposito da
  * garantia, publicacao de indices, avaliacao da condicao, liquidacao e encerramento.
- * Cada bloco cita o requisito que exercita, de modo que a rastreabilidade exigida
- * pelo RNF12 fique visivel no proprio codigo de teste.
+ * Os blocos citam o requisito que exercitam, na numeracao da documentacao de software.
  */
 describe("ApoliceHistorica", function () {
   // -------------------------------------------------------------------------
-  // HU01 - Contrato da apolice em rede local
+  // RF09 - Contrato da apolice em rede local
   // -------------------------------------------------------------------------
   describe("implantacao", function () {
     async function implantarSemGarantia() {
@@ -184,7 +183,7 @@ describe("ApoliceHistorica", function () {
   });
 
   // -------------------------------------------------------------------------
-  // Garantia
+  // RF10 - Garantia
   // -------------------------------------------------------------------------
   describe("deposito da garantia", function () {
     async function implantarSemGarantia() {
@@ -261,7 +260,7 @@ describe("ApoliceHistorica", function () {
   });
 
   // -------------------------------------------------------------------------
-  // HU02 - Controle de enderecos autorizados
+  // RF11 e RF12 - Controle de enderecos autorizados
   // -------------------------------------------------------------------------
   describe("publicacao de indices", function () {
     it("aceita publicacao de endereco autorizado e emite evento com apolice, periodo e indice", async function () {
@@ -346,7 +345,7 @@ describe("ApoliceHistorica", function () {
   });
 
   // -------------------------------------------------------------------------
-  // HU03 - Avaliacao da condicao e liquidacao
+  // RF13 - Avaliacao da condicao e liquidacao
   // -------------------------------------------------------------------------
   describe("avaliacao da condicao e liquidacao", function () {
     it("nao paga quando o indice fica abaixo do limiar", async function () {
@@ -442,7 +441,7 @@ describe("ApoliceHistorica", function () {
   });
 
   // -------------------------------------------------------------------------
-  // Encerramento
+  // RF15 - Encerramento
   // -------------------------------------------------------------------------
   describe("resgate da garantia", function () {
     it("devolve a garantia a seguradora apos o fim da vigencia sem acionamento", async function () {
