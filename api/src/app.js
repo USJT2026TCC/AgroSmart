@@ -36,7 +36,7 @@ export function criarApp({ banco, cadeia, indexador = null }) {
 
   app.use(express.json({ limit: "2mb" }));
 
-  // CORS restrito a origem do aplicativo (http://localhost:5173).
+  // CORS restrito à origem configurada para o aplicativo.
   app.use((req, res, proximo) => {
     const origem = req.get("origin");
 

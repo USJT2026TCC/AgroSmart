@@ -122,8 +122,6 @@ describe("Fluxo historico: API, banco, oraculo e EVM", function () {
           };
         },
       };
-      // O relato nao e parte da avaliacao; seu SQL e coberto pela suite do backend.
-      backend.relatarPublicacao = async () => ({});
       const servico = new ServicoOraculo({
         publicador,
         backend,
@@ -141,6 +139,21 @@ describe("Fluxo historico: API, banco, oraculo e EVM", function () {
       );
       expect(await apolice.situacao()).to.equal(2);
       expect(await apolice.periodoAcionador()).to.equal(20240208);
+      const { rows: relatos } = await banco.query(
+        "SELECT tx_hash,indice_climatico,procedencia,confirmada_na_cadeia FROM publicacoes_oraculo WHERE apolice_endereco=$1",
+        [endereco.toLowerCase()],
+      );
+      expect(relatos).to.have.lengthOf(1);
+      expect(relatos[0].tx_hash).to.equal(publicado.recibo.txHash);
+      expect(relatos[0].indice_climatico).to.equal(2);
+      expect(relatos[0].procedencia.estacao).to.equal("A770");
+      // O relato real chegou à API; sem indexador neste ensaio, ainda não é confirmado por ela.
+      expect(relatos[0].confirmada_na_cadeia).to.equal(false);
+      expect(entrada.relatoPendente).to.equal(false);
+      await servico.relatarPublicacao(entrada);
+      expect(
+        Number((await banco.query("SELECT count(*) AS n FROM publicacoes_oraculo")).rows[0].n),
+      ).to.equal(1);
     } finally {
       if (servidor) await new Promise((resolve) => servidor.close(resolve));
       await banco.fechar();
