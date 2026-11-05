@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { after, before, describe, test } from "node:test";
-import { com, entrar, montar } from "./ajuda.js";
+import { com, entrar, montar } from "../fixtures/ajuda.js";
 import { periodo } from "../../../api/src/validacao.js";
 
 describe("API no escopo histórico atual", () => {

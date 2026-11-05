@@ -5,7 +5,7 @@ import { abrirBancoDeTeste } from "../fixtures/banco.js";
 import { inicializarBanco } from "../../../api/src/banco/inicializar.js";
 import { semear } from "../../../api/src/banco/semente.js";
 import { criarApp } from "../../../api/src/app.js";
-import { cadeiaFalsa, entrar, com } from "../unitarios/ajuda.js";
+import { cadeiaFalsa, entrar, com } from "../fixtures/ajuda.js";
 const require = createRequire(new URL("../../../api/package.json", import.meta.url));
 const request = require("supertest");
 

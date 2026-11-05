@@ -3,7 +3,7 @@ import { after, before, describe, test } from "node:test";
 
 import { ethers } from "ethers";
 
-import { PRODUTOR_NA_CADEIA, com, entrar, montar } from "./ajuda.js";
+import { PRODUTOR_NA_CADEIA, com, entrar, montar } from "../fixtures/ajuda.js";
 
 /** API autenticada: relatos e falhas; ingestao de sensores foi retirada. */
 describe("API do oraculo", () => {

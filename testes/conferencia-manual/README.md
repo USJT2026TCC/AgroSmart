@@ -1,4 +1,4 @@
-# Conferência complementar das apólices
+# Conferência manual das apólices
 
 Estas ferramentas são executadas separadamente de `npm test`. São verificações
 da equipe fora do fluxo da aplicação, não uma auditoria independente de terceiros.
@@ -12,8 +12,8 @@ período, índice e condição com os eventos registrados. Não consulta a rede 
 Na raiz, com Python 3.10 ou superior:
 
 ```bash
-python testes/auditoria-externa/auditar_apolice.py . testes/evidencias/validacao-2026-11-03/registros/cenario-a-sepolia.json
-python testes/auditoria-externa/auditar_apolice.py . testes/evidencias/validacao-2026-11-03/registros/cenario-b-sepolia.json
+python testes/conferencia-manual/auditar_apolice.py . testes/evidencias/validacao-2026-11-03/registros/cenario-a-sepolia.json
+python testes/conferencia-manual/auditar_apolice.py . testes/evidencias/validacao-2026-11-03/registros/cenario-b-sepolia.json
 ```
 
 O resultado registrado é 10/06/2024, índice 10 para A, e 21/02/2024, índice 0 para B.
@@ -29,7 +29,7 @@ com garantia em EVM local. É um diagnóstico: imprime as gravações e não con
 asserções de aprovação. Execute em `blockchain/`:
 
 ```bash
-npx hardhat --config ../testes/blockchain/hardhat.config.cjs test ../testes/auditoria-externa/trace_cancelamento.test.cjs
+npx hardhat --config ../testes/blockchain/hardhat.config.cjs test ../testes/conferencia-manual/trace_cancelamento.test.cjs
 ```
 
 O resultado registrado compara situação 0 → 4 e 1 → 4. A diferença de 10.028 gas

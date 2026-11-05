@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { ethers } from "ethers";
-import { montar, entrar, com, PRODUTOR_NA_CADEIA } from "./ajuda.js";
+import { montar, entrar, com, PRODUTOR_NA_CADEIA } from "../fixtures/ajuda.js";
 test("desvincular e trocar carteira preserva apolices do produtor e nao revela proposta alheia", async () => {
   const ctx = await montar();
   try {

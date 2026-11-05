@@ -1,4 +1,4 @@
-const { expect } = require("./helpers.js");
+const { expect } = require("../fixtures/ajuda.js");
 const { ethers } = require("hardhat");
 const { time } = require("@nomicfoundation/hardhat-network-helpers");
 
@@ -9,7 +9,7 @@ const {
   montarTermos,
   cenarioApoliceAtiva,
   publicar,
-} = require("./helpers.js");
+} = require("../fixtures/ajuda.js");
 
 /**
  * Cancelamento antes da vigencia.

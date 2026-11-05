@@ -66,16 +66,9 @@ status 1. A leitura final conferiu situação, saldo, valor pago e eventos. A AP
 também confirmou os estados finais; C1 e C2 estão Canceladas na conferência final
 de 04/11/2026, após atualização da VM.
 
-## Testes automatizados que sustentam o fluxo
+## Suíte automatizada nesta validação
 
-| Etapa | Resultado documentado |
-| --- | --- |
-| Preparar/importar dados | 1.827 dias utilizáveis; seis preenchimentos identificados; nova importação sem duplicatas |
-| Contratar/emitir | Perfis, carteira e termos validados; campos divergentes recusados |
-| Publicar/pagar | Autorização, depósito exato, pagamento único, retomada e recuperação de recibos exercitados |
-| Cancelar/resgatar | Regras de permissão e devolução verificadas, incluindo recebedores hostis e reentrância em EVM local |
-| Acompanhar/reiniciar | Reconciliação do indexador, atualização das telas e persistência Docker verificadas |
-
+O pacote de dados tinha 1.827 dias utilizáveis, com seis preenchimentos identificados.
 A execução consolidada registrou **353 testes distintos aprovados**: contratos 89,
 configuração 2, API 75, integração da API 12, oráculo 51, integração do publicador 4,
 interface 76, infraestrutura 18 e ETL 26. Os quatro testes de banco repetidos pelo

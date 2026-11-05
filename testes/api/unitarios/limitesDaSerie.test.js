@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { montar } from "./ajuda.js";
+import { montar } from "../fixtures/ajuda.js";
 import { inicializarBanco } from "../../../api/src/banco/inicializar.js";
 const inserirDia = (b, data) =>
   b.query(

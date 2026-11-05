@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { montar } from "./ajuda.js";
+import { montar } from "../fixtures/ajuda.js";
 const chave = { "X-Chave-De-Servico": "chave-de-teste" };
 const endereco = "0x0000000000000000000000000000000000009876";
 

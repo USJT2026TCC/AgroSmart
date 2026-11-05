@@ -97,7 +97,5 @@ listadas no manifesto e preserva a consulta às apólices existentes.
 
 ## Testes
 
-`testes/` reúne as suítes, a conferência complementar e as evidências. Seu README
-informa o que cada grupo verifica e como executar. O relatório em
-`testes/evidencias/validacao-2026-11-03/` apresenta cadastro, pagamento, resgate e
-cancelamentos, com capturas em `prints/` e recibos/medições em `registros/`.
+`testes/` reúne a suíte automatizada (`npm test`), a conferência manual e as evidências
+da validação na Sepolia, e seu README mostra o que há em cada pasta.

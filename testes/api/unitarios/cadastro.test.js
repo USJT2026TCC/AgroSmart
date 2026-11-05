@@ -3,7 +3,7 @@ import { after, before, describe, test } from "node:test";
 
 import { inicializarBanco } from "../../../api/src/banco/inicializar.js";
 
-import { com, entrar, montar } from "./ajuda.js";
+import { com, entrar, montar } from "../fixtures/ajuda.js";
 
 /**
  * Cadastro de talhoes do produtor fixo e consulta do produto da demonstracao.

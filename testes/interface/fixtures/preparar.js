@@ -10,7 +10,7 @@ import { afterEach } from "vitest";
 
 afterEach(() => cleanup());
 
-vi.mock("../../interface/src/cadeia/rede.js", async (importOriginal) => {
+vi.mock("../../../interface/src/cadeia/rede.js", async (importOriginal) => {
   const original = await importOriginal();
   const rede = {
     chainId: 31337,

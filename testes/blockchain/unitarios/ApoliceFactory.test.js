@@ -1,6 +1,6 @@
-const { expect } = require("./helpers.js");
+const { expect } = require("../fixtures/ajuda.js");
 const { ethers } = require("hardhat");
-const { Situacao, VALOR_INDENIZACAO, b32, montarTermos, publicar } = require("./helpers.js");
+const { Situacao, VALOR_INDENIZACAO, b32, montarTermos, publicar } = require("../fixtures/ajuda.js");
 
 /**
  * Testes da fabrica de apolices.

@@ -11,7 +11,7 @@ import {
   abrir,
   achar,
   carteiraFalsa,
-} from "./ambiente.jsx";
+} from "../fixtures/ambiente.jsx";
 
 const ENDERECO = "0x00000000000000000000000000000000000a9011";
 const TX = `0x${"34".repeat(32)}`;

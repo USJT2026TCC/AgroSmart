@@ -4,7 +4,7 @@ import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
-import { montar, entrar, com } from "./ajuda.js";
+import { montar, entrar, com } from "../fixtures/ajuda.js";
 import { importarInmet } from "../../../api/src/banco/importarInmet.js";
 
 test("importacao persistida e idempotente; API avalia periodo e proposta congela gatilho", async () => {

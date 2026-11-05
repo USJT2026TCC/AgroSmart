@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { montar, entrar, com } from "./ajuda.js";
+import { montar, entrar, com } from "../fixtures/ajuda.js";
 import { abrirSessao } from "../../../api/src/seguranca/sessoes.js";
 
 test("conta fora dos dois acessos fixos não entra nem reutiliza sessão anterior", async () => {

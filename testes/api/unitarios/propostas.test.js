@@ -14,7 +14,7 @@ import {
   idDoTalhao,
   montar,
   reciboDeEmissao,
-} from "./ajuda.js";
+} from "../fixtures/ajuda.js";
 
 /**
  * Cotacao, proposta e emissao verificada na cadeia.

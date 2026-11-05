@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Auditoria externa de uma apolice do AgroSmart, sem usar a API nem o codigo do oraculo.
+"""Conferencia manual de uma apolice do AgroSmart, sem usar a API nem o codigo do oraculo.
 
 Entradas: o pacote INMET versionado no repositorio (api/recursos/inmet/A770) e o registro
 das consultas JSON-RPC feitas a rede Sepolia na validacao (testes/evidencias/...).
@@ -8,7 +8,7 @@ Passos:
   2. recalcular a sequencia de dias secos desde o inicio da cobertura e o dia a publicar;
   3. recompor o texto dos termos no formato publico (docs/termos-e-vinculo.md) e calcular o Keccak-256;
   4. comparar os resultados com os eventos ApoliceEmitida, IndicesPublicados e CondicaoAvaliada.
-Uso: python3 auditar_apolice.py <raiz-do-repositorio> <cenario-x-sepolia.json> [texto-dos-termos.txt]
+Uso: python auditar_apolice.py <raiz-do-repositorio> <cenario-x-sepolia.json> [texto-dos-termos.txt]
 O texto dos termos (passo 3) e exibido pela interface na apolice; o identificador da proposta,
 um UUID, nao e gravado na cadeia nem consta dos registros publicos da validacao.
 """

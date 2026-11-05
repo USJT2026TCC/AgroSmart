@@ -4,7 +4,7 @@
 import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
-import { CONTA_DO_PRODUTOR, USUARIOS, abrir, achar, carteiraFalsa } from "./ambiente.jsx";
+import { CONTA_DO_PRODUTOR, USUARIOS, abrir, achar, carteiraFalsa } from "../fixtures/ambiente.jsx";
 
 afterEach(() => {
   // Desmonta antes de remover a carteira: a tela tira os ouvintes ao sair.

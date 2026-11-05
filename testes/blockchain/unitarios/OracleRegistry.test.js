@@ -1,4 +1,4 @@
-const { expect } = require("./helpers.js");
+const { expect } = require("../fixtures/ajuda.js");
 const { ethers } = require("hardhat");
 /**
  * Testes do registro de oraculos autorizados.

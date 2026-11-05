@@ -19,7 +19,7 @@ export default mergeConfig(
     test: {
       environment: "jsdom",
       include: ["testes/interface/**/*.test.{js,mjs,jsx}"],
-      setupFiles: [path.join(aqui, "preparar.js")],
+      setupFiles: [path.join(aqui, "fixtures/preparar.js")],
       coverage: {
         provider: "v8",
         reportsDirectory: path.resolve(aqui, "../gerados/interface/cobertura"),

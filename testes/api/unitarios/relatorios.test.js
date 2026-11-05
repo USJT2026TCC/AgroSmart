@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { after, before, describe, test } from "node:test";
 
-import { PRODUTOR_NA_CADEIA, com, entrar, idDoTalhao, montar } from "./ajuda.js";
+import { PRODUTOR_NA_CADEIA, com, entrar, idDoTalhao, montar } from "../fixtures/ajuda.js";
 
 /**
  * Indicadores do painel da seguradora.

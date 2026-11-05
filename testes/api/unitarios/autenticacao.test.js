@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { after, before, describe, test } from "node:test";
 
 import { sha256Hex } from "../../../api/src/seguranca/cripto.js";
-import { com, entrar, montar } from "./ajuda.js";
+import { com, entrar, montar } from "../fixtures/ajuda.js";
 
 /**
  * Autenticacao e controle de acesso.

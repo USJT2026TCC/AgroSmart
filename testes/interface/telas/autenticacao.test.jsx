@@ -11,7 +11,7 @@ import {
   abrir,
   achar,
   carteiraFalsa,
-} from "./ambiente.jsx";
+} from "../fixtures/ambiente.jsx";
 
 vi.mock("../../../interface/src/cadeia/contratos.js", () => ({
   listarApolices: vi.fn(async () => []),

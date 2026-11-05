@@ -4,7 +4,7 @@
 import { act, cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, test } from "vitest";
 
-import { USUARIOS, abrir, achar } from "./ambiente.jsx";
+import { USUARIOS, abrir, achar } from "../fixtures/ambiente.jsx";
 
 afterEach(() => {
   cleanup();

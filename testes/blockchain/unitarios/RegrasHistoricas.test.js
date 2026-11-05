@@ -1,5 +1,5 @@
 const { ethers } = require("hardhat");
-const { expect, montarTermos } = require("./helpers");
+const { expect, montarTermos } = require("../fixtures/ajuda.js");
 describe("Apolice historica explicita", function () {
   async function cenario(extra = {}) {
     const [seguradora, produtor, oraculo, estranho] = await ethers.getSigners();

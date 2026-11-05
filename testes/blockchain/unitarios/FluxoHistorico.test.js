@@ -1,5 +1,5 @@
 const { ethers } = require("hardhat");
-const { expect, montarTermos } = require("./helpers");
+const { expect, montarTermos } = require("../fixtures/ajuda.js");
 const { ServicoOraculo } = require("../../../oraculo/src/oraculo");
 const { FilaDePublicacoes } = require("../../../oraculo/src/fila");
 const fs = require("node:fs");

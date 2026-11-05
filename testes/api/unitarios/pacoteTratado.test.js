@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createRequire } from "node:module";
-import { montar, entrar, com } from "./ajuda.js";
+import { montar, entrar, com } from "../fixtures/ajuda.js";
 import { importarInmet } from "../../../api/src/banco/importarInmet.js";
 import { hashDaSerie } from "../../../api/src/dominio/reproducao.js";
 const require = createRequire(import.meta.url);

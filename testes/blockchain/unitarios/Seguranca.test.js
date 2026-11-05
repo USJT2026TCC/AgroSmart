@@ -1,8 +1,8 @@
-const { expect } = require("./helpers.js");
+const { expect } = require("../fixtures/ajuda.js");
 const { ethers } = require("hardhat");
 const { time } = require("@nomicfoundation/hardhat-network-helpers");
 
-const { Situacao, VALOR_INDENIZACAO, montarTermos, publicar } = require("./helpers.js");
+const { Situacao, VALOR_INDENIZACAO, montarTermos, publicar } = require("../fixtures/ajuda.js");
 
 /**
  * Testes de seguranca da apolice.

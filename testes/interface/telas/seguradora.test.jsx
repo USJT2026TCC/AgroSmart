@@ -6,7 +6,7 @@
 import { cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
-import { CONTA_DA_SEGURADORA, abrir, achar, carteiraFalsa } from "./ambiente.jsx";
+import { CONTA_DA_SEGURADORA, abrir, achar, carteiraFalsa } from "../fixtures/ambiente.jsx";
 
 const TX = `0x${"12".repeat(32)}`;
 const transacao = () => ({

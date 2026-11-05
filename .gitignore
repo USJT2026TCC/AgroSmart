@@ -28,13 +28,10 @@ __pycache__/
 
 # Saídas e arquivos locais dos testes
 testes/gerados/
-testes/medicoes/
 testes/evidencias/*
 !testes/evidencias/validacao-2026-11-03/
 coverage/
 coverage.json
-.scenarios/
-.nyc_output/
 
 # Ferramentas e configurações pessoais
 .claude/

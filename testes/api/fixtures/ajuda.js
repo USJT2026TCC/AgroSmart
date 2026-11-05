@@ -2,9 +2,9 @@ import { ethers } from "ethers";
 import request from "supertest";
 
 import { criarApp } from "../../../api/src/app.js";
-import { abrirBancoDeTeste } from "../fixtures/banco.js";
+import { abrirBancoDeTeste } from "./banco.js";
 import { inicializarBanco } from "../../../api/src/banco/inicializar.js";
-import { semearParaTeste as semear } from "../fixtures/semente.js";
+import { semearParaTeste as semear } from "./semente.js";
 import { interfaceFactory } from "../../../api/src/cadeia/rede.js";
 
 /**

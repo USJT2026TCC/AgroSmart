@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { after, before, describe, test } from "node:test";
 
-import { carteiraAleatoria, com, entrar, montar } from "./ajuda.js";
+import { carteiraAleatoria, com, entrar, montar } from "../fixtures/ajuda.js";
 
 /**
  * Vinculo da carteira por assinatura, verificado no servidor.

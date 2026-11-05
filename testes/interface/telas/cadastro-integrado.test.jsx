@@ -17,7 +17,7 @@ test("seguradora cadastra dois talhoes para o produtor fixo usando API e Postgre
   const carregar = createRequire(resolve(import.meta.dirname, "../../../api/package.json"));
   const importarNativo = carregar("../testes/interface/fixtures/importar-node.cjs");
   const { montar, entrar } = await importarNativo(
-    pathToFileURL(carregar.resolve("../testes/api/unitarios/ajuda.js")).href,
+    pathToFileURL(carregar.resolve("../testes/api/fixtures/ajuda.js")).href,
   );
   const ctx = await montar();
   const fetchAnterior = globalThis.fetch;
