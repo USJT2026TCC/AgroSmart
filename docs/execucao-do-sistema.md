@@ -1,73 +1,128 @@
 # Execução do sistema
 
-Resumo dos passos para executar o AgroSmart, com o passo a passo completo em
-`scripts/README.md`.
+Para subir o AgroSmart numa máquina, local ou na VM da equipe. Os passos ficam aqui
+para a equipe; quem só usa o sistema não precisa deles.
 
-## Requisitos
+### 1. Instale
 
-A máquina precisa do Node.js 22.12 ou superior e do Docker com o Docker Compose. O
-navegador precisa da extensão MetaMask, com a rede Sepolia ativada. As contas do oráculo
-e da seguradora precisam de ETH de teste da Sepolia, obtido gratuitamente em uma faucet.
-Use somente contas criadas para testes, sem valor real.
+- Node.js 22.12 ou mais recente
+- Docker Desktop (com o Docker Compose)
+- A extensão MetaMask no navegador, com a rede Sepolia e algum ETH de teste
 
-## Configuração
+### 2. Configure
 
-As variáveis ficam no arquivo `blockchain/.env`, criado a partir de
-`blockchain/.env.example`. Esse arquivo guarda chaves privadas e não vai para o Git.
+Copie `blockchain/.env.example` para `blockchain/.env` e preencha:
 
-| Variável | Uso |
-|---|---|
-| `RPC_SEPOLIA` | Endereço de acesso à Sepolia, obtido em um provedor como Infura ou Alchemy |
-| `CHAVE_PRIVADA_ORACULO` | Chave da conta que publica os índices; com os contratos em uso, é a conta do oráculo autorizado, entregue pela equipe |
-| `CHAVE_PRIVADA_SEGURADORA` | Usada só para publicar contratos próprios; a conta passa a ser a seguradora desses contratos |
-| `ETHERSCAN_API_KEY` | Usada só para verificar contratos próprios no explorador de blocos |
-| `PRECO_GAS_GWEI` | Opcional; fixa o preço do gás nas transações |
-| `DOMINIO` | Só na máquina virtual; endereço público que ativa o Caddy com HTTPS |
+| Variável                   | Para quê                                      | Onde conseguir                                                                                                                                                                                                                                                            |
+| -------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `RPC_SEPOLIA`              | Endereço de acesso à Sepolia                  | Crie uma conta gratuita na [Infura](https://www.infura.io) ou na [Alchemy](https://www.alchemy.com), crie um projeto, escolha a rede **Sepolia** e copie o endereço HTTPS (algo como `https://sepolia.infura.io/v3/...`)                                                  |
+| `CHAVE_PRIVADA_ORACULO`    | Conta que publica a contagem de dias secos    | Com os contratos em uso, é a chave da conta `0xeFCf…D691D`, que a equipe entrega por canal privado; o `npm start` recusa outra chave. Com contratos próprios (passo 5), use uma conta nova da MetaMask: menu da conta → **Detalhes da conta** → **Mostrar chave privada** |
+| `CHAVE_PRIVADA_SEGURADORA` | Só para publicar contratos próprios (passo 5) | Chave de outra conta da MetaMask, obtida do mesmo jeito; ela vira a seguradora dos contratos                                                                                                                                                                              |
+| `ETHERSCAN_API_KEY`        | Só para verificar contratos próprios          | Crie uma conta no [Etherscan](https://etherscan.io) e gere a chave em **API Keys**                                                                                                                                                                                        |
+| `PRECO_GAS_GWEI`           | Opcional: preço fixo do gás                   | Deixe em branco, ou use `0.01` para publicar contratos gastando pouco ETH de teste                                                                                                                                                                                        |
 
-## Início e comandos
+As contas do oráculo e da seguradora precisam de **ETH de teste da Sepolia** para pagar as
+transações. Ele é gratuito e vem de uma _faucet_, como a do
+[Google Cloud](https://cloud.google.com/application/web3/faucet/ethereum/sepolia) ou a da
+[Alchemy](https://www.alchemy.com/faucets/ethereum-sepolia): cole o endereço da conta e peça.
 
-Na pasta do projeto:
+Use somente contas criadas para testes, sem valor real. O arquivo `.env` guarda chaves
+privadas e nunca vai para o Git; nunca envie essas chaves por e-mail ou chat aberto.
+
+### 3. Inicie
 
 ```powershell
 npm ci
 npm start
 ```
 
-O `npm ci` instala as dependências, e o `npm start` confere a Sepolia, configura a API e
-o oráculo e inicia os serviços no Docker. O primeiro início baixa as imagens e importa a
-série do INMET, o que leva alguns minutos. Depois, a interface abre em
-http://localhost:5173, com os perfis de demonstração `produtor` e `seguradora`, ambos
-com a senha `agrosmart`. Seguradora e produtor precisam de contas diferentes na MetaMask.
+O primeiro início baixa as imagens Docker e importa a série do INMET; leva alguns
+minutos. Depois, abra **http://localhost:5173** e entre com:
 
-| Comando | Efeito |
-|---|---|
-| `npm run status` | Mostra se os serviços estão em execução |
-| `npm stop` | Para os serviços e preserva os dados |
-| `docker compose logs --tail 50 oraculo` | Mostra as últimas mensagens do serviço de oráculo |
-| `npm test` | Executa os testes automatizados |
-| `npm run dados:preparar` | Refaz o pacote de dados do INMET; o pacote já acompanha o projeto |
+| Perfil     | Usuário      | Senha       |
+| ---------- | ------------ | ----------- |
+| Seguradora | `seguradora` | `agrosmart` |
+| Produtor   | `produtor`   | `agrosmart` |
 
-Ao iniciar, o oráculo pode processar apólices ativas e enviar transações e pagamentos na
-Sepolia automaticamente.
+O login é separado da MetaMask. Seguradora e produtor precisam de **contas MetaMask
+diferentes**; a da seguradora é a que publicou os contratos. O botão **ⓘ** de cada
+tela mostra o passo a passo do perfil.
 
-## Contratos próprios
+### 4. Comandos do dia a dia
 
-Os contratos em uso pertencem às contas da equipe. Para executar com outras contas:
+| Comando                                 | O que faz                           |
+| --------------------------------------- | ----------------------------------- |
+| `npm run status`                        | Mostra se os serviços estão no ar   |
+| `npm stop`                              | Para tudo e preserva os dados       |
+| `docker compose logs --tail 50 oraculo` | Mostra o que o oráculo está fazendo |
+
+### 5. Usar com suas próprias contas
+
+Os contratos em uso pertencem às contas da equipe. Para rodar com outras contas,
+publique contratos próprios (gasta um pouco de ETH de teste da conta da seguradora):
 
 ```powershell
 $env:NOVA_IMPLANTACAO=1; npm run implantar:sepolia --workspace blockchain
 npm start
 ```
 
-O primeiro comando publica o registro de oráculos, autoriza o oráculo, publica a fábrica
-e grava os endereços em `blockchain/implantacoes/sepolia.json`. O `npm start` inicia o
-sistema com os novos contratos.
+O script publica o registro de oráculos, autoriza o oráculo, publica a fábrica de
+apólices e grava os endereços em `blockchain/implantacoes/sepolia.json`.
 
-## Máquina virtual
+### 6. Publicar numa VM (Google Cloud)
 
-Para hospedar o sistema, a equipe usa uma máquina virtual do Google Cloud do tipo
-e2-medium, com Ubuntu 24.04, endereço IP fixo e tráfego HTTP e HTTPS liberado. Na
-máquina, a equipe instala o Docker, o Node.js e o Git, clona o repositório e envia o
-arquivo `.env` diretamente, sem passar pelo Git. Com a variável `DOMINIO` preenchida com
-o IP no formato do serviço sslip.io, o `npm start` também inicia o Caddy, que obtém o
-certificado HTTPS.
+Roda o mesmo sistema numa máquina da nuvem, acessível por um endereço com HTTPS. Só o
+navegador e a MetaMask ficam com quem usa; os logins são os mesmos do README principal.
+
+1. Entre no [Google Cloud](https://console.cloud.google.com), ative a avaliação gratuita
+   conforme as condições atuais da plataforma, e crie um projeto. Abra **Compute Engine** e aceite
+   ativar a API quando o console pedir.
+2. Em **Compute Engine → Instâncias de VM → Criar instância**:
+   - Região **southamerica-east1 (São Paulo)**, tipo de máquina **e2-medium**
+     (4 GB de memória).
+   - **Disco de inicialização → Alterar**: **Ubuntu 24.04 LTS**, 20 GB.
+   - **Firewall**: marque **Permitir tráfego HTTP** e **Permitir tráfego HTTPS**.
+3. Ainda na criação, em **Rede → Interface de rede → Endereço IPv4 externo**, escolha
+   **Reservar endereço IP estático**, para o endereço não mudar quando a máquina for
+   desligada. Anote o IP (exemplo: `34.1.2.3`) e clique em **Criar**.
+4. Na lista de instâncias, clique em **SSH**: abre um terminal da VM no navegador.
+   Instale Docker, Node.js e Git:
+
+   ```bash
+   curl -fsSL https://get.docker.com | sudo sh
+   sudo usermod -aG docker $USER
+   curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
+   sudo apt-get install -y nodejs git
+   exit
+   ```
+
+5. Abra o **SSH** de novo (para valer o acesso ao Docker), baixe o projeto e instale as dependências:
+
+   ```bash
+   git clone https://github.com/USJT2026TCC/AgroSmart.git
+   cd AgroSmart && npm ci
+   ```
+
+6. Envie o `.env` para a VM, sem passar pelo Git: no terminal SSH, use **Fazer upload de
+   arquivo** (ícone de engrenagem ou de seta, no topo da janela), escolha o
+   `blockchain/.env` do seu computador e depois mova:
+
+   ```bash
+   mv ~/.env ~/AgroSmart/blockchain/.env
+   ```
+
+7. Informe o endereço público e inicie. O endereço é o IP com traços seguido de
+   `.sslip.io`, um serviço gratuito que aponta para o próprio IP:
+
+   ```bash
+   echo "DOMINIO=34-1-2-3.sslip.io" >> blockchain/.env
+   npm start
+   ```
+
+O sistema abre em `https://34-1-2-3.sslip.io`. Com `DOMINIO` preenchido, o `npm start` sobe
+também o Caddy (`docker-compose.vm.yml`), que obtém o certificado HTTPS sozinho e é o único
+serviço exposto; banco e API continuam fechados dentro da VM. Os serviços voltam sozinhos
+quando a VM é ligada. Para economizar crédito, use **Parar** e **Iniciar** na lista de
+instâncias, ou crie uma **Programação de instâncias** (Compute Engine → Programações) que
+liga e desliga a VM em horários fixos; com o IP estático, o endereço continua o mesmo.
+O banco da VM é independente do da sua máquina.

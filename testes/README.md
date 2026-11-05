@@ -1,70 +1,51 @@
 # Testes do AgroSmart
 
-A validação acompanha o uso do seguro: cadastrar um talhão, disponibilizá-lo ao
-produtor, solicitar uma cobertura, emitir a apólice, depositar a garantia e
-conferir o desfecho na interface e na Sepolia. Os testes automatizados verificam
-as regras e as falhas que podem interromper essas etapas.
+A validação acompanha o seguro do cadastro do talhão ao pagamento, cancelamento
+ou resgate. Há três tipos de verificação, com alcances diferentes:
 
-## Fluxo avaliado
-
-```mermaid
-flowchart TD
-  A[Seguradora cadastra o talhão] --> B[Produtor consulta o talhão e solicita cobertura]
-  B --> C[Seguradora emite pela MetaMask]
-  C --> D[Seguradora deposita a garantia]
-  D --> E[Oráculo consulta a série histórica e publica o índice]
-  E --> F{Gatilho atingido?}
-  F -->|Sim| G[Contrato paga ao produtor e apólice fica liquidada]
-  F -->|Não até o fim| H[Seguradora resgata a garantia e encerra a apólice]
-  C --> I[Cancelamento antes da primeira publicação]
-  D --> I
-  I --> J[Devolve a garantia quando depositada]
-```
-
-O cadastro integrado foi testado com interface, API e PostgreSQL reais em ambiente
-automatizado; o transporte HTTP foi adaptado ao teste. As capturas locais de
-cadastro registram um talhão próprio desse ensaio. Os cenários da VM utilizam o
-talhão `talhao-alunos`, já cadastrado: não são apresentados como uma única execução
-contínua iniciada naquele cadastro local.
-
-## Cenários e evidências do sistema
-
-| Caminho | O que foi feito | Como conferir o resultado |
+| Verificação | O que executa | Onde está |
 | --- | --- | --- |
-| Cadastro e acesso do produtor | A seguradora cadastrou dois talhões; após sair e entrar como produtor, ambos ofereceram solicitação de proposta | Asserções da interface integrada com API e PostgreSQL; capturas locais 01 e 02 documentam outro cadastro, sem pagamento |
-| A — pagamento | Proposta de 01–30/06/2024, gatilho 10; emissão e garantia pela MetaMask; publicação automática | Liquidada; 0,006 ETH ao produtor; recibo, evento de pagamento, estado da apólice e API; capturas 03–08 e 11 |
-| B — encerramento sem acionamento | Cobertura de 20–21/02/2024, gatilho 10; índice final 0; resgate pela seguradora | Encerrada; nenhum pagamento ao produtor e 0,006 ETH devolvidos; capturas 12–20 e recibos |
-| C1 — cancelamento sem garantia | Emissão seguida de cancelamento antes do depósito e da publicação | Cancelada; nenhum depósito, publicação ou pagamento; capturas 21–24 e recibos |
-| C2 — cancelamento com garantia | Emissão, depósito de 0,006 ETH e cancelamento antes da publicação | Cancelada; garantia devolvida e nenhum pagamento ao produtor; capturas 25–28 e recibos |
+| Suíte automatizada | Regras, falhas e integrações com banco e EVM isolados; telas com fronteiras controladas | Pastas dos componentes; comando `npm test` |
+| Demonstração com MetaMask | Operações realizadas na VM e confirmadas na Sepolia | `evidencias/validacao-2026-11-03/` |
+| Conferência complementar | Recálculo dos registros A e B sem a API/oráculo e diagnóstico de cancelamento em EVM local | `auditoria-externa/`; comandos próprios |
 
-Os quatro caminhos de apólice foram executados com ETH de teste na Sepolia. Nos
-cancelamentos, o oráculo foi pausado para controlar a ordem das operações. B tem
-dois dias de cobertura e gatilho dez: verifica o encerramento e o resgate, sem
-avaliar uma estiagem em período longo. O relatório em `evidencias/` reúne os
-resultados, os prints selecionados e os identificadores públicos das operações.
+## O que é testado no fluxo
 
-## Como os testes automatizados sustentam o fluxo
-
-| Etapa do uso | Regra ou falha verificada | Por que isso importa |
+| Etapa | O que se confere | Testes responsáveis |
 | --- | --- | --- |
-| Cadastrar e consultar o talhão | Persistência, associação ao produtor fixo e acesso por perfil | O produtor precisa encontrar o talhão correto para contratar |
-| Escolher cobertura e enviar proposta | Datas de 2020–2024, gatilho válido, carteira vinculada e uma proposta pendente por talhão | Impedir uma solicitação que o sistema não possa processar |
-| Emitir e ativar a apólice | Conferência de termos, produtor, valor, gatilho e datas; depósito exato e autorização | O contrato emitido deve representar a proposta e ter garantia suficiente |
-| Avaliar a estiagem | Integridade do pacote, tratamento auditável, contagem desde o início e reinício com chuva | O índice deve seguir a regra contratada e a série identificada |
-| Publicar e pagar | Oráculo autorizado, pagamento único, retomada da fila e recuperação de recibo | Uma falha de comunicação não deve gerar um segundo pagamento |
-| Cancelar ou resgatar | Momento permitido, papel autorizado e destino dos fundos | Conferir devolução à seguradora e bloquear operações indevidas |
-| Acompanhar o resultado | Indexação, reconciliação, notificações e atualização da tela | A interface deve refletir o estado confirmado na rede |
-| Reiniciar a instalação | Importação sem duplicatas e persistência Docker | Preservar dados e permitir continuidade do uso |
+| Cadastrar o talhão | A seguradora cadastra e o produtor encontra o talhão correto | `interface/telas/cadastro-integrado.test.jsx`, API e PostgreSQL |
+| Simular e solicitar | Datas de 2020–2024, gatilho, carteira vinculada e proposta por talhão | `interface/telas/`, `api/unitarios/` |
+| Emitir e garantir | Termos iguais aos da proposta, permissão e depósito exato | `api/integracao/`, `blockchain/unitarios/` |
+| Avaliar a chuva | Integridade dos arquivos, preenchimento registrado e contagem dos dias secos | `etl/`, `oraculo/unitarios/` |
+| Publicar e pagar | API, banco, oráculo e contrato em conjunto; pagamento único e retomada | `blockchain/unitarios/FluxoHistorico.test.js`, `oraculo/integracao/` |
+| Variar período e gatilho | Série A770 tratada com coberturas mais longas, pagamento ou resgate | `blockchain/unitarios/CenariosSafra.test.js` |
+| Cancelar e resgatar | Momento permitido, papel autorizado e destino da garantia | `blockchain/unitarios/Cancelamento.test.js` e demais casos contratuais |
+| Acompanhar e reiniciar | Eventos, atualização das telas, importação sem duplicatas e persistência | `api/integracao/indexador.test.js`, `interface/`, `infraestrutura/` |
 
-A execução registrada contabiliza 353 testes distintos aprovados. Essa quantidade
-e a cobertura descrevem os casos automatizados; a comprovação dos desfechos do
-seguro está nos cenários acima. Análise estática com Slither complementa as
-verificações dos contratos e não constitui auditoria de segurança.
+O cadastro integrado usa interface, API e PostgreSQL reais, com transporte HTTP
+adaptado ao teste. `FluxoHistorico` usa dados sintéticos identificados; os cenários
+de safra usam o pacote A770 tratado. Ambos executam contratos em EVM local, sem
+MetaMask. A comprovação pública do pagamento está nos recibos da Sepolia.
 
-## Preparar e executar
+## Casos com a série A770 em EVM local
 
-Requisitos: Node.js compatível com o projeto, dependências instaladas com `npm ci`,
-Docker em execução, Python e Slither disponível no PATH. Prepare o ambiente Python:
+Os quatro casos de `CenariosSafra.test.js` foram conferidos em 04/11/2026.
+Eles executam o avaliador do oráculo e um contrato local, sem API, interface ou
+MetaMask. A sequência máxima é calculada sobre todo o período da cobertura.
+
+| Caso | Cobertura | Gatilho | Maior sequência seca | Resultado |
+| --- | --- | ---: | ---: | --- |
+| S1 | 01–28/02/2022 | 10 | 10 | Publicação em 22/02; pagamento de 0,006 ETH locais |
+| S2 | 01–30/11/2022 | 15 | 23 | Publicação em 15/11; pagamento de 0,006 ETH locais |
+| S3 | 20/02–31/03/2024 | 10 | 9 | Sem pagamento; publicação final e resgate da garantia |
+| S4 | 20/02–31/03/2024 | 9 | 9 | Publicação em 04/03; pagamento de 0,006 ETH locais |
+
+S3 e S4 usam os mesmos dados e mudam apenas o gatilho. São parâmetros
+experimentais; esses resultados não validam uma tolerância agronômica da soja.
+
+## Executar a suíte
+
+Na raiz, após `npm ci`, com Docker em execução, Python e Slither disponíveis:
 
 ```powershell
 python -m venv etl/.venv
@@ -73,38 +54,31 @@ python -m pip install slither-analyzer
 npm test
 ```
 
-O cache do pytest fica desativado pela configuração e pelo runner. As saídas de
-cobertura e os temporários ficam em `gerados/`; uma execução separada confirmou os
-26 testes do ETL com pytest 9.2.0. Essa verificação está registrada no relatório
-de evidências de 03/11/2026.
+No Linux, use `etl/.venv/bin/python` para instalar as dependências do ETL. O runner
+seleciona esse executável automaticamente. A conta PostgreSQL precisa criar bancos
+descartáveis `agrosmart_teste_<UUID>`; o ensaio Docker usa projeto e volume próprios.
 
-No Linux, o executável Python do ambiente é `etl/.venv/bin/python`. O runner usa
-esse caminho automaticamente. O usuário PostgreSQL precisa poder criar bancos;
-a fixture inicia o servidor Docker e cria somente bancos descartáveis
-`agrosmart_teste_<UUID>`. O ensaio Docker usa projeto e volume próprios.
+`npm test` executa cobertura dos contratos, Slither, API, integração da API, oráculo,
+interface, build, infraestrutura e ETL. Não abre a MetaMask nem envia transações à
+Sepolia. Saídas e temporários ficam em `gerados/`, ignorado pelo Git.
 
-Para executar um grupo:
+Para uma verificação específica:
 
-```powershell
-npm run cobertura --workspace api
-npm run testar:integracao --workspace api
-npm run cobertura --workspace oraculo
-npm run cobertura --workspace interface
-npm run testar:docker
-```
+| Comando na raiz | Alcance |
+| --- | --- |
+| `npm run testar --workspace blockchain` | Todos os testes contratuais, incluindo os fluxos integrados e de safra |
+| `npm run testar:integracao --workspace api` | API, PostgreSQL, pacote INMET e indexador |
+| `npm run cobertura --workspace oraculo` | Regras, fila e publicador |
+| `npm run cobertura --workspace interface` | Telas e cadastro integrado |
+| `npm run testar:docker` | Inicialização e persistência no Docker |
 
-A suíte completa também compila os contratos, mede sua cobertura, executa o
-Slither, gera o build da interface e verifica o ETL. Não exige a chave privada
-do produtor nem movimenta ETH da Sepolia.
+## Ler as evidências
 
-## Alcance da execução
+Em `evidencias/validacao-2026-11-03/`, o README apresenta os resultados e o roteiro
+de repetição. `prints/` contém as capturas numeradas; `registros/` contém recibos,
+consultas e medições. O cadastro local e as apólices da VM são ensaios distintos.
 
-`npm test` executa as suítes, o build e a análise estática; não abre a MetaMask
-nem realiza os cenários públicos automaticamente. As integrações usam PostgreSQL
-e EVM local isolados; testes de tela podem usar respostas controladas de carteira
-e API. Essas fronteiras estão identificadas nas fixtures.
-
-Testes, fixtures e configurações ficam em `testes/`; saídas locais ficam em
-`gerados/`, ignorado pelo Git. Somente evidências selecionadas são versionadas.
-Uma captura de saldo não identifica, sozinha, a origem de um pagamento. Para
-cada operação na Sepolia, conferir também endereço, hash, recibo e eventos.
+Os 353 testes do relatório correspondem à execução consolidada de 03/11/2026.
+Os quatro casos de safra foram acrescentados depois e não são resultados da
+Sepolia nem uma nova medição da cobertura consolidada. A contagem de uma nova
+execução deve vir da respectiva saída, sem somar rodadas repetidas.

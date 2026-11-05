@@ -5,7 +5,7 @@ Entradas: o pacote INMET versionado no repositorio (api/recursos/inmet/A770) e o
 das consultas JSON-RPC feitas a rede Sepolia na validacao (testes/evidencias/...).
 Passos:
   1. conferir os SHA-256 dos arquivos do pacote contra o manifesto e recompor o resumo da serie;
-  2. recalcular a sequencia de dias secos S(d) pela Equacao 1 e o dia a publicar;
+  2. recalcular a sequencia de dias secos desde o inicio da cobertura e o dia a publicar;
   3. recompor o texto dos termos no formato publico (docs/termos-e-vinculo.md) e calcular o Keccak-256;
   4. comparar os resultados com os eventos ApoliceEmitida, IndicesPublicados e CondicaoAvaliada.
 Uso: python3 auditar_apolice.py <raiz-do-repositorio> <cenario-x-sepolia.json> [texto-dos-termos.txt]
@@ -13,11 +13,11 @@ O texto dos termos (passo 3) e exibido pela interface na apolice; o identificado
 um UUID, nao e gravado na cadeia nem consta dos registros publicos da validacao.
 """
 import csv, hashlib, json, sys
-from datetime import date, datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from pathlib import Path
-from Crypto.Hash import keccak
 
 def keccak256(texto: str) -> str:
+    from Crypto.Hash import keccak
     k = keccak.new(digest_bits=256); k.update(texto.encode("utf-8")); return "0x" + k.hexdigest()
 
 def sha256(b: bytes) -> str:
@@ -42,7 +42,7 @@ for ano in range(d0.year, d1.year + 1):
 hash_serie = sha256(json.dumps(arquivos, separators=(",", ":")).encode())
 print("1. arquivos do pacote conferem com o manifesto; resumo da serie:", hash_serie)
 
-# Passo 2: Equacao 1 sobre a serie diaria
+# Passo 2: contagem desde o inicio da cobertura sobre a serie diaria
 dias = {}
 for ano in range(d0.year, d1.year + 1):
     with open(pacote / f"{ano}-diario.csv", newline="", encoding="utf-8") as f:

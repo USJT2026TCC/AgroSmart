@@ -45,19 +45,6 @@ MetaMask da equipe.
 
 O botão **ⓘ** de cada tela mostra esse passo a passo.
 
-## Como funciona
-
-1. **Seguradora** cadastra os talhões do João. O produto (soja, gatilho e valor) já vem pronto.
-2. **Produtor** vincula a carteira MetaMask, escolhe talhão, período e gatilho e envia a proposta.
-3. **Seguradora** aprova: a MetaMask dela cria a apólice na Sepolia e deposita a garantia
-   (o valor da indenização fica guardado no contrato).
-4. **Oráculo** lê a série do INMET, confere os termos gravados no contrato e publica o
-   primeiro dia em que o gatilho foi atingido, ou o último dia da cobertura.
-5. **Contrato** paga a indenização ao produtor se o gatilho foi atingido; se não foi,
-   a seguradora resgata a garantia no fim da cobertura.
-
-A interface acompanha tudo pela API e mostra cada transação com link para o Etherscan.
-
 ## Regras do seguro
 
 | Regra           | Valor                                                                                                                |
@@ -89,7 +76,7 @@ do oráculo autorizado.
 | `etl/`                                        | Ferramenta Python que baixa e prepara os dados do INMET (só para reconstruí-los)       |
 | `api/recursos/inmet/A770/`                    | Série do INMET já preparada, importada no banco ao iniciar                             |
 | `configuracao/`                               | Limites compartilhados: período, estação, perfis, cultura e município                  |
-| `scripts/`                                    | Inicialização pelo Docker, preparo dos dados e o passo a passo para executar o sistema |
+| `scripts/`                                    | Inicialização pelo Docker e preparo dos dados |
 | `docker-compose.yml`, `docker-compose.vm.yml` | Serviços do Docker; o segundo acrescenta o HTTPS na VM                                 |
 | `docs/`                                       | Documentação de software, formato dos termos, execução e diagrama do fluxo             |
 
@@ -110,7 +97,7 @@ listadas no manifesto e preserva a consulta às apólices existentes.
 
 ## Testes
 
-A pasta `testes/` reúne as suítes automatizadas, o roteiro de demonstração na Sepolia
-e as evidências da versão avaliada. Execute `npm test` após preparar os requisitos
-descritos em `testes/README.md`. Resultados de teste local e evidências da Sepolia
-são identificados separadamente.
+`testes/` reúne as suítes, a conferência complementar e as evidências. Seu README
+informa o que cada grupo verifica e como executar. O relatório em
+`testes/evidencias/validacao-2026-11-03/` apresenta cadastro, pagamento, resgate e
+cancelamentos, com capturas em `prints/` e recibos/medições em `registros/`.
