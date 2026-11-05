@@ -12,7 +12,7 @@ registro de oráculos.
    arquivos do INMET do repositório.
 4. Conta os dias secos seguidos desde o início da cobertura.
 5. Publica no contrato o primeiro dia que atinge o gatilho, ou o último dia da
-   cobertura se ele não for atingido. Quem decide e paga é o contrato.
+   cobertura se ele não for atingido. Quem decide e libera a indenização é o contrato.
 6. Relata à API a confirmação, com gás e horários, ou a falha definitiva.
 
 A fila fica em `.execucao/oraculo/fila.json`. Ela preserva entradas pendentes,

@@ -247,10 +247,8 @@ test.describe("oraculo contra um no real", { timeout: 240_000 }, () => {
       assert.equal(recuperado.txHash, recibo.txHash);
       assert.equal(recuperado.recuperada, true);
       const bloco = (await provedor.getTransactionReceipt(recibo.txHash)).blockNumber;
-      assert.equal(
-        await provedor.getBalance(termos.produtor, bloco),
-        antes + termos.valorIndenizacao,
-      );
+      assert.equal(await provedor.getBalance(termos.produtor, bloco), antes);
+      assert.equal(await apolice.indenizacaoDisponivel(), termos.valorIndenizacao);
       assert.equal(await apolice.totalPeriodos(), 1n);
     } finally {
       p.encerrar();

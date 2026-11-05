@@ -20,11 +20,11 @@ describe("Apolice historica explicita", function () {
   it("paga hoje por evento historico dentro da cobertura, uma unica vez", async () => {
     const { apolice, oraculo, produtor, termos } = await cenario();
     expect(await apolice.modoHistorico()).to.equal(true);
-    await expect(apolice.connect(oraculo).publicarIndices(20240216, 10)).to.changeEtherBalance(
-      produtor,
-      termos.valorIndenizacao,
-    );
+    await apolice.connect(oraculo).publicarIndices(20240216, 10);
     expect(await apolice.situacao()).to.equal(2);
+    await expect(apolice.connect(produtor).sacarIndenizacao()).to.changeEtherBalance(produtor, termos.valorIndenizacao, {
+      includeFee: false,
+    });
     await expect(
       apolice.connect(oraculo).publicarIndices(20240217, 11),
     ).to.be.revertedWithCustomError(apolice, "SituacaoInvalida");

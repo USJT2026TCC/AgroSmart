@@ -1,12 +1,12 @@
 # AgroSmart
 
-Seguro agrícola contra estiagem que paga sozinho, por contrato inteligente.
+Seguro agrícola contra estiagem em que o contrato inteligente decide e libera a indenização sozinho.
 
 É uma demonstração acadêmica (TCC). Um produtor de soja contrata uma cobertura sobre
 um período passado; um serviço chamado **oráculo** lê a chuva registrada pelo INMET
 nesse período e informa ao contrato quantos dias seguidos ficaram secos. Se o número
-atingir o gatilho combinado, o contrato transfere a indenização ao produtor, sem
-vistoria e sem aprovação manual.
+atingir o gatilho combinado, o contrato libera a indenização ao produtor, sem
+vistoria e sem aprovação manual, e o produtor a saca com a própria carteira.
 
 - Série tratada do INMET A770 (São Simão/SP), de 01/01/2020 a 31/12/2024, com seis dias preenchidos e documentados no manifesto. Fontes oficiais intactas acompanham o pacote.
 - Contratos na **Sepolia**, a rede pública de testes do Ethereum; os valores são ETH de teste.
@@ -34,14 +34,14 @@ MetaMask da equipe.
 
 1. Abra o link e entre com `produtor` / `agrosmart`.
 2. Em **Minha carteira**, conecte a MetaMask e vincule a conta: é só uma assinatura,
-   sem custo. É nessa conta que a indenização será paga.
+   sem custo. É essa conta que saca a indenização.
 3. Em **Meus talhões e seguros**, escolha um talhão livre e vá para **Simular e contratar**.
 4. Escolha o período (entre 01/01/2020 e 31/12/2024) e o gatilho em dias secos seguidos,
    confira a simulação com a chuva real do INMET e envie a proposta.
 5. A equipe aprova a proposta: a apólice é criada na Sepolia e a garantia é depositada.
-6. O oráculo publica o resultado sozinho. Se o gatilho foi atingido, o contrato paga a
-   indenização na sua conta; o aviso aparece em **Avisos** e no detalhe da apólice,
-   com o link da transação no Etherscan.
+6. O oráculo publica o resultado sozinho. Se o gatilho foi atingido, o contrato libera a
+   indenização; o aviso aparece em **Avisos**, e o saque é assinado no detalhe da
+   apólice, com o link da transação no Etherscan.
 
 O botão **ⓘ** de cada tela mostra esse passo a passo.
 
@@ -87,13 +87,14 @@ oráculo e interface (porta 5173). A Sepolia e a MetaMask ficam fora do Docker.
 
 | Contrato             | Endereço na Sepolia                                                                                                                |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Fábrica de apólices  | [0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834](https://sepolia.etherscan.io/address/0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834#code) |
+| Fábrica de apólices  | [0x88c6D10589b66A597a3958Cc3Bc98585d86a97c6](https://sepolia.etherscan.io/address/0x88c6D10589b66A597a3958Cc3Bc98585d86a97c6#code) |
 | Registro de oráculos | [0xb9821B9aA456Ce8Ccc2B489c1C7381Ffff1f5Aa3](https://sepolia.etherscan.io/address/0xb9821B9aA456Ce8Ccc2B489c1C7381Ffff1f5Aa3#code) |
 
-A fábrica está verificada no Etherscan e corresponde à tag `sepolia-2026-11-03`;
-ela limita a cobertura a 01/01/2020–31/12/2024. O registro de oráculos foi mantido,
-com fontes verificadas na tag `sepolia-2026-10-28`. O indexador acompanha as fábricas
-listadas no manifesto e preserva a consulta às apólices existentes.
+A fábrica está verificada no Etherscan e corresponde à tag `sepolia-2026-11-05`;
+ela limita a cobertura a 01/01/2020–31/12/2024 e libera a indenização para saque
+do produtor. O registro de oráculos foi mantido, com fontes verificadas na tag
+`sepolia-2026-10-28`. O indexador acompanha as fábricas listadas no manifesto e
+preserva a consulta às apólices existentes.
 
 ## Testes
 

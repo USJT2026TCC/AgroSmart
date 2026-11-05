@@ -131,11 +131,13 @@ describe("Fluxo historico: API, banco, oraculo e EVM", function () {
       const entrada = await servico.prepararHistorico(endereco);
       expect(entrada.periodo).to.equal(20240208);
       expect(entrada.payload.indiceClimatico).to.equal(2);
-      const saldoAntes = await ethers.provider.getBalance(produtor.address);
       const publicado = await servico.publicarEntrada(entrada);
       expect(publicado.sucesso).to.equal(true);
-      expect(await ethers.provider.getBalance(produtor.address)).to.equal(
-        saldoAntes + termos.valorIndenizacao,
+      expect(await apolice.indenizacaoDisponivel()).to.equal(termos.valorIndenizacao);
+      await expect(apolice.connect(produtor).sacarIndenizacao()).to.changeEtherBalance(
+        produtor,
+        termos.valorIndenizacao,
+        { includeFee: false },
       );
       expect(await apolice.situacao()).to.equal(2);
       expect(await apolice.periodoAcionador()).to.equal(20240208);

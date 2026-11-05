@@ -365,24 +365,34 @@ describe("ApoliceHistorica", function () {
     it("paga integralmente quando o indice atinge exatamente o limiar", async function () {
       const { apolice, oraculo, produtor } = await cenarioApoliceAtiva();
 
-      await expect(publicar(apolice, oraculo, 20241201, 30)).to.changeEtherBalance(
-        produtor,
-        VALOR_INDENIZACAO,
-      );
+      await expect(publicar(apolice, oraculo, 20241201, 30)).to.changeEtherBalance(produtor, 0);
 
       expect(await apolice.situacao()).to.equal(Situacao.LIQUIDADA);
+      expect(await apolice.indenizacaoDisponivel()).to.equal(VALOR_INDENIZACAO);
+      expect(await apolice.valorPago()).to.equal(0);
+
+      await expect(apolice.connect(produtor).sacarIndenizacao()).to.changeEtherBalance(produtor, VALOR_INDENIZACAO, {
+        includeFee: false,
+      });
+
+      expect(await apolice.indenizacaoDisponivel()).to.equal(0);
       expect(await apolice.valorPago()).to.equal(VALOR_INDENIZACAO);
       expect(await apolice.periodoAcionador()).to.equal(20241201);
       expect(await apolice.garantiaRetida()).to.equal(0);
     });
 
-    it("emite CondicaoAvaliada e PagamentoExecutado na mesma transacao", async function () {
+    it("libera na publicacao e so emite PagamentoExecutado no saque", async function () {
       const { apolice, oraculo, produtor } = await cenarioApoliceAtiva();
 
       await expect(publicar(apolice, oraculo, 20241201, 45))
         .to.emit(apolice, "CondicaoAvaliada")
         .withArgs(20241201, true)
-        .and.to.emit(apolice, "PagamentoExecutado")
+        .and.to.emit(apolice, "IndenizacaoLiberada")
+        .withArgs(produtor.address, 20241201, VALOR_INDENIZACAO)
+        .and.to.not.emit(apolice, "PagamentoExecutado");
+
+      await expect(apolice.connect(produtor).sacarIndenizacao())
+        .to.emit(apolice, "PagamentoExecutado")
         .withArgs(produtor.address, 20241201, VALOR_INDENIZACAO);
     });
 
@@ -395,7 +405,7 @@ describe("ApoliceHistorica", function () {
         .to.be.revertedWithCustomError(apolice, "SituacaoInvalida")
         .withArgs(Situacao.LIQUIDADA, Situacao.ATIVA);
 
-      expect(await apolice.valorPago()).to.equal(VALOR_INDENIZACAO);
+      expect(await apolice.indenizacaoDisponivel()).to.equal(VALOR_INDENIZACAO);
     });
 
     it("segue acumulando periodos sem acionar ate a condicao ser atendida", async function () {
@@ -407,10 +417,10 @@ describe("ApoliceHistorica", function () {
 
       expect(await apolice.situacao()).to.equal(Situacao.ATIVA);
 
-      await expect(publicar(apolice, oraculo, 20241204, 31)).to.changeEtherBalance(
-        produtor,
-        VALOR_INDENIZACAO,
-      );
+      await publicar(apolice, oraculo, 20241204, 31);
+      await expect(apolice.connect(produtor).sacarIndenizacao()).to.changeEtherBalance(produtor, VALOR_INDENIZACAO, {
+        includeFee: false,
+      });
 
       expect(await apolice.totalPeriodos()).to.equal(4);
       expect(await apolice.periodoAcionador()).to.equal(20241204);
@@ -421,10 +431,10 @@ describe("ApoliceHistorica", function () {
     for (const indice of [30, 31, 60, 366]) {
       it(`paga 100% uma unica vez com indice ${indice}`, async function () {
         const { apolice, oraculo, produtor } = await cenarioApoliceAtiva();
-        await expect(publicar(apolice, oraculo, 20241201, indice)).to.changeEtherBalance(
-          produtor,
-          VALOR_INDENIZACAO,
-        );
+        await publicar(apolice, oraculo, 20241201, indice);
+        await expect(apolice.connect(produtor).sacarIndenizacao()).to.changeEtherBalance(produtor, VALOR_INDENIZACAO, {
+          includeFee: false,
+        });
         expect(await apolice.valorPago()).to.equal(VALOR_INDENIZACAO);
         expect(await apolice.garantiaRetida()).to.equal(0);
         await expect(publicar(apolice, oraculo, 20241202, indice)).to.be.revertedWithCustomError(
@@ -514,10 +524,49 @@ describe("ApoliceHistorica", function () {
         .withArgs(Situacao.AGUARDANDO_GARANTIA, Situacao.ATIVA);
     });
 
+    it("a indenizacao ainda nao sacada nao pode ser resgatada pela seguradora", async function () {
+      const { apolice, oraculo, seguradora, produtor } = await cenarioApoliceAtiva();
+
+      await publicar(apolice, oraculo, 20241201, 30);
+
+      await expect(
+        apolice.connect(seguradora).resgatarGarantia(),
+      ).to.be.revertedWithCustomError(apolice, "SemSaldoParaResgatar");
+      expect(await apolice.garantiaRetida()).to.equal(0);
+
+      await expect(apolice.connect(produtor).sacarIndenizacao()).to.changeEtherBalance(
+        produtor,
+        VALOR_INDENIZACAO,
+        { includeFee: false },
+      );
+    });
+
+    it("so o produtor titular saca, e uma unica vez", async function () {
+      const { apolice, oraculo, seguradora, produtor } = await cenarioApoliceAtiva();
+
+      await expect(apolice.connect(produtor).sacarIndenizacao()).to.be.revertedWithCustomError(
+        apolice,
+        "SemIndenizacaoParaSacar",
+      );
+
+      await publicar(apolice, oraculo, 20241201, 30);
+
+      await expect(apolice.connect(seguradora).sacarIndenizacao()).to.be.revertedWithCustomError(
+        apolice,
+        "OrigemNaoAutorizada",
+      );
+      await apolice.connect(produtor).sacarIndenizacao();
+      await expect(apolice.connect(produtor).sacarIndenizacao()).to.be.revertedWithCustomError(
+        apolice,
+        "SemIndenizacaoParaSacar",
+      );
+    });
+
     describe("recuperacao de saldo forcado apos pagamento integral", function () {
       async function cenarioComSaldoForcado() {
         const cenario = await cenarioApoliceAtiva();
         await publicar(cenario.apolice, cenario.oraculo, 20241201, 30);
+        await cenario.apolice.connect(cenario.produtor).sacarIndenizacao();
         // Simula ETH forcado por terceiro, que nao passa por receive().
         await ethers.provider.send("hardhat_setBalance", [
           await cenario.apolice.getAddress(),

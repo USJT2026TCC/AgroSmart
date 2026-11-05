@@ -31,7 +31,16 @@ beforeEach(() => {
     totalPeriodos: async () => 0n,
     seguradora: async () => "0x0000000000000000000000000000000000000001",
     instanteHistorico: async () => 1707263999n,
+    indenizacaoDisponivel: async () => 0n,
   };
+});
+
+test("apolice anterior ao saque, sem a funcao, le indenizacao disponivel zero", async () => {
+  estado.contrato.indenizacaoDisponivel = async () => {
+    throw new Error("could not decode result data");
+  };
+  const a = await lerApolice("0x0000000000000000000000000000000000000002", {});
+  expect(a.indenizacaoDisponivel).toBe(0n);
 });
 test("le o relogio historico sem usar a data atual", async () => {
   const a = await lerApolice("0x0000000000000000000000000000000000000002", {});

@@ -1,18 +1,10 @@
 {
-  "versaoProtocolo": "clima-historico-v4",
+  "versaoProtocolo": "clima-historico-v5",
   "rede": "sepolia",
   "chainId": 11155111,
-  "implantadoEm": "2026-11-03T05:13:48.000Z",
+  "implantadoEm": "2026-11-05T22:29:49.493Z",
   "blocoInicial": 12009798,
-  "txImplantacao": "0xc6556617765b15c0b512b428a70badcb19ff27943848b3db50fed313bf0ecd75",
-  "gasImplantacao": "13064296",
-  "seguradora": "0x95eA48b7BF91446CF12C156aC2FDeA75Af03fD70",
-  "oraculoAutorizado": "0xeFCf4d0c3f22ac012896c2D9c6bA35e9fd7D691D",
-  "contratos": {
-    "OracleRegistry": "0xb9821B9aA456Ce8Ccc2B489c1C7381Ffff1f5Aa3",
-    "ApoliceFactory": "0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834"
-  },
-  "blocoImplantacaoFabrica": 12053136,
+  "blocoImplantacaoFabrica": 12072439,
   "limitesDados": {
     "inicio": "2020-01-01",
     "fim": "2024-12-31"
@@ -21,6 +13,18 @@
     {
       "endereco": "0xE9CE1a3AC2685ec7Eb54205E6E72eeE4bfaFB386",
       "blocoInicial": 12009798
+    },
+    {
+      "endereco": "0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834",
+      "blocoInicial": 12053136
     }
-  ]
+  ],
+  "txImplantacao": "0x6cd2d07c2f5a49b74d33597365d5fd335c83247db6eb7ee9ffb18e29379d9576",
+  "gasImplantacao": "13540518",
+  "seguradora": "0x95eA48b7BF91446CF12C156aC2FDeA75Af03fD70",
+  "oraculoAutorizado": "0xeFCf4d0c3f22ac012896c2D9c6bA35e9fd7D691D",
+  "contratos": {
+    "OracleRegistry": "0xb9821B9aA456Ce8Ccc2B489c1C7381Ffff1f5Aa3",
+    "ApoliceFactory": "0x88c6D10589b66A597a3958Cc3Bc98585d86a97c6"
+  }
 }

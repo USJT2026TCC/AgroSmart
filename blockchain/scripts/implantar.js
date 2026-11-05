@@ -6,6 +6,8 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { ethers, network } = require("hardhat");
 
+const VERSAO_PROTOCOLO = "clima-historico-v5";
+
 async function main() {
   const arquivo = path.resolve(__dirname, "../implantacoes/sepolia.json");
   const anterior = fs.existsSync(arquivo) ? JSON.parse(fs.readFileSync(arquivo, "utf8")) : null;
@@ -14,9 +16,13 @@ async function main() {
     fs.readFileSync(path.resolve(__dirname, "../../configuracao/historico.json"), "utf8"),
   );
   if (atualizarFabrica && !anterior) throw new Error("Não há implantação para atualizar.");
-  if (atualizarFabrica && anterior.limitesDados?.fim === limites.fim)
+  if (
+    atualizarFabrica &&
+    anterior.versaoProtocolo === VERSAO_PROTOCOLO &&
+    anterior.limitesDados?.fim === limites.fim
+  )
     throw new Error(
-      "A fábrica configurada já possui o recorte atual; confira o manifesto antes de publicar novamente.",
+      "A fábrica configurada já possui o protocolo e o recorte atuais; confira o manifesto antes de publicar novamente.",
     );
   if (anterior && process.env.NOVA_IMPLANTACAO !== "1" && !atualizarFabrica)
     throw new Error(
@@ -91,7 +97,7 @@ async function main() {
 
   // ---------------------------------------------------------------- registro em disco
   const implantacao = {
-    versaoProtocolo: "clima-historico-v4",
+    versaoProtocolo: VERSAO_PROTOCOLO,
     rede: network.name,
     chainId: Number((await ethers.provider.getNetwork()).chainId),
     implantadoEm: new Date().toISOString(),
@@ -103,7 +109,7 @@ async function main() {
           ...(anterior.fabricasAnteriores ?? []),
           {
             endereco: anterior.contratos.ApoliceFactory,
-            blocoInicial: anterior.blocoInicial,
+            blocoInicial: anterior.blocoImplantacaoFabrica ?? anterior.blocoInicial,
           },
         ]
       : [],

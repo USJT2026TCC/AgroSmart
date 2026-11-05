@@ -12,7 +12,7 @@ abra http://localhost:3001/api/saude.
 - Importa a série do INMET no banco e avalia períodos para a cotação.
 - Registra propostas e prepara os termos que a seguradora assina na MetaMask.
 - Confere na blockchain se a apólice criada tem exatamente os termos da proposta.
-- Acompanha os eventos dos contratos (garantia, publicações, pagamentos) e gera os
+- Acompanha os eventos dos contratos (garantia, publicações, liberações e saques) e gera os
   avisos que aparecem na tela "Avisos" de cada perfil. O cancelamento ocorre
   antes da primeira publicação histórica; a garantia é devolvida à seguradora.
 - Entrega ao oráculo as apólices ativas vinculadas a propostas históricas emitidas

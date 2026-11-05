@@ -49,7 +49,7 @@ export async function verificarRede(
   m = manifesto(),
 ) {
   if (!env.RPC_SEPOLIA) throw new Error("Configure RPC_SEPOLIA em blockchain/.env.");
-  if (m.versaoProtocolo !== "clima-historico-v4" || m.rede !== "sepolia" || m.chainId !== 11155111)
+  if (m.versaoProtocolo !== "clima-historico-v5" || m.rede !== "sepolia" || m.chainId !== 11155111)
     throw new Error("Manifesto incompativel com o protocolo historico atual na Sepolia.");
   const requisicao = new FetchRequest(env.RPC_SEPOLIA);
   requisicao.timeout = 15000;

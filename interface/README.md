@@ -53,8 +53,8 @@ flowchart LR
 A interface consulta a API em `/api` e lê termos, índices e eventos na Sepolia.
 O oráculo executa em serviço separado; a interface não publica índices climáticos.
 O produtor vincula a carteira assinando uma mensagem sem custo de gás. A seguradora
-assina duas transações: emissão e depósito da garantia. O pagamento automático
-não exige outra assinatura do produtor.
+assina duas transações: emissão e depósito da garantia. Atingido o gatilho, o contrato
+libera a indenização sozinho, e o produtor assina o saque no detalhe da apólice.
 
 As datas de cobertura são históricas e exibidas em UTC. Cancelar exige que a
 reprodução ainda não tenha começado; o resgate sem acionamento exige a publicação

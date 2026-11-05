@@ -61,19 +61,29 @@ function notificacoesDoEvento(nome, args, apolice) {
         },
       ];
 
+    case "IndenizacaoLiberada":
+      return [
+        {
+          para: { carteira: args.produtor },
+          tipo: "indenizacao_liberada",
+          titulo: "Indenizacao disponivel para saque",
+          mensagem: `${ethers.formatEther(args.valor)} ETH foram liberados no periodo ${args.periodo}. Assine o saque na pagina da apolice.`,
+        },
+        {
+          para: { perfil: "seguradora" },
+          tipo: "apolice_liquidada",
+          titulo: "Apolice liquidada",
+          mensagem: `Uma apolice foi acionada e liberou ${ethers.formatEther(args.valor)} ETH no periodo ${args.periodo}.`,
+        },
+      ];
+
     case "PagamentoExecutado":
       return [
         {
           para: { carteira: args.produtor },
           tipo: "indenizacao_paga",
           titulo: "Indenizacao paga",
-          mensagem: `${ethers.formatEther(args.valor)} ETH foram transferidos para a carteira beneficiária da apólice: ${args.produtor}.`,
-        },
-        {
-          para: { perfil: "seguradora" },
-          tipo: "apolice_liquidada",
-          titulo: "Apolice liquidada",
-          mensagem: `Uma apolice foi acionada e pagou ${ethers.formatEther(args.valor)} ETH no periodo ${args.periodo}.`,
+          mensagem: `${ethers.formatEther(args.valor)} ETH foram transferidos para a carteira beneficiária.`,
         },
       ];
 

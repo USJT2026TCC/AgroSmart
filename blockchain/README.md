@@ -6,7 +6,7 @@ Contratos em Solidity, publicados na Sepolia, e o script que os publica.
 
 | Arquivo | Função |
 |---|---|
-| `contracts/ApoliceHistorica.sol` | Uma apólice: guarda os termos e a garantia, recebe a contagem do oráculo e paga o produtor se o gatilho for atingido. Também permite cancelar antes da primeira publicação e resgatar a garantia no fim da cobertura |
+| `contracts/ApoliceHistorica.sol` | Uma apólice: guarda os termos e a garantia, recebe a contagem do oráculo e libera a indenização se o gatilho for atingido; o produtor a saca com `sacarIndenizacao()`. Também permite cancelar antes da primeira publicação e resgatar a garantia no fim da cobertura |
 | `contracts/ApoliceFactory.sol` | Cria as apólices; só a seguradora pode emitir |
 | `contracts/OracleRegistry.sol` | Lista de oráculos autorizados a publicar; a seguradora autoriza e revoga |
 
@@ -20,13 +20,13 @@ publicações só de oráculo autorizado, em ordem de data.
 
 | Contrato | Endereço |
 |---|---|
-| Fábrica de apólices | `0x2a9b6995cf920A70B96f4cfC3Ec951BDfeC0f834` |
+| Fábrica de apólices | `0x88c6D10589b66A597a3958Cc3Bc98585d86a97c6` |
 | Registro de oráculos | `0xb9821B9aA456Ce8Ccc2B489c1C7381Ffff1f5Aa3` |
 | Seguradora | `0x95eA48b7BF91446CF12C156aC2FDeA75Af03fD70` |
 | Oráculo autorizado | `0xeFCf4d0c3f22ac012896c2D9c6bA35e9fd7D691D` |
 
-A fábrica foi publicada e verificada em 03/11/2026; as fontes correspondem à tag
-`sepolia-2026-11-03`. O registro foi mantido e suas fontes verificadas estão na tag
+A fábrica foi publicada e verificada em 05/11/2026; as fontes correspondem à tag
+`sepolia-2026-11-05`. O registro foi mantido e suas fontes verificadas estão na tag
 `sepolia-2026-10-28`. Compilação: Solidity 0.8.24, otimizador com 200 execuções.
 
 O manifesto também lista as fábricas anteriores. O indexador acompanha seus eventos
@@ -42,8 +42,8 @@ $env:NOVA_IMPLANTACAO=1; npm run implantar:sepolia --workspace blockchain
 
 `scripts/implantar.js` publica o registro, autoriza o oráculo, publica a fábrica e
 reescreve `implantacoes/sepolia.json`. Usa ETH de teste da conta da seguradora.
-Para atualizar somente a fábrica, mantendo o registro e o acompanhamento das
-apólices existentes:
+Para atualizar somente a fábrica, quando muda o recorte dos dados ou o contrato da
+apólice, mantendo o registro e o acompanhamento das apólices existentes:
 
 ```powershell
 $env:ATUALIZAR_FABRICA=1
@@ -67,14 +67,16 @@ npx hardhat verify --network sepolia <fabrica> <registro> <seguradora>
 
 A API prepara os termos e confere a apólice emitida pelo evento `ApoliceEmitida`.
 O oráculo consulta `verTermos()` e publica com `publicarIndices()`. O indexador
-registra garantia, publicação, pagamento, cancelamento e resgate a partir dos eventos.
+registra garantia, publicação, liberação e saque da indenização, cancelamento e resgate a partir dos eventos.
 A autorização ou revogação de oráculos pertence ao administrador do registro.
 
 O contrato valida autorização, datas, ordem das publicações e pagamento único.
 Ele não consulta o INMET nem recalcula a chuva; essa conferência pertence ao oráculo.
 O resgate sem indenização depende da publicação do último dia da cobertura.
-O beneficiário precisa aceitar ETH: se o recebimento for recusado, a publicação
-inteira reverte e a garantia pode permanecer retida. Não há saque alternativo.
+A publicação só reserva a indenização; o valor sai do contrato quando o produtor titular
+chama `sacarIndenizacao()`. Se a carteira recusar ETH, só o saque reverte: a decisão, o
+relógio da cobertura e a reserva permanecem, e o produtor pode tentar de novo. A
+seguradora não resgata a indenização reservada.
 
 ## Numeração dos requisitos nos comentários
 
@@ -89,7 +91,6 @@ editado porque precisa continuar igual ao verificado no Etherscan.
 | RF10 | `ApoliceHistorica`: cancelamento | RF14 |
 | RF18 | `OracleRegistry` e `ApoliceHistorica`: lista de oráculos e recusa de outros endereços | RF11 |
 | RF20 | `ApoliceHistorica`: período já publicado | RF12 |
-| RF23, RF24 | `ApoliceHistorica`: avaliação e pagamento na mesma transação | RF13 |
 | RNF09 | `ApoliceHistorica`: proteção contra reentrância | RNF04 |
 | RNF10 | `OracleRegistry`: controle de acesso | RNF02 |
 | RNF18 | `ApoliceHistorica`: `publicacao()` | RF16 |

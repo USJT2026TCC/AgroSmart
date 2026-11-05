@@ -111,40 +111,43 @@ describe("Seguranca da apolice", function () {
       return { apolice, recusa, oraculo, seguradora };
     }
 
-    it("reverte a transacao inteira quando a transferencia falha", async function () {
+    it("a recusa nao impede a publicacao nem a liquidacao", async function () {
       const { apolice, oraculo } = await cenarioProdutorQueRecusa();
 
-      await expect(publicar(apolice, oraculo, 20241201, 40)).to.be.revertedWithCustomError(
+      await publicar(apolice, oraculo, 20241201, 40);
+
+      expect(await apolice.periodoPublicado(20241201)).to.equal(true);
+      expect(await apolice.situacao()).to.equal(Situacao.LIQUIDADA);
+      expect(await apolice.indenizacaoDisponivel()).to.equal(VALOR_INDENIZACAO);
+    });
+
+    it("o saque recusado e desfeito e o valor continua reservado ao produtor", async function () {
+      const { apolice, recusa, oraculo } = await cenarioProdutorQueRecusa();
+
+      await publicar(apolice, oraculo, 20241201, 40);
+
+      await expect(recusa.sacar(await apolice.getAddress())).to.be.revertedWithCustomError(
         apolice,
         "FalhaNaTransferencia",
       );
-    });
 
-    it("nao deixa estado inconsistente apos a falha na transferencia", async function () {
-      const { apolice, oraculo } = await cenarioProdutorQueRecusa();
-
-      await expect(publicar(apolice, oraculo, 20241201, 40)).to.be.reverted;
-
-      // Nada foi gravado: o periodo continua disponivel, a apolice segue ativa e
-      // a garantia permanece integra. Nao houve pagamento parcial.
-      expect(await apolice.periodoPublicado(20241201)).to.equal(false);
-      expect(await apolice.totalPeriodos()).to.equal(0);
-      expect(await apolice.situacao()).to.equal(Situacao.ATIVA);
       expect(await apolice.valorPago()).to.equal(0);
-      expect(await apolice.garantiaRetida()).to.equal(VALOR_INDENIZACAO);
+      expect(await apolice.indenizacaoDisponivel()).to.equal(VALOR_INDENIZACAO);
+      expect(await apolice.situacao()).to.equal(Situacao.LIQUIDADA);
     });
 
-    it("documenta a limitacao: recusa no ultimo dia impede avancar o relogio e resgatar", async function () {
+    it("a recusa no ultimo dia nao trava o relogio nem a decisao", async function () {
       const { apolice, oraculo, seguradora } = await cenarioProdutorQueRecusa();
-      await expect(publicar(apolice, oraculo, 20241231, 40)).to.be.revertedWithCustomError(
-        apolice,
-        "FalhaNaTransferencia",
-      );
-      await expect(apolice.connect(seguradora).resgatarGarantia()).to.be.revertedWithCustomError(
-        apolice,
-        "VigenciaEmCurso",
-      );
-      expect(await apolice.garantiaRetida()).to.equal(VALOR_INDENIZACAO);
+
+      await publicar(apolice, oraculo, 20241231, 40);
+
+      const termos = await apolice.verTermos();
+      expect(await apolice.instanteHistorico()).to.be.greaterThan(termos.vigenciaFim);
+      expect(await apolice.situacao()).to.equal(Situacao.LIQUIDADA);
+      // O valor e do produtor: a seguradora nao o recupera por resgate.
+      await expect(
+        apolice.connect(seguradora).resgatarGarantia(),
+      ).to.be.revertedWithCustomError(apolice, "SemSaldoParaResgatar");
     });
 
     it("publicacoes que nao acionam continuam funcionando com o mesmo produtor", async function () {

@@ -75,8 +75,11 @@ contract ApoliceHistorica {
     /// @notice Estado atual do ciclo de vida.
     Situacao public situacao;
 
-    /// @notice Valor efetivamente pago ao produtor, em wei.
+    /// @notice Valor efetivamente sacado pelo produtor, em wei.
     uint256 public valorPago;
+
+    /// @notice Indenizacao liberada pelo acionamento e ainda nao sacada, em wei.
+    uint256 public indenizacaoDisponivel;
 
     /// @notice Periodo que acionou o pagamento. Valido apenas quando LIQUIDADA.
     uint256 public periodoAcionador;
@@ -115,6 +118,8 @@ contract ApoliceHistorica {
 
     event CondicaoAvaliada(uint256 indexed periodo, bool atendida);
 
+    event IndenizacaoLiberada(address indexed produtor, uint256 indexed periodo, uint256 valor);
+
     event PagamentoExecutado(address indexed produtor, uint256 indexed periodo, uint256 valor);
 
     event GarantiaResgatada(address indexed seguradora, uint256 valor);
@@ -137,6 +142,7 @@ contract ApoliceHistorica {
     error SemSaldoParaResgatar();
     error DepositoDireto();
     error VigenciaIniciada(uint64 agora, uint64 inicio);
+    error SemIndenizacaoParaSacar();
 
     // ---------------------------------------------------------------------
     // Modificadores
@@ -254,6 +260,7 @@ contract ApoliceHistorica {
      *    historica sem acionamento. Ate esse fechamento a garantia permanece retida.
      *
      *  - situacao LIQUIDADA: permite recuperar eventual saldo forcado por terceiros.
+     *    A indenizacao liberada e ainda nao sacada pertence ao produtor e nao entra na conta.
      *
      * A apolice liquidada continua LIQUIDADA depois do resgate: trocar para
      * ENCERRADA apagaria, da leitura do estado, o fato de ter havido pagamento.
@@ -267,7 +274,7 @@ contract ApoliceHistorica {
             revert SituacaoInvalida(situacao, Situacao.ATIVA);
         }
 
-        uint256 saldo = address(this).balance;
+        uint256 saldo = address(this).balance - indenizacaoDisponivel;
 
         // O Slither alerta que o saldo de um contrato pode ser inflado a forca
         // (por selfdestruct de outro contrato), o que quebraria comparacoes de
@@ -340,7 +347,9 @@ contract ApoliceHistorica {
      * @notice Ponto unico de entrada de dados externos na cadeia.
      *
      * Publica o indice climatico do periodo, avalia a condicao contratada e, se
-     * atendida, transfere a indenizacao — tudo na mesma transacao (RF23, RF24).
+     * atendida, libera a indenizacao para saque, tudo na mesma transacao. Nenhuma
+     * carteira externa e chamada aqui: uma carteira que recuse ETH nao consegue
+     * desfazer a publicacao nem travar o relogio da cobertura.
      *
      * @param periodo Identificador do periodo de referencia (ex.: 20240915 = 15/09/2024).
      * @param indiceClimatico Dias secos consecutivos calculados pelo oráculo.
@@ -403,14 +412,9 @@ contract ApoliceHistorica {
     }
 
     /**
-     * @dev Avalia a condicao e, se atendida, liquida. Chamada so pela publicacao,
-     *      com os efeitos ja gravados, mantendo a ordem verificar-efeitos-interacao.
+     * @dev Avalia a condicao e, se atendida, liquida e reserva a indenizacao ao
+     *      produtor. O dinheiro so sai do contrato em `sacarIndenizacao`.
      */
-    // O destino vem dos termos fixados no construtor; nenhuma funcao permite
-    // altera-lo e o oraculo so informa periodo e indice. A transferencia a esse
-    // beneficiario e a finalidade do contrato. Testes conferem valor, destino,
-    // atomicidade e impossibilidade de repetir o pagamento.
-    // slither-disable-next-line arbitrary-send-eth
     function _liquidarSeAtendida(uint256 periodo, uint32 indiceClimatico) private {
         // Gatilho experimental: abaixo dele nada e devido; nele ou acima, o valor integral.
         bool atendida = indiceClimatico >= termos.limiarClimatico;
@@ -421,26 +425,35 @@ contract ApoliceHistorica {
 
         uint256 valor = termos.valorIndenizacao;
 
-        // Situacao muda ANTES da transferencia. Esta linha e a protecao efetiva
-        // contra reentrancia: uma reentrada cairia no modificador naSituacao e
-        // seria revertida, porque a apolice ja nao esta ATIVA.
         situacao = Situacao.LIQUIDADA;
-        valorPago = valor;
         periodoAcionador = periodo;
+        indenizacaoDisponivel = valor;
 
-        // O evento sai ANTES da transferencia. Pode parecer que anuncia um
-        // pagamento que ainda nao aconteceu, mas a atomicidade garante o
-        // contrario: se a transferencia falhar, a transacao inteira reverte e o
-        // evento some junto. Emitir antes fecha a ordem verificar-efeitos-
-        // interacao por completo, porque evento tambem e efeito (Slither:
-        // reentrancy-events).
-        emit PagamentoExecutado(termos.produtor, periodo, valor);
+        emit IndenizacaoLiberada(termos.produtor, periodo, valor);
+    }
 
-        // ---------- Interacao ----------
+    /**
+     * @notice O produtor titular saca a indenizacao liberada pelo acionamento.
+     *
+     * @dev Segue verificar, atualizar estado e so entao interagir. Se a carteira
+     *      recusar o valor, so este saque e desfeito: a decisao ja registrada e a
+     *      apolice nao mudam, e o produtor pode tentar de novo.
+     */
+    function sacarIndenizacao() external naoReentrante {
+        if (msg.sender != termos.produtor) revert OrigemNaoAutorizada(msg.sender);
+
+        uint256 valor = indenizacaoDisponivel;
+        if (valor == 0) revert SemIndenizacaoParaSacar();
+
+        indenizacaoDisponivel = 0;
+        valorPago = valor;
+
+        // Evento antes da transferencia: se ela falhar, a reversao leva o evento junto.
+        emit PagamentoExecutado(termos.produtor, periodoAcionador, valor);
+
         // `call` e nao `transfer`: `transfer` repassa so 2300 de gas, e falha com
-        // produtor que use carteira de contrato, como uma multisig. A protecao
-        // contra reentrancia nao depende do limite de gas, e sim da ordem acima
-        // e da guarda `naoReentrante` (Slither: low-level-calls).
+        // produtor que use carteira de contrato, como uma multisig (Slither:
+        // low-level-calls).
         // slither-disable-next-line low-level-calls
         (bool ok, ) = termos.produtor.call{value: valor}("");
         if (!ok) revert FalhaNaTransferencia(termos.produtor, valor);
@@ -471,7 +484,7 @@ contract ApoliceHistorica {
 
     /// @notice Saldo de garantia ainda retido pelo contrato, em wei.
     function garantiaRetida() external view returns (uint256) {
-        return address(this).balance;
+        return address(this).balance - indenizacaoDisponivel;
     }
 
     /**

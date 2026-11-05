@@ -109,6 +109,7 @@ export async function lerApolice(endereco, provedor) {
     total,
     seguradora,
     instanteHistorico,
+    indenizacaoDisponivel,
   ] = await Promise.all([
     contrato.verTermos(),
     contrato.situacao(),
@@ -118,6 +119,8 @@ export async function lerApolice(endereco, provedor) {
     contrato.totalPeriodos(),
     contrato.seguradora(),
     contrato.instanteHistorico(),
+    // Apolices emitidas antes do saque pelo beneficiario nao tem esta funcao.
+    contrato.indenizacaoDisponivel().catch(() => 0n),
   ]);
 
   return {
@@ -127,6 +130,7 @@ export async function lerApolice(endereco, provedor) {
     termos: normalizarTermos(termos),
     situacao: Number(situacao),
     valorPago,
+    indenizacaoDisponivel,
     periodoAcionador: Number(periodoAcionador),
     garantiaRetida,
     totalPeriodos: Number(total),
@@ -172,6 +176,7 @@ export async function lerLinhaDoTempo(endereco, provedor) {
     "GarantiaDepositada",
     "IndicesPublicados",
     "CondicaoAvaliada",
+    "IndenizacaoLiberada",
     "PagamentoExecutado",
     "GarantiaResgatada",
     "ApoliceCancelada",

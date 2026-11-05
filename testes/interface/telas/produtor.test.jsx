@@ -62,6 +62,32 @@ describe("minhas apolices", () => {
     );
   });
 
+  test("apolice liquidada sem saque mostra a indenizacao pendente", async () => {
+    await abrir("/produtor", {
+      perfil: "produtor",
+      rotas: {
+        "GET /propostas": { propostas: [] },
+        "GET /apolices": {
+          apolices: [
+            {
+              endereco: APOLICE,
+              talhao: "talhao-01",
+              cultura: "soja",
+              situacao: 2,
+              valorIndenizacaoWei: "10000000000000000",
+              valorPagoWei: "0",
+              emitidaEm: "2026-10-07T00:00:00Z",
+              produtor: { carteira: CONTA_DO_PRODUTOR },
+            },
+          ],
+        },
+      },
+    });
+
+    expect(await achar(/saque pendente/)).toBeTruthy();
+    expect(screen.queryByText(/Recebeu/)).toBeNull();
+  });
+
   test("sem carteira vinculada, avisa e aponta a tela de vinculo", async () => {
     await abrir("/produtor", {
       perfil: "produtor",

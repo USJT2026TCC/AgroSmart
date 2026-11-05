@@ -23,6 +23,7 @@ export const ABI_APOLICE = [
   "event GarantiaDepositada(address indexed seguradora, uint256 valor)",
   "event IndicesPublicados(uint256 indexed periodo, address indexed oraculo, uint32 indiceClimatico)",
   "event CondicaoAvaliada(uint256 indexed periodo, bool atendida)",
+  "event IndenizacaoLiberada(address indexed produtor, uint256 indexed periodo, uint256 valor)",
   "event PagamentoExecutado(address indexed produtor, uint256 indexed periodo, uint256 valor)",
   "event GarantiaResgatada(address indexed seguradora, uint256 valor)",
   "event ApoliceCancelada(address indexed solicitante, uint256 garantiaDevolvida)",

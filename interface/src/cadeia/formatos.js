@@ -69,7 +69,7 @@ export function explicacaoSituacao(codigo) {
     {
       0: "Aguardando a seguradora depositar a garantia.",
       1: "Cobertura ativa. O oraculo pode publicar indices.",
-      2: "Indenizacao paga. A apolice cumpriu seu proposito.",
+      2: "Gatilho atingido. A indenizacao foi liberada ao produtor.",
       3: "Vigencia encerrada sem acionamento. Garantia devolvida.",
       4: "Cancelada antes da primeira publicação histórica. Não há cobertura. Se houve depósito, a garantia foi devolvida à seguradora.",
     }[Number(codigo)] ?? ""

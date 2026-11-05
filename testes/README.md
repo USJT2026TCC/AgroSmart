@@ -85,12 +85,12 @@ projeto e volume próprios; a suíte não publica transações na Sepolia.
 
 ## Verificação de 05/11/2026
 
-A suíte completa aprovou 357 testes: 93 de contratos e fluxos, 2 de configuração
-da implantação, 75 da API, 12 de integração da API, 55 do oráculo, 76 da interface,
-18 de infraestrutura e 26 do ETL. O build da interface concluiu e o Slither não
-reportou achados na configuração utilizada. Após ampliar os fluxos de cadastro
-até a proposta e de pagamento até o relato à API, ambos foram reexecutados e
-aprovados. Não foram feitas novas transações na Sepolia nesta revisão.
+A suíte completa aprovou 362 testes, já com o saque da indenização pelo
+beneficiário: 95 de contratos e fluxos, 2 de configuração da implantação, 75 da
+API, 12 de integração da API, 55 do oráculo, 79 da interface, 18 de infraestrutura
+e 26 do ETL. O build da interface concluiu e o Slither não reportou achados na
+configuração utilizada. A suíte não envia transações; a fábrica com o saque foi
+publicada e verificada na Sepolia em 05/11/2026, à parte, pelo script de implantação.
 
 Esses resultados verificam os cenários exercitados; não constituem auditoria de
 segurança nem garantia de ausência de defeitos.

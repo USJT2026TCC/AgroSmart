@@ -220,10 +220,14 @@ export default function MinhasApolices() {
                       </td>
                       <td data-rotulo="Situação">
                         <SeloSituacao situacao={a.situacao} />
-                        {a.situacao === 2 ? (
+                        {a.situacao === 2 && BigInt(a.valorPagoWei ?? "0") > 0n ? (
                           <div className="silencioso">
                             Recebeu {emEth(a.valorPagoWei)}
                             {a.periodoAcionador ? ` em ${periodoEmData(a.periodoAcionador)}` : ""}
+                          </div>
+                        ) : a.situacao === 2 ? (
+                          <div className="silencioso">
+                            Indenização liberada; saque pendente em Ver detalhes
                           </div>
                         ) : null}
                       </td>

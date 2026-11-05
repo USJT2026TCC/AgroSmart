@@ -112,10 +112,10 @@ describe("ApoliceFactory", function () {
     );
     await apolice.connect(seguradora).depositarGarantia({ value: VALOR_INDENIZACAO });
 
-    await expect(publicar(apolice, oraculo, 20241201, 35)).to.changeEtherBalance(
-      produtor,
-      VALOR_INDENIZACAO,
-    );
+    await publicar(apolice, oraculo, 20241201, 35);
+    await expect(apolice.connect(produtor).sacarIndenizacao()).to.changeEtherBalance(produtor, VALOR_INDENIZACAO, {
+      includeFee: false,
+    });
 
     expect(await apolice.situacao()).to.equal(Situacao.LIQUIDADA);
   });

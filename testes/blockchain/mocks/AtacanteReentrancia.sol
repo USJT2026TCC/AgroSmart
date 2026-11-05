@@ -10,7 +10,7 @@ import {ApoliceHistorica} from "../../../blockchain/contracts/ApoliceHistorica.s
  * Encena o pior cenario possivel: o atacante e, ao mesmo tempo, o produtor
  * beneficiario da apolice e um endereco autorizado no OracleRegistry. Assim, no
  * instante em que recebe a indenizacao, ele ainda detem permissao para chamar
- * `publicarIndices` de novo e tentar sacar uma segunda vez.
+ * `sacarIndenizacao` de novo e tentar receber uma segunda vez.
  *
  * Se a apolice estiver correta, essa segunda chamada e revertida pela guarda
  * `naoReentrante`, e o contrato registra abaixo o motivo da falha para que o teste
@@ -28,21 +28,17 @@ contract AtacanteReentrancia {
     /// @notice Dados de erro devolvidos pela apolice na tentativa de reentrada.
     bytes public ultimoErro;
 
-    /// @dev Periodo usado na tentativa de reentrada.
-    uint256 private _periodoDeAtaque;
-
     function configurar(address apolice_) external {
         apolice = ApoliceHistorica(payable(apolice_));
     }
 
     /**
-     * @notice Dispara o ataque: publica um indice que aciona o pagamento.
+     * @notice Publica um indice que libera a indenizacao e dispara o saque.
      * @dev Exige que este contrato esteja autorizado no OracleRegistry.
      */
     function atacar(uint256 periodo, uint32 indiceClimatico) external {
-        _periodoDeAtaque = periodo + 1;
-
         apolice.publicarIndices(periodo, indiceClimatico);
+        apolice.sacarIndenizacao();
     }
 
     /**
@@ -53,7 +49,7 @@ contract AtacanteReentrancia {
     receive() external payable {
         vezesRecebido += 1;
 
-        try apolice.publicarIndices(_periodoDeAtaque, type(uint32).max) {
+        try apolice.sacarIndenizacao() {
             reentradaFalhou = false;
         } catch (bytes memory erro) {
             reentradaFalhou = true;

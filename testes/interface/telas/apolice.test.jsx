@@ -40,6 +40,7 @@ vi.mock("../../../interface/src/cadeia/contratos.js", () => ({
       cancelar: tx("cancelar"),
       depositarGarantia: tx("depositarGarantia"),
       resgatarGarantia: tx("resgatarGarantia"),
+      sacarIndenizacao: tx("sacarIndenizacao"),
     };
   }),
 }));
@@ -222,6 +223,30 @@ describe("detalhe da apolice", () => {
     expect(await achar(/Garantia depositada/)).toBeTruthy();
   });
 
+  test("produtor saca a indenizacao liberada", async () => {
+    cadeia.apolice = apolice(
+      {
+        situacao: 2,
+        indenizacaoDisponivel: ethers.parseEther("1"),
+        garantiaRetida: 0n,
+        periodoAcionador: 20261007,
+      },
+      {},
+    );
+    carteiraFalsa(CONTA_DO_PRODUTOR);
+
+    await abrir(`/apolice/${ENDERECO}`, {
+      perfil: "produtor",
+      rotas: rotasDaApolice(),
+    });
+
+    const botao = await screen.findByRole("button", { name: /Sacar/ });
+    await waitFor(() => expect(botao.disabled).toBe(false));
+    fireEvent.click(botao);
+    expect(await achar(/Indenizacao sacada/)).toBeTruthy();
+    expect(cadeia.chamadas[0][0]).toBe("sacarIndenizacao");
+  });
+
   test("liquidada integralmente: seguradora recupera saldo forcado", async () => {
     cadeia.apolice = apolice(
       {
@@ -232,7 +257,7 @@ describe("detalhe da apolice", () => {
       },
       {},
     );
-    cadeia.linha.push(evento("PagamentoExecutado", { valor: ethers.parseEther("1") }));
+    cadeia.linha.push(evento("IndenizacaoLiberada", { valor: ethers.parseEther("1") }));
     carteiraFalsa(CONTA_DA_SEGURADORA);
 
     await abrir(`/apolice/${ENDERECO}`, {

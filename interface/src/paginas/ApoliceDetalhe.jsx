@@ -37,7 +37,8 @@ const TITULOS = {
   GarantiaDepositada: "Seguradora depositou a garantia",
   IndicesPublicados: "Oraculo publicou os indices do periodo",
   CondicaoAvaliada: "Contrato avaliou a condicao contratada",
-  PagamentoExecutado: "Indenizacao transferida ao produtor",
+  IndenizacaoLiberada: "Indenizacao liberada para saque",
+  PagamentoExecutado: "Indenizacao sacada pelo produtor",
   GarantiaResgatada: "Garantia devolvida a seguradora",
   ApoliceCancelada: "Apolice cancelada antes da primeira publicação histórica",
 };
@@ -55,10 +56,12 @@ function descreverEvento(evento) {
       return `Periodo ${periodoEmData(a.periodo)} — indice climatico de ${a.indiceClimatico} dia(s) sem chuva.`;
     case "CondicaoAvaliada":
       return a.atendida
-        ? "Condicao atendida: o contrato paga a indenizacao integral."
+        ? "Condicao atendida: o contrato libera a indenizacao integral."
         : "Condicao nao atendida neste periodo. Nenhum valor foi movimentado.";
+    case "IndenizacaoLiberada":
+      return `${emEth(a.valor)} reservados ao produtor sem aprovacao humana, na mesma transacao que publicou o indice.`;
     case "PagamentoExecutado":
-      return `${emEth(a.valor)} transferidos sem aprovacao humana, na mesma transacao que publicou o indice.`;
+      return `${emEth(a.valor)} transferidos para a carteira do produtor.`;
     case "GarantiaResgatada":
       return `${emEth(a.valor)} devolvidos apos o fim da vigencia sem acionamento.`;
     case "ApoliceCancelada":
@@ -200,6 +203,7 @@ export default function ApoliceDetalhe() {
     const atualizar = () => carregar();
 
     contrato.on("IndicesPublicados", atualizar);
+    contrato.on("IndenizacaoLiberada", atualizar);
     contrato.on("PagamentoExecutado", atualizar);
     contrato.on("GarantiaDepositada", atualizar);
     contrato.on("ApoliceCancelada", atualizar);
@@ -225,6 +229,27 @@ export default function ApoliceDetalhe() {
       setAviso(`Transacao enviada: ${transacao.hash}. Aguardando confirmacao…`);
       await transacao.wait();
       setAviso("Garantia depositada. A apolice esta ativa e pronta para receber indices.");
+      await carregar();
+    } catch (falha) {
+      setErro(mensagemDeErro(falha));
+    } finally {
+      setOperando(false);
+    }
+  }
+
+  /** Saque da indenizacao liberada, feito pelo produtor titular. */
+  async function sacarIndenizacao() {
+    setAviso(null);
+    setErro(null);
+    setOperando(true);
+
+    try {
+      const contrato = contratoApolice(endereco, signatario);
+      const transacao = await contrato.sacarIndenizacao();
+
+      setAviso(`Transacao enviada: ${transacao.hash}. Aguardando confirmacao…`);
+      await transacao.wait();
+      setAviso("Indenizacao sacada. O valor esta na carteira beneficiaria.");
       await carregar();
     } catch (falha) {
       setErro(mensagemDeErro(falha));
@@ -412,6 +437,23 @@ export default function ApoliceDetalhe() {
         />
       </div>
 
+      {apolice.indenizacaoDisponivel > 0n ? (
+        <div className="cartao">
+          <h2>Indenizacao disponivel</h2>
+          <p>
+            O gatilho foi atingido e {emEth(apolice.indenizacaoDisponivel)} estao reservados ao
+            produtor. O valor sai do contrato quando o produtor assina o saque.
+          </p>
+          {ehProdutorTitular ? (
+            <button onClick={sacarIndenizacao} disabled={operando || !podeAssinar}>
+              {operando
+                ? "Aguardando a carteira…"
+                : `Sacar ${emEth(apolice.indenizacaoDisponivel)}`}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+
       {ehSeguradora ? (
         <div className="cartao">
           <h2>Acoes da seguradora</h2>
@@ -442,7 +484,7 @@ export default function ApoliceDetalhe() {
             {/* Saldo eventualmente forcado por terceiros pode ser recuperado. */}
             {apolice.situacao === 2 && apolice.garantiaRetida > 0n ? (
               <span className="silencioso">
-                A indenizacao integral ja foi paga. Um saldo excedente pode ser recuperado pela
+                Um saldo excedente, separado da indenizacao do produtor, pode ser recuperado pela
                 seguradora.
               </span>
             ) : null}
@@ -561,11 +603,15 @@ export default function ApoliceDetalhe() {
             {linhaDoTempo.map((evento) => (
               <li
                 key={`${evento.txHash}-${evento.indiceNoBloco}`}
-                className={evento.nome === "PagamentoExecutado" ? "pagamento" : ""}
+                className={
+                  ["IndenizacaoLiberada", "PagamentoExecutado"].includes(evento.nome)
+                    ? "pagamento"
+                    : ""
+                }
               >
                 <div className="titulo-evento">
                   {TITULOS[evento.nome] ?? evento.nome}{" "}
-                  {evento.nome === "PagamentoExecutado" ? (
+                  {evento.nome === "IndenizacaoLiberada" ? (
                     <Selo tipo="sucesso">sem intervencao humana</Selo>
                   ) : null}
                 </div>

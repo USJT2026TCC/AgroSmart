@@ -223,6 +223,7 @@ describe("indexador contra um no real", { timeout: 180_000 }, () => {
         [apolice, periodo, txHash, valor],
       );
     }
+    await (await contrato.connect(await provedor.getSigner(1)).sacarIndenizacao()).wait();
 
     await indexador.varrer();
 
@@ -253,11 +254,12 @@ describe("indexador contra um no real", { timeout: 180_000 }, () => {
     assert.deepEqual(Object.fromEntries(eventos.map((e) => [e.nome, e.n])), {
       CondicaoAvaliada: 3,
       GarantiaDepositada: 1,
+      IndenizacaoLiberada: 1,
       IndicesPublicados: 3,
       PagamentoExecutado: 1,
     });
 
-    // O produtor semeado tem a carteira da conta 1: recebe a notificacao do pagamento.
+    // O produtor semeado tem a carteira da conta 1: recebe os avisos de liberacao e de saque.
     const { rows: notificacoes } = await banco.query(
       `SELECT n.tipo FROM notificacoes n JOIN usuarios u ON u.id = n.usuario_id
         WHERE u.identificador = 'produtor' ORDER BY n.id`,
@@ -265,7 +267,7 @@ describe("indexador contra um no real", { timeout: 180_000 }, () => {
 
     assert.deepEqual(
       notificacoes.map((n) => n.tipo),
-      ["apolice_emitida", "cobertura_ativa", "indenizacao_paga"],
+      ["apolice_emitida", "cobertura_ativa", "indenizacao_liberada", "indenizacao_paga"],
     );
   });
 
@@ -609,24 +611,20 @@ describe("indexador contra um no real", { timeout: 180_000 }, () => {
         });
         assert.equal(Boolean(referencia.primeiroAcionamento), esperado);
         if (esperado) await pedir("/carteira", { metodo: "DELETE", token: produtor });
-        const saldoAntes = await provedor.send("eth_getBalance", [
-          await contas[1].getAddress(),
-          "latest",
-        ]);
         const resultado = await executarCiclo(servico, () => {});
         assert.equal(
           resultado.publicadas,
           1,
           JSON.stringify(resultado, (_k, v) => (typeof v === "bigint" ? v.toString() : v)),
         );
-        const saldoDepois = await provedor.send("eth_getBalance", [
-          await contas[1].getAddress(),
-          "latest",
-        ]);
         assert.equal(
-          BigInt(saldoDepois) - BigInt(saldoAntes),
+          await contrato.indenizacaoDisponivel(),
           esperado ? BigInt(preparo.termos.valorIndenizacao) : 0n,
         );
+        if (esperado) {
+          await (await contrato.connect(contas[1]).sacarIndenizacao()).wait();
+          assert.equal(await contrato.valorPago(), BigInt(preparo.termos.valorIndenizacao));
+        }
         const entradas = fila.entradas.length;
         assert.equal((await executarCiclo(servico, () => {})).publicadas, 0);
         assert.equal(fila.entradas.length, entradas);

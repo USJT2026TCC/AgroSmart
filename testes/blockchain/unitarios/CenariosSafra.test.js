@@ -51,9 +51,9 @@ describe("Cenarios de safra em rede local", () => {
       const dia = r.primeiroAcionamento || c.fim;
       const indice = r.dias.find((d) => d.data === dia).indiceClimatico;
       const periodo = Number(dia.replaceAll("-", ""));
-      const antes = await ethers.provider.getBalance(produtor.address);
       await apolice.connect(oraculo).publicarIndices(periodo, indice);
-      const pago = (await ethers.provider.getBalance(produtor.address)) - antes;
+      if (c.paga) await apolice.connect(produtor).sacarIndenizacao();
+      const pago = await apolice.valorPago();
       let situacaoFinal = Number(await apolice.situacao());
       if (!c.paga) {
         await apolice.resgatarGarantia();
