@@ -6,7 +6,8 @@ const SEPOLIA = {
   chainId: 11155111,
   nome: "Sepolia",
   moeda: { name: "Sepolia Ether", symbol: "ETH", decimals: 18 },
-  rpc: "https://ethereum-sepolia-rpc.publicnode.com",
+  // Precisa entregar os eventos antigos das apolices em consultas de 10 mil blocos.
+  rpc: "https://sepolia.gateway.tenderly.co",
   explorador: "https://sepolia.etherscan.io",
 };
 
