@@ -14,10 +14,15 @@ import { ABI_APOLICE, ABI_FACTORY } from "./abis.js";
 
 let provedorCompartilhado = null;
 
+/** Tentativas quando o RPC responde 429 (limite de taxa). */
+export const TENTATIVAS_LIMITE_DE_TAXA = 5;
+
 /**
- * Provedor com tempo limite curto e sem repeticao automatica — pela mesma razao
- * do oraculo: com o no fora do ar, o padrao do ethers trava por minutos em vez de
- * falhar e deixar a proxima varredura tentar de novo.
+ * Provedor com tempo limite curto — pela mesma razao do oraculo: com o no fora do
+ * ar, o padrao do ethers trava por minutos em vez de falhar e deixar a proxima
+ * varredura tentar de novo. So a resposta 429 e repetida, com espera crescente e
+ * no maximo TENTATIVAS_LIMITE_DE_TAXA vezes: sem isso, um trecho com muitas emissoes nunca
+ * termina num RPC publico e a varredura recomeca sempre do mesmo bloco.
  */
 export function provedor() {
   if (provedorCompartilhado) return provedorCompartilhado;
@@ -25,7 +30,10 @@ export function provedor() {
   const implantacao = lerImplantacao();
   const requisicao = new ethers.FetchRequest(config.rpcUrl);
   requisicao.timeout = 10_000;
-  requisicao.retryFunc = async () => false;
+  // O ethers so consulta esta funcao nas respostas 429.
+  requisicao.retryFunc = async (_pedido, _resposta, tentativa) =>
+    tentativa < TENTATIVAS_LIMITE_DE_TAXA;
+  requisicao.setThrottleParams({ slotInterval: 1_000 });
 
   const chainId = implantacao?.chainId;
 

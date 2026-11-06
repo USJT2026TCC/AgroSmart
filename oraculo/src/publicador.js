@@ -4,6 +4,9 @@ const { ethers } = require("ethers");
 
 const { ABI_APOLICE, ABI_REGISTRY } = require("./abi");
 
+/** Tentativas quando o RPC responde 429 (limite de taxa). */
+const TENTATIVAS_LIMITE_DE_TAXA = 5;
+
 /**
  * Travessia da fronteira: assina e submete os indices a cadeia.
  *
@@ -34,9 +37,15 @@ class Publicador {
     // devolver a publicacao a fila. A indisponibilidade da rede não deve perder
     // dados; a requisição falha com tempo limitado, enquanto a
     // entrada continua na fila e a proxima tentativa vem com espera crescente.
+    // So a resposta 429 (limite de taxa) e repetida aqui, com espera crescente e no
+    // maximo TENTATIVAS_LIMITE_DE_TAXA vezes; o ethers so consulta esta funcao
+    // nessas respostas. Repetir um envio reenvia a mesma transacao assinada, com o
+    // mesmo hash.
     const requisicao = new ethers.FetchRequest(rpcUrl);
     requisicao.timeout = timeoutMs;
-    requisicao.retryFunc = async () => false;
+    requisicao.retryFunc = async (_pedido, _resposta, tentativa) =>
+      tentativa < TENTATIVAS_LIMITE_DE_TAXA;
+    requisicao.setThrottleParams({ slotInterval: 1000 });
 
     this.provider = new ethers.JsonRpcProvider(requisicao, chainId ?? undefined, {
       staticNetwork: Boolean(chainId),
@@ -182,4 +191,4 @@ class Publicador {
   }
 }
 
-module.exports = { Publicador };
+module.exports = { Publicador, TENTATIVAS_LIMITE_DE_TAXA };

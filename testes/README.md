@@ -83,12 +83,12 @@ No Linux, use `etl/.venv/bin/python`. A conta PostgreSQL precisa poder criar os
 bancos descartáveis `agrosmart_teste_<UUID>`. O ensaio de persistência Docker usa
 projeto e volume próprios; a suíte não publica transações na Sepolia.
 
-## Verificação de 05/11/2026
+## Verificação de 06/11/2026
 
-A suíte completa aprovou 362 testes, já com o saque da indenização pelo
-beneficiário: 95 de contratos e fluxos, 2 de configuração da implantação, 75 da
-API, 12 de integração da API, 55 do oráculo, 79 da interface, 18 de infraestrutura
-e 26 do ETL. O build da interface concluiu e o Slither não reportou achados na
+A suíte completa aprovou 366 testes, já com o saque da indenização pelo
+beneficiário e a espera diante do limite de taxa do RPC: 95 de contratos e fluxos,
+2 de configuração da implantação, 77 da API, 12 de integração da API, 57 do
+oráculo, 79 da interface, 18 de infraestrutura e 26 do ETL. O build da interface concluiu e o Slither não reportou achados na
 configuração utilizada. A suíte não envia transações; a fábrica com o saque foi
 publicada e verificada na Sepolia em 05/11/2026, à parte, pelo script de implantação.
 
