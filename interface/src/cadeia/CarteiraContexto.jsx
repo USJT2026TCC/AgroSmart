@@ -32,11 +32,16 @@ export function ProvedorCarteira({ children }) {
 
   const temCarteira = typeof window !== "undefined" && Boolean(window.ethereum);
 
-  /** Provedor somente leitura. Nao depende de carteira instalada. */
+  /**
+   * Provedor somente leitura. Nao depende de carteira instalada. Sem lotes: o RPC
+   * publico conta cada chamada de um lote no limite de taxa e recusa o lote
+   * inteiro, que o ethers entao repete por minutos antes de desistir.
+   */
   const provedorLeitura = useMemo(
     () =>
       new ethers.JsonRpcProvider(rede.rpc, rede.chainId, {
         staticNetwork: true,
+        batchMaxCount: 1,
       }),
     [rede],
   );

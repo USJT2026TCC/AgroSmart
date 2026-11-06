@@ -194,20 +194,16 @@ export default function ApoliceDetalhe() {
   }, [carregar]);
 
   /**
-   * Escuta ao vivo. O contrato emite os eventos na mesma transacao em que paga,
-   * entao recarregar tudo quando um deles chega mantem a tela coerente sem
-   * precisar montar o estado a partir do proprio evento.
+   * Escuta ao vivo. Qualquer evento da apolice muda o que a tela mostra, entao
+   * recarregar tudo quando um deles chega mantem a tela coerente sem montar o
+   * estado a partir do proprio evento. Um unico filtro para todos os eventos do
+   * contrato consulta o RPC uma vez por bloco, e nao uma vez por tipo de evento.
    */
   useEffect(() => {
     const contrato = contratoApolice(endereco, provedorLeitura);
     const atualizar = () => carregar();
 
-    contrato.on("IndicesPublicados", atualizar);
-    contrato.on("IndenizacaoLiberada", atualizar);
-    contrato.on("PagamentoExecutado", atualizar);
-    contrato.on("GarantiaDepositada", atualizar);
-    contrato.on("ApoliceCancelada", atualizar);
-    contrato.on("GarantiaResgatada", atualizar);
+    contrato.on("*", atualizar);
 
     return () => {
       contrato.removeAllListeners();
